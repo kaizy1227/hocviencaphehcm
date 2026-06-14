@@ -99,6 +99,7 @@ export default function HomePage() {
   const nameRef = useRef<HTMLInputElement>(null);
   const phoneRef = useRef<HTMLInputElement>(null);
   const courseRef = useRef<HTMLSelectElement>(null);
+  const locationRef = useRef<HTMLSelectElement>(null);
   const marqueeRef1 = useRef<HTMLDivElement>(null);
   const marqueeRef2 = useRef<HTMLDivElement>(null);
   const masonryRef = useRef<HTMLDivElement>(null);
@@ -142,11 +143,12 @@ export default function HomePage() {
     const name = nameRef.current?.value.trim();
     const phone = phoneRef.current?.value.trim();
     const course = courseRef.current?.value;
-    if (!name || !phone || !course) { setFormError('Vui lòng điền đầy đủ thông tin.'); return; }
+    const location = locationRef.current?.value;
+    if (!name || !phone || !course || !location) { setFormError('Vui lòng điền đầy đủ thông tin.'); return; }
     setFormSubmitting(true);
     setFormError('');
     const supabase = createClient();
-    const { error } = await supabase.from('leads').insert({ name, phone, course });
+    const { error } = await supabase.from('leads').insert({ name, phone, course, location });
     setFormSubmitting(false);
     if (error) { setFormError('Có lỗi xảy ra, vui lòng thử lại hoặc liên hệ Zalo.'); return; }
     setFormDone(true);
@@ -474,6 +476,38 @@ export default function HomePage() {
                   <div className="fg">
                     <label className="fl-lbl" htmlFor="f-phone">Số Điện Thoại <em>*</em></label>
                     <input className="fi" type="tel" id="f-phone" placeholder="Ví dụ: 0901 234 567" required ref={phoneRef} />
+                  </div>
+                  <div className="fg">
+                    <label className="fl-lbl" htmlFor="f-location">Khu vực của bạn <em>*</em></label>
+                    <select className="fs" id="f-location" required ref={locationRef} defaultValue="">
+                      <option value="" disabled>-- Chọn tỉnh / thành phố --</option>
+                      <optgroup label="Chi nhánh Học Viện Cà Phê">
+                        <option value="Hồ Chí Minh">🏙 Hồ Chí Minh (Chi nhánh HCM)</option>
+                        <option value="Hà Nội">🏛 Hà Nội (Chi nhánh Hà Nội)</option>
+                      </optgroup>
+                      <optgroup label="Miền Nam">
+                        <option value="Bình Dương">Bình Dương</option>
+                        <option value="Đồng Nai">Đồng Nai</option>
+                        <option value="Long An">Long An</option>
+                        <option value="Tiền Giang">Tiền Giang</option>
+                        <option value="Vũng Tàu">Vũng Tàu</option>
+                        <option value="Cần Thơ">Cần Thơ</option>
+                      </optgroup>
+                      <optgroup label="Miền Trung">
+                        <option value="Đà Nẵng">Đà Nẵng</option>
+                        <option value="Huế">Huế</option>
+                        <option value="Nha Trang">Nha Trang</option>
+                        <option value="Đà Lạt">Đà Lạt</option>
+                        <option value="Quy Nhơn">Quy Nhơn</option>
+                      </optgroup>
+                      <optgroup label="Miền Bắc">
+                        <option value="Hải Phòng">Hải Phòng</option>
+                        <option value="Hải Dương">Hải Dương</option>
+                        <option value="Bắc Ninh">Bắc Ninh</option>
+                        <option value="Nam Định">Nam Định</option>
+                      </optgroup>
+                      <option value="Tỉnh / Thành khác">Tỉnh / Thành khác</option>
+                    </select>
                   </div>
                   <div className="fg">
                     <label className="fl-lbl" htmlFor="f-course">Bạn quan tâm đến khóa học / dịch vụ nào? <em>*</em></label>

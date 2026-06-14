@@ -19,6 +19,7 @@ type Lead = {
   name: string;
   phone: string;
   course: string;
+  location: string | null;
   status: 'new' | 'contacted' | 'enrolled';
   created_at: string;
 };
@@ -215,6 +216,7 @@ export default function AdminPage() {
                     <th>#</th>
                     <th>Họ Tên</th>
                     <th>Số Điện Thoại</th>
+                    <th>Khu Vực</th>
                     <th>Khóa Quan Tâm</th>
                     <th>Ngày Gửi</th>
                     <th>Trạng Thái</th>
@@ -223,12 +225,13 @@ export default function AdminPage() {
                 </thead>
                 <tbody>
                   {filteredLeads.length === 0 ? (
-                    <tr><td colSpan={7} className="admin-empty">Chưa có yêu cầu tư vấn nào</td></tr>
+                    <tr><td colSpan={8} className="admin-empty">Chưa có yêu cầu tư vấn nào</td></tr>
                   ) : filteredLeads.map((l, i) => (
                     <tr key={l.id} className={l.status === 'new' ? 'lead-row-new' : ''}>
                       <td className="admin-num">{i + 1}</td>
                       <td className="admin-name">{l.name}</td>
                       <td><a href={`tel:${l.phone}`} className="admin-phone">{l.phone}</a></td>
+                      <td className="admin-date">{l.location ?? '—'}</td>
                       <td><span className="admin-course-tag">{l.course}</span></td>
                       <td className="admin-date">{new Date(l.created_at).toLocaleDateString('vi-VN')}</td>
                       <td>
