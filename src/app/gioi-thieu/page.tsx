@@ -118,6 +118,81 @@ export default function GioiThieuPage() {
         </div>
       </div>
 
+      {/* INSTRUCTORS */}
+      <section className="section gv-section">
+        <div className="container">
+          <div style={{textAlign:'center'}}>
+            <span className="tag">Đội Ngũ Giảng Viên</span>
+            <h2 className="title">Học Từ Người Đã Làm<br /><em>Trước Bạn</em></h2>
+            <p className="sub" style={{maxWidth:'560px', margin:'0 auto'}}>Mỗi giảng viên tại Học Viện Cà Phê đều xuất thân từ thực tế — từng quản lý quán, xây dựng chuỗi, đào tạo hàng chục nhân viên trước khi đứng lớp.</p>
+          </div>
+
+          <div className="gv-grid">
+            {/* GIẢNG VIÊN 1 — Đoàn Hồng Liêm */}
+            <div className="gv-card">
+              <div className="gv-photo-wrap">
+                <img
+                  className="gv-photo"
+                  src="/images/giangvien_Liem.jpg"
+                  alt="Thầy Đoàn Hồng Liêm"
+                  onError={e => { e.currentTarget.style.display='none'; (e.currentTarget.nextElementSibling as HTMLElement)?.style.setProperty('display','flex'); }}
+                />
+                <div className="gv-photo-placeholder" style={{display:'none'}}>ĐL</div>
+              </div>
+              <div className="gv-info">
+                <div className="gv-name">Đoàn Hồng Liêm</div>
+                <div className="gv-role">☕ Chuyên Gia Cà Phê &amp; Vận Hành</div>
+                <div className="gv-badges">
+                  <span className="gv-badge">10 năm kinh nghiệm</span>
+                  <span className="gv-badge">Cựu QL Phúc Long</span>
+                  <span className="gv-badge">Sinh 1996</span>
+                </div>
+                <p className="gv-desc">
+                  Gắn bó với ngành F&amp;B từ năm 18 tuổi, Thầy Liêm từng kinh qua nhiều vị trí từ barista đến quản lý tại <strong>Phúc Long</strong> — thương hiệu trà &amp; cà phê hàng đầu Việt Nam. 10 năm đứng bar và quản lý vận hành đã tôi luyện nên một chuyên gia hiểu cà phê theo chiều sâu thực sự: từ cách chiết xuất espresso chuẩn đến tối ưu chi phí nguyên liệu và xây dựng quy trình đào tạo nhân sự bài bản cho quán mới mở.
+                </p>
+                <div className="gv-skills">
+                  <span className="gv-skill">☕ Cà phê máy & espresso</span>
+                  <span className="gv-skill">🔧 Vận hành quán</span>
+                  <span className="gv-skill">👥 Đào tạo nhân sự</span>
+                  <span className="gv-skill">📊 Tối ưu chi phí</span>
+                </div>
+              </div>
+            </div>
+
+            {/* GIẢNG VIÊN 2 — Bùi Trần Thiên Ân */}
+            <div className="gv-card">
+              <div className="gv-photo-wrap">
+                <img
+                  className="gv-photo"
+                  src="/images/giangvien_An.jpg"
+                  alt="Cô Bùi Trần Thiên Ân"
+                  onError={e => { e.currentTarget.style.display='none'; (e.currentTarget.nextElementSibling as HTMLElement)?.style.setProperty('display','flex'); }}
+                />
+                <div className="gv-photo-placeholder" style={{display:'none'}}>TÂ</div>
+              </div>
+              <div className="gv-info">
+                <div className="gv-name">Bùi Trần Thiên Ân</div>
+                <div className="gv-role">🍵 Chuyên Gia Trà &amp; Sáng Tạo Đồ Uống</div>
+                <div className="gv-badges">
+                  <span className="gv-badge">8 năm kinh nghiệm</span>
+                  <span className="gv-badge">Cựu trainer AiCha (~20 cơ sở)</span>
+                  <span className="gv-badge">Sinh 1997</span>
+                </div>
+                <p className="gv-desc">
+                  Với 8 năm trong ngành F&amp;B, Cô Ân đã xây dựng hệ thống đào tạo và quản lý nhân sự cho chuỗi trà sữa <strong>AiCha</strong> — phát triển đến gần 20 cửa hàng. Am hiểu sâu về các dòng trà từ truyền thống Việt Nam đến oolong Đài Loan, Cô Ân có khả năng đặc biệt trong việc phát triển đồ uống <strong>hot trend</strong> — nhiều công thức sáng tạo đã trở thành bestseller thực sự tại chuỗi AiCha trong thời gian đó.
+                </p>
+                <div className="gv-skills">
+                  <span className="gv-skill">🍵 Trà Việt Nam & Đài Loan</span>
+                  <span className="gv-skill">✨ Sáng tạo hot trend</span>
+                  <span className="gv-skill">👥 Đào tạo chuỗi</span>
+                  <span className="gv-skill">🧋 Trà sữa & topping</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* BARISTA GALLERY */}
       <section className="section" style={{background:'var(--bg-alt)'}}>
         <div className="container">
