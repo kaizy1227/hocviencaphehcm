@@ -198,9 +198,9 @@ export default function HomePage() {
   return (
     <>
       {lb && (
-        <div id="lightbox" className="active" onClick={e => { if (e.target === e.currentTarget || (e.target as HTMLElement).tagName === 'IMG') closeLb(); }}>
+        <div className="lightbox active" onClick={e => { if (e.target === e.currentTarget) closeLb(); }}>
           <button className="lb-close" onClick={closeLb}>&#x2715;</button>
-          <img src={lb.src} alt={lb.alt} />
+          <img src={lb.src} alt={lb.alt} onClick={closeLb} />
         </div>
       )}
 
