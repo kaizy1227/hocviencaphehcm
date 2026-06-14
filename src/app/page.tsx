@@ -94,6 +94,8 @@ export default function HomePage() {
   const [formSubmitting, setFormSubmitting] = useState(false);
   const [formError, setFormError] = useState('');
   const [selectedCourse, setSelectedCourse] = useState('');
+  const [leCourses, setLeCourses] = useState(LE_COURSES);
+  const [services, setServices] = useState(SERVICES);
 
   const fanTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const nameRef = useRef<HTMLInputElement>(null);
@@ -157,6 +159,17 @@ export default function HomePage() {
   useEffect(() => {
     const interval = setInterval(() => setHeroIdx(i => (i + 1) % HERO_IMGS.length), 4500);
     return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.from('courses').select('*').eq('active', true).order('sort_order').then(({ data }) => {
+      if (!data || data.length === 0) return;
+      const le = data.filter((c: { category: string }) => c.category === 'chuyen-de');
+      const svc = data.filter((c: { category: string }) => c.category === 'kinh-doanh');
+      if (le.length > 0) setLeCourses(le.map((c: { image: string; name: string; description: string; price: string; duration: string }) => ({ img: c.image, name: c.name, desc: c.description, price: c.price, time: c.duration })));
+      if (svc.length > 0) setServices(svc.map((c: { image: string; name: string; description: string; price: string }) => ({ img: c.image, name: c.name, desc: c.description, price: c.price })));
+    });
   }, []);
 
   useEffect(() => {
@@ -317,7 +330,7 @@ export default function HomePage() {
             <h3 className="card-name" style={{fontSize:'1.15rem', marginBottom:'6px'}}>Chuyên đề lẻ tự chọn</h3>
             <p className="sub" style={{marginBottom:'20px'}}>Học đúng món bạn cần — mỗi chuyên đề 1 ngày, riêng Cà Phê Máy Nâng Cao 3 ngày.</p>
             <div className="le-grid">
-              {LE_COURSES.map(c => (
+              {leCourses.map(c => (
                 <div className="le-card" key={c.name}>
                   <div className="le-img" onClick={() => openLb(`/images/courses/Bang-gia-khoa-le/${c.img}`, c.name)}>
                     <img src={`/images/courses/Bang-gia-khoa-le/${c.img}`} alt={c.name} loading="lazy" onError={e => { const card = e.currentTarget.closest('.le-card') as HTMLElement; if (card) card.style.display='none'; }} />
@@ -369,7 +382,7 @@ export default function HomePage() {
           <h2 className="title" style={{textAlign:'center'}}>Đồng Hành Mở &amp; Vận Hành Quán</h2>
           <p className="sub" style={{textAlign:'center', maxWidth:'560px', margin:'0 auto 44px'}}>Không chỉ pha chế — chúng tôi đồng hành cùng bạn từ khởi nghiệp, set up menu đến vận hành quán hiệu quả.</p>
           <div className="poster-grid">
-            {SERVICES.map(s => (
+            {services.map(s => (
               <div className="poster-card" key={s.name}>
                 <div className="poster-img" onClick={() => openLb(`/images/services/${s.img}`, s.name)}>
                   <img src={`/images/services/${s.img}`} alt={s.name} loading="lazy" />
