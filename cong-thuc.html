@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#B05A10">
+  <meta name="description" content="36 công thức pha chế độc quyền — Kombucha, Matcha, Cà phê đặc sản. Từ nguyên liệu đến cách pha chi tiết.">
+  <title>Công Thức Pha Chế | Học Viện Cà Phê HCM</title>
+  <link rel="icon" type="image/png" href="images/logo.png">
+  <link rel="apple-touch-icon" href="images/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--bg:#FFFAF5;--bg-alt:#F5EDE1;--bg-dark:#1E0C04;--white:#FFFFFF;--accent:#B05A10;--accent-h:#8C4008;--gold:#D08C18;--text:#1A0800;--text-2:#4A2810;--text-3:#7A5838;--muted:#A88868;--border:rgba(30,10,0,0.09);--nav-h:72px;--r:12px;--r-lg:20px;--r-xl:32px;--sh-sm:0 1px 6px rgba(30,10,0,0.07);--sh-md:0 4px 24px rgba(30,10,0,0.10)}
+    html{scroll-behavior:smooth}
+    body{font-family:'Be Vietnam Pro',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.65;overflow-x:hidden}
+    img{max-width:100%;display:block}a{text-decoration:none;color:inherit}ul{list-style:none}button{font-family:inherit}
+    .container{width:100%;max-width:1160px;margin:0 auto;padding:0 24px}
+    @media(min-width:768px){.container{padding:0 48px}}
+    /* NAV */
+    .navbar{position:fixed;top:0;left:0;right:0;z-index:1000;height:var(--nav-h);background:var(--white);border-bottom:1px solid var(--border);transition:box-shadow .3s}
+    .navbar.scrolled{box-shadow:var(--sh-sm)}
+    .nav-inner{height:100%;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px}
+    .nav-left{display:flex;align-items:center;gap:2px}
+    .nav-right{display:flex;align-items:center;gap:2px;justify-content:flex-end}
+    .nav-link{font-size:.86rem;font-weight:500;color:var(--text-2);padding:8px 13px;border-radius:8px;position:relative;transition:color .2s}
+    .nav-link:hover{color:var(--accent)}
+    .nav-link.active{color:var(--accent);font-weight:600}
+    .nav-link.active::after{content:'';position:absolute;bottom:3px;left:13px;right:13px;height:2px;background:var(--accent);border-radius:2px}
+    .nav-logo{display:flex;align-items:center;justify-content:center;gap:10px}
+    .nav-logo-icon{width:40px;height:40px;border-radius:8px;object-fit:contain}
+    .nav-logo-main{font-size:.9rem;font-weight:800;color:var(--text);display:block}
+    .nav-logo-sub{font-size:.62rem;font-weight:500;color:var(--muted);display:block}
+    .btn-login{font-size:.83rem;font-weight:600;padding:7px 15px;border-radius:8px;background:transparent;color:var(--accent);border:1.5px solid var(--accent);cursor:pointer;transition:all .2s;text-decoration:none;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;line-height:1}
+    .btn-login:hover{background:var(--accent);color:#fff}
+    .hamburger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:6px;margin-left:8px}
+    .hamburger span{display:block;width:22px;height:1.5px;background:var(--text);border-radius:2px;transition:all .3s}
+    @media(max-width:900px){.nav-left{display:none}.nav-right .nav-link{display:none}.hamburger{display:flex}.nav-inner{grid-template-columns:auto 1fr auto}.nav-logo{justify-content:flex-start}}
+    .mob-menu{display:none;position:fixed;top:var(--nav-h);left:0;right:0;background:var(--white);z-index:999;border-bottom:1px solid var(--border);padding:12px 24px 20px;flex-direction:column;gap:2px}
+    .mob-menu.open{display:flex}
+    .mob-menu a{font-size:.95rem;font-weight:500;color:var(--text-2);padding:13px 16px;border-radius:8px;border-bottom:1px solid var(--border);transition:all .2s}
+    .mob-menu a:last-child{border-bottom:none}
+    .mob-menu a:hover{color:var(--accent);background:#FFF5ED}
+    /* FLOATS */
+    .floats{position:fixed;right:16px;bottom:90px;z-index:900;display:flex;flex-direction:column;gap:10px;align-items:center}
+    .fl{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 12px rgba(0,0,0,.18);transition:transform .2s;border:none;cursor:pointer;font-size:1.2rem;color:#fff;text-decoration:none}
+    .fl:hover{transform:scale(1.1)}
+    .scroll-top{width:42px;height:42px;border-radius:50%;background:var(--bg-dark);color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1rem;box-shadow:0 2px 12px rgba(0,0,0,.2);transition:all .2s;opacity:0;pointer-events:none}
+    .scroll-top.show{opacity:1;pointer-events:auto}
+    /* HERO */
+    .ct-hero{position:relative;padding:calc(var(--nav-h) + 60px) 0 64px;background:var(--bg-dark);overflow:hidden}
+    .ct-hero-bg{position:absolute;inset:0;opacity:.22}
+    .ct-hero-bg img{width:100%;height:100%;object-fit:cover}
+    .ct-hero-body{position:relative;z-index:1;max-width:700px}
+    .ct-hero-tag{display:inline-block;font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);border:1px solid rgba(208,140,24,.3);padding:5px 14px;border-radius:100px;margin-bottom:16px}
+    .ct-hero h1{font-size:clamp(2.2rem,5.5vw,3.6rem);font-weight:900;color:#fff;line-height:1.1;letter-spacing:-.02em;margin-bottom:16px}
+    .ct-hero h1 em{color:var(--gold);font-style:normal}
+    .ct-hero-sub{font-size:1rem;color:rgba(255,255,255,.65);line-height:1.75;margin-bottom:36px;max-width:520px}
+    .ct-hero-stats{display:flex;flex-wrap:wrap;gap:0;border-top:1px solid rgba(255,255,255,.12);padding-top:28px}
+    .ct-hs{padding-right:28px;margin-right:28px;border-right:1px solid rgba(255,255,255,.1)}
+    .ct-hs:last-child{border-right:none}
+    .ct-hs-n{font-size:1.7rem;font-weight:900;color:var(--gold);line-height:1}
+    .ct-hs-l{font-size:.7rem;color:rgba(255,255,255,.45);margin-top:4px;font-weight:500}
+    @media(max-width:560px){.ct-hs{padding-right:18px;margin-right:18px}.ct-hs-n{font-size:1.4rem}}
+    /* FILTER BAR */
+    .ct-controls{background:var(--white);border-bottom:1px solid var(--border);position:sticky;top:var(--nav-h);z-index:90;padding:14px 0}
+    .ct-controls-inner{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+    .ct-filters{display:flex;gap:6px;flex-wrap:wrap;flex:1;min-width:0}
+    .ct-btn{font-size:.76rem;font-weight:600;padding:6px 14px;border-radius:100px;border:1.5px solid var(--border);background:transparent;color:var(--text-2);cursor:pointer;transition:all .2s;white-space:nowrap;font-family:inherit}
+    .ct-btn:hover{border-color:var(--accent);color:var(--accent)}
+    .ct-btn.active{background:var(--accent);border-color:var(--accent);color:#fff}
+    .ct-search-wrap{position:relative;flex-shrink:0}
+    .ct-search{padding:8px 14px 8px 36px;border:1.5px solid var(--border);border-radius:100px;font-size:.82rem;font-family:inherit;color:var(--text);background:var(--bg);outline:none;width:200px;transition:border-color .2s}
+    .ct-search:focus{border-color:var(--accent)}
+    .ct-search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:.9rem;pointer-events:none}
+    @media(max-width:600px){.ct-search{width:130px}.ct-btn{font-size:.72rem;padding:5px 10px}}
+    /* GRID */
+    .ct-main{padding:40px 0 80px}
+    .ct-count{font-size:.82rem;color:var(--text-3);margin-bottom:18px}
+    .ct-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+    @media(max-width:960px){.ct-grid{grid-template-columns:repeat(3,1fr)}}
+    @media(max-width:640px){.ct-grid{grid-template-columns:repeat(2,1fr);gap:10px}}
+    .ct-card{background:var(--white);border-radius:var(--r-lg);overflow:hidden;border:1px solid var(--border);transition:box-shadow .25s,transform .25s;cursor:pointer}
+    .ct-card:hover{box-shadow:0 8px 32px rgba(30,10,0,.12);transform:translateY(-3px)}
+    .ct-card-img{aspect-ratio:1;overflow:hidden;background:var(--bg-alt)}
+    .ct-card-img img{width:100%;height:100%;object-fit:cover;transition:transform .45s ease;display:block}
+    .ct-card:hover .ct-card-img img{transform:scale(1.06)}
+    .ct-card-body{padding:12px 12px 14px}
+    .ct-cat-badge{display:inline-block;font-size:.63rem;font-weight:700;letter-spacing:.05em;padding:3px 8px;border-radius:100px;margin-bottom:7px;text-transform:uppercase}
+    .ct-card-name{font-size:.85rem;font-weight:700;color:var(--text);line-height:1.35;margin-bottom:5px}
+    .ct-card-footer{display:flex;align-items:center;margin-top:8px}
+    .ct-lock-hint{font-size:.71rem;color:var(--muted);display:inline-flex;align-items:center;gap:4px}
+    .ct-empty{grid-column:1/-1;text-align:center;padding:80px 24px;color:var(--text-3)}
+    .ct-empty i{font-size:2.5rem;color:var(--muted);margin-bottom:14px;display:block}
+    /* CATEGORY BADGE COLORS */
+    .cat-kombucha{background:#DCFCE7;color:#166534}
+    .cat-cafe{background:#FEF3C7;color:#92400E}
+    .cat-matcha{background:#D1FAE5;color:#065F46}
+    .cat-da-xay{background:#DBEAFE;color:#1E40AF}
+    .cat-kombucha-soda{background:#EDE9FE;color:#5B21B6}
+    .cat-sinh-to{background:#FFEDD5;color:#9A3412}
+    .cat-tra-sua{background:#FCE7F3;color:#9D174D}
+    .cat-cocomilk{background:#CCFBF1;color:#134E4A}
+    /* MODAL */
+    .ct-modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:2000;display:none;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(4px)}
+    .ct-modal-bg.open{display:flex}
+    .ct-modal{background:var(--white);border-radius:var(--r-xl);overflow:hidden;width:100%;max-width:860px;max-height:90vh;display:grid;grid-template-columns:1fr 1fr;box-shadow:0 24px 80px rgba(0,0,0,.35)}
+    @media(max-width:640px){.ct-modal{grid-template-columns:1fr;max-height:95vh;overflow-y:auto}}
+    .ct-modal-img{position:relative;background:var(--bg-alt);min-height:280px}
+    .ct-modal-img img{width:100%;height:100%;object-fit:cover;display:block}
+    @media(max-width:640px){.ct-modal-img{height:200px;min-height:unset}}
+    .ct-modal-body{padding:28px 24px;overflow-y:auto;max-height:90vh}
+    @media(max-width:640px){.ct-modal-body{max-height:none;padding:20px 16px}}
+    .ct-modal-close{position:absolute;top:10px;right:10px;width:32px;height:32px;border-radius:50%;background:rgba(0,0,0,.5);border:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.9rem;transition:background .2s;z-index:10}
+    .ct-modal-close:hover{background:rgba(0,0,0,.8)}
+    .ct-modal-cat{margin-bottom:8px}
+    .ct-modal-name{font-size:1.25rem;font-weight:800;color:var(--text);line-height:1.25;margin-bottom:18px}
+    .ct-modal-locked{text-align:center;padding:12px 0 8px}
+    .ct-lock-ico{width:64px;height:64px;border-radius:50%;background:#FFF5ED;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;color:var(--accent);font-size:1.7rem}
+    .ct-modal-locked h3{font-size:1.1rem;font-weight:800;color:var(--text);margin-bottom:10px}
+    .ct-modal-locked p{font-size:.88rem;color:var(--text-3);line-height:1.7;margin-bottom:24px}
+    .ct-lock-btns{display:flex;flex-direction:column;gap:10px}
+    .ct-lock-btn-primary{display:flex;align-items:center;justify-content:center;gap:8px;background:var(--accent);color:#fff;padding:13px 24px;border-radius:100px;font-weight:700;font-size:.9rem;transition:background .2s}
+    .ct-lock-btn-primary:hover{background:var(--accent-h)}
+    .ct-lock-btn-sec{display:flex;align-items:center;justify-content:center;gap:8px;background:transparent;color:var(--accent);border:1.5px solid var(--accent);padding:11px 24px;border-radius:100px;font-weight:600;font-size:.88rem;transition:all .2s}
+    .ct-lock-btn-sec:hover{background:var(--accent);color:#fff}
+    .ct-modal-course{font-size:.72rem;color:var(--text-3);margin-top:16px;display:flex;align-items:center;justify-content:center;gap:5px}
+    /* FOOTER */
+    footer{background:var(--bg-dark)}
+    .ft-grid{display:grid;grid-template-columns:1.6fr repeat(3,1fr);gap:40px;padding:64px 0 36px}
+    @media(max-width:900px){.ft-grid{grid-template-columns:1fr 1fr}}
+    @media(max-width:560px){.ft-grid{grid-template-columns:1fr}}
+    .ft-brand-logo{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+    .ft-ico{width:36px;height:36px;border-radius:7px;background:#fff;flex-shrink:0;object-fit:contain;display:block;padding:2px}
+    .ft-name{font-size:.92rem;font-weight:800;color:#fff}
+    .ft-desc{font-size:.8rem;color:rgba(255,255,255,.45);line-height:1.7;max-width:220px}
+    .ft-socs{display:flex;gap:8px;margin-top:18px}
+    .ft-soc{width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.45);font-size:.85rem;transition:all .2s;text-decoration:none}
+    .ft-soc:hover{background:var(--accent);border-color:var(--accent);color:#fff}
+    .ft-col h5{font-size:.8rem;font-weight:700;color:#fff;margin-bottom:14px;letter-spacing:.04em}
+    .ft-col ul{display:flex;flex-direction:column;gap:9px}
+    .ft-col ul a{font-size:.78rem;color:rgba(255,255,255,.42);transition:color .2s}
+    .ft-col ul a:hover{color:var(--gold)}
+    .ft-bot{border-top:1px solid rgba(255,255,255,.06);padding:20px 0;text-align:center;font-size:.73rem;color:rgba(255,255,255,.28)}
+    .ft-bot a{color:rgba(255,255,255,.28);transition:color .2s}
+    .ft-bot a:hover{color:var(--gold)}
+  </style>
+</head>
+<body>
+
+<nav class="navbar" id="nav">
+  <div class="container">
+    <div class="nav-inner">
+      <div class="nav-left">
+        <a href="index.html" class="nav-link">Trang Chủ</a>
+        <a href="index.html#courses" class="nav-link">Khóa Học</a>
+        <a href="index.html#services" class="nav-link">Gói Kinh Doanh</a>
+      </div>
+      <a href="index.html" class="nav-logo">
+        <img src="images/logo.png" class="nav-logo-icon" alt="Học Viện Cà Phê">
+        <div><span class="nav-logo-main">Học Viện Cà Phê</span><span class="nav-logo-sub">Coffee &amp; Tea Academy</span></div>
+      </a>
+      <div class="nav-right">
+        <a href="index.html#menu" class="nav-link">Menu</a>
+        <a href="gioi-thieu.html" class="nav-link">Giới Thiệu</a>
+        <a href="cong-thuc.html" class="nav-link active">Công Thức</a>
+        <a href="index.html#dangky" class="nav-link">Liên Hệ</a>
+        <a href="index.html#login" class="btn-login"><i class="ti ti-lock" style="font-size:.85rem"></i> Đăng Nhập</a>
+        <button class="hamburger" onclick="toggleMenu()" aria-label="Menu"><span></span><span></span><span></span></button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="mob-menu" id="mobMenu">
+  <a href="index.html" onclick="closeMenu()">Trang Chủ</a>
+  <a href="index.html#courses" onclick="closeMenu()">Khóa Học</a>
+  <a href="index.html#services" onclick="closeMenu()">Gói Kinh Doanh</a>
+  <a href="index.html#menu" onclick="closeMenu()">Menu Đồ Uống</a>
+  <a href="gioi-thieu.html" onclick="closeMenu()">Giới Thiệu</a>
+  <a href="cong-thuc.html" onclick="closeMenu()">Công Thức Pha Chế</a>
+  <a href="index.html#dangky" onclick="closeMenu()">Đăng Ký / Liên Hệ</a>
+  <a href="index.html#login" onclick="closeMenu()">Đăng Nhập Nội Bộ</a>
+</div>
+
+<section class="ct-hero">
+  <div class="ct-hero-bg"><img src="images/gallery/Concept-studio-with-products/43. Trà đào cam sả bg.webp" alt="" loading="eager"></div>
+  <div class="container">
+    <div class="ct-hero-body">
+      <span class="ct-hero-tag">Kiến Thức Pha Chế</span>
+      <h1>Công Thức<br><em>Pha Chế</em></h1>
+      <p class="ct-hero-sub">Bộ sưu tập công thức độc quyền của Học Viện — từ nguyên liệu, định lượng đến từng bước pha chế chuẩn mực.</p>
+      <div class="ct-hero-stats">
+        <div class="ct-hs"><div class="ct-hs-n">36</div><div class="ct-hs-l">Công thức</div></div>
+        <div class="ct-hs"><div class="ct-hs-n">8</div><div class="ct-hs-l">Danh mục</div></div>
+        <div class="ct-hs"><div class="ct-hs-n">2</div><div class="ct-hs-l">Khóa học</div></div>
+        <div class="ct-hs"><div class="ct-hs-n">100%</div><div class="ct-hs-l">Thực chiến</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="ct-controls">
+  <div class="container">
+    <div class="ct-controls-inner">
+      <div class="ct-filters" id="ctFilters">
+        <button class="ct-btn active" data-cat="all" onclick="filterCat(this)">Tất cả (36)</button>
+        <button class="ct-btn" data-cat="Kombucha" onclick="filterCat(this)">Kombucha (11)</button>
+        <button class="ct-btn" data-cat="Cafe" onclick="filterCat(this)">Cà Phê (11)</button>
+        <button class="ct-btn" data-cat="Matcha" onclick="filterCat(this)">Matcha (4)</button>
+        <button class="ct-btn" data-cat="Đá xay" onclick="filterCat(this)">Đá Xay (4)</button>
+        <button class="ct-btn" data-cat="Kombucha Soda" onclick="filterCat(this)">Kombucha Soda (3)</button>
+        <button class="ct-btn" data-cat="Trà sữa" onclick="filterCat(this)">Trà Sữa</button>
+        <button class="ct-btn" data-cat="Sinh tố" onclick="filterCat(this)">Sinh Tố</button>
+        <button class="ct-btn" data-cat="Cocomilk" onclick="filterCat(this)">Cocomilk</button>
+      </div>
+      <div class="ct-search-wrap">
+        <i class="ti ti-search ct-search-icon"></i>
+        <input type="text" class="ct-search" id="ctSearch" placeholder="Tìm công thức..." oninput="filterSearch()">
+      </div>
+    </div>
+  </div>
+</div>
+
+<section class="ct-main">
+  <div class="container">
+    <p class="ct-count" id="ctCount"></p>
+    <div class="ct-grid" id="ctGrid"></div>
+  </div>
+</section>
+
+<div class="ct-modal-bg" id="ctModal" onclick="closeModal(event)">
+  <div class="ct-modal" id="ctModalBox">
+    <div class="ct-modal-img" id="ctModalImg">
+      <img id="ctModalImgEl" src="" alt="">
+      <button class="ct-modal-close" onclick="closeModalDirect()"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="ct-modal-body">
+      <div class="ct-modal-cat" id="ctModalCat"></div>
+      <div class="ct-modal-name" id="ctModalName"></div>
+      <div class="ct-modal-locked">
+        <div class="ct-lock-ico"><i class="ti ti-lock"></i></div>
+        <h3>Nội dung dành cho học viên</h3>
+        <p>Đăng ký khóa học để nhận toàn bộ <strong>36 công thức pha chế độc quyền</strong> kèm hướng dẫn định lượng và từng bước thực chiến.</p>
+        <div class="ct-lock-btns">
+          <a href="index.html#dangky" class="ct-lock-btn-primary" onclick="closeModalDirect()"><i class="ti ti-calendar-check"></i> Đăng Ký Khóa Học</a>
+          <a href="tel:0834790555" class="ct-lock-btn-sec"><i class="ti ti-phone"></i> Tư Vấn Miễn Phí</a>
+        </div>
+      </div>
+      <div class="ct-modal-course" id="ctModalCourse"></div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="container">
+    <div class="ft-grid">
+      <div>
+        <div class="ft-brand-logo"><img src="images/logo.png" class="ft-ico" alt=""><span class="ft-name">Học Viện Cà Phê HCM</span></div>
+        <p class="ft-desc">Nơi khởi nguồn kinh doanh của bạn. Đào tạo pha chế &amp; đồng hành mở quán cà phê, trà sữa.</p>
+        <div class="ft-socs">
+          <a href="https://www.facebook.com/hocviencaphe" class="ft-soc" target="_blank" rel="noopener"><i class="ti ti-brand-facebook"></i></a>
+          <a href="#" class="ft-soc"><i class="ti ti-brand-instagram"></i></a>
+          <a href="#" class="ft-soc"><i class="ti ti-brand-tiktok"></i></a>
+          <a href="#" class="ft-soc"><i class="ti ti-brand-youtube"></i></a>
+        </div>
+      </div>
+      <div class="ft-col"><h5>Khóa Học</h5><ul>
+        <li><a href="index.html#courses">Tổng Hợp Truyền Thống</a></li>
+        <li><a href="index.html#courses">Tổng Hợp Hiện Đại</a></li>
+        <li><a href="index.html#courses">Chuyên Đề Lẻ</a></li>
+        <li><a href="index.html#services">Gói Kinh Doanh</a></li>
+      </ul></div>
+      <div class="ft-col"><h5>Khám Phá</h5><ul>
+        <li><a href="gioi-thieu.html">Giới Thiệu</a></li>
+        <li><a href="cong-thuc.html">Công Thức Pha Chế</a></li>
+        <li><a href="index.html#menu">Menu Đồ Uống</a></li>
+        <li><a href="index.html#dangky">Đăng Ký Tư Vấn</a></li>
+      </ul></div>
+      <div class="ft-col"><h5>Liên Hệ</h5><ul>
+        <li><a href="tel:0834790555"><i class="ti ti-phone" style="font-size:.78rem;vertical-align:middle;margin-right:4px;"></i>Hotline: 0834.790.555</a></li>
+        <li><a href="https://zalo.me/0834790555"><i class="ti ti-message-circle" style="font-size:.78rem;vertical-align:middle;margin-right:4px;"></i>Zalo: 0834.790.555</a></li>
+        <li><a href="mailto:hocviencaphehcm@gmail.com"><i class="ti ti-mail" style="font-size:.78rem;vertical-align:middle;margin-right:4px;"></i>hocviencaphehcm@gmail.com</a></li>
+        <li><a href="https://maps.app.goo.gl/gdSAqQAEifDbjzJZA" target="_blank" rel="noopener"><i class="ti ti-map-pin" style="font-size:.78rem;vertical-align:middle;margin-right:4px;"></i>26/23 Nguyễn Minh Hoàng, P. Bảy Hiền, Tân Bình</a></li>
+      </ul></div>
+    </div>
+    <div class="ft-bot">© 2024 Công Ty Cổ Phần Học Viện Cà Phê &nbsp;·&nbsp; <a href="#">Chính sách bảo mật</a> &nbsp;·&nbsp; <a href="#">Điều khoản sử dụng</a></div>
+  </div>
+</footer>
+
+<div class="floats">
+  <a href="https://zalo.me/0834790555" class="fl" style="background:#0068FF" title="Zalo" target="_blank" rel="noopener">
+    <svg width="22" height="22" viewBox="0 0 48 48" fill="white"><path d="M24 4C13 4 4 13 4 24c0 4.4 1.4 8.5 3.8 11.8L4 44l8.6-3.7C15.5 42.1 19.6 43.2 24 43.2 35 43.2 44 34.2 44 24S35 4 24 4zm0 36.2c-3.9 0-7.5-1.2-10.5-3.2l-.7-.4-5.1 2.2 1.6-4.9-.5-.8C7.1 30.5 6 27.4 6 24 6 14.1 14.1 6 24 6s18 8.1 18 18-8.1 16.2-18 16.2z"/><path d="M33.5 28.3c-.5-.2-2.9-1.4-3.3-1.6-.4-.2-.7-.2-1 .2-.3.4-1.2 1.6-1.5 1.9-.3.3-.5.4-1 .1-.5-.2-2-.7-3.8-2.3-1.4-1.2-2.3-2.8-2.6-3.2-.3-.4 0-.7.2-.9.2-.2.5-.5.7-.8.2-.3.3-.5.4-.8.1-.3 0-.6-.1-.8-.1-.2-1-2.4-1.4-3.3-.4-.9-.8-.8-1-.8h-.9c-.3 0-.8.1-1.2.6-.4.5-1.6 1.6-1.6 3.8s1.6 4.4 1.9 4.7c.3.3 3.2 4.9 7.7 6.8 1.1.5 1.9.8 2.6 1 1.1.3 2.1.3 2.9.2.9-.1 2.9-1.2 3.3-2.3.4-1.1.4-2.1.3-2.3-.1-.2-.4-.3-.9-.5z"/></svg>
+  </a>
+  <a href="https://www.facebook.com/hocviencaphe" class="fl" style="background:#1877F2" title="Facebook" target="_blank" rel="noopener"><i class="ti ti-brand-facebook" style="font-size:1.25rem;"></i></a>
+  <a href="tel:0834790555" class="fl" style="background:#25D366" title="Gọi ngay"><i class="ti ti-phone" style="font-size:1.1rem;"></i></a>
+  <button class="scroll-top" id="btnTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Lên đầu"><i class="ti ti-arrow-up"></i></button>
+</div>
+
+<script>
+const RECIPES = [{"id": 1, "name": "Kombucha - TRÀ CHANH HOÀNG KIM", "shortName": "TRÀ CHANH HOÀNG KIM", "cat": "Kombucha", "steps": "B1: Vắt 15ml cốt chanh vào bình\nB2: Thêm 60ml trà Kombucha + 40ml lục trà\nB3: Thêm 50ml nước lọc\nB4: Thêm 30ml đường + 5ml siro trái cây nhiệt đới\nB5: Thêm đá đến vạch 400ml lắc đều đổ ra cốc\nB6: Trang trí 1 lát chanh vàng + lá bạc hà", "ingredients": "Lục Trà Nhài Mộc Lam / Túi 1kg / 365000 vnđ: 40 ml | Trà Kombucha ColoMix/ Chai 1L/ 49000 vnđ: 60 ml | Siro nhiệt đới Mao Mao/ Chai 1,3kg / 155000 vnđ: 5 ml | Đường: 30 ml | Chanh thơm: 15 ml | Nước lọc : 50 ml | Chanh vàng (lát): 1 lát | Bạc hà: 1 lá", "cost": "7,353", "img": "images/gallery/Concept-studio-with-products/38. Kombucha chanh vàng bg.webp", "ingPreview": "Lục Trà Nhài Mộc Lam, Trà Kombucha ColoMix, Siro nhiệt đới Mao Mao", "course": "Khóa truyền thống, Khóa hiện đại"}, {"id": 2, "name": "Kombucha - DƯA LƯỚI", "shortName": "DƯA LƯỚI", "cat": "Kombucha", "steps": "B1: Đong 60ml trà Kombucha + 40ml lục trà\nB2: Thêm 50ml nước lọc\nB3: Cân 45gr mứt dưa lưới\nB4: Thêm đá đến vạch 400ml lắc đều đổ ra cốc\nB5: Trang trí 1 lá bạc hà+ lát chanh", "ingredients": "Lục Trà Nhài Mộc Lam / Túi 1kg / 365000 vnđ: 40 ml | Trà Kombucha ColoMix/ Chai 1L/ 49000 vnđ: 60 ml | Mứt Dưa lưới ColoMix/ Hộp 1,2kg/ 115000 vnđ: 45 gram | Bạc hà: 1 lá | Chanh vàng (lát): 1 lát", "cost": "8,619", "img": "images/gallery/Concept-studio-with-products/3. Lục ngọc thiên hương bg.webp", "ingPreview": "Lục Trà Nhài Mộc Lam, Trà Kombucha ColoMix, Mứt Dưa lưới ColoMix", "course": "Khóa truyền thống, Khóa hiện đại"}, {"id": 3, "name": "Kombucha - LỰU CAM VÀNG", "shortName": "LỰU CAM VÀNG", "cat": "Kombucha", "steps": "B1: Thêm 1/2 lát cam vàng cho vào bình lắc dầm nhẹ\nB2: Đong 60ml trà Kombucha + 40ml lục trà\nB3: Thêm 50ml nước lọc\nB4: Đong 10ml đường phèn + 35ml siro lựu\nB5: Thêm đá đến vạch 400ml lắc đều đổ ra cốc\nB6: Trang trí 1 lát cam + lá bạc hà", "ingredients": "Lục Trà Nhài Mộc Lam / Túi 1kg / 365000 vnđ: 40 ml | Trà Kombucha ColoMix/ Chai 1L/ 49000 vnđ: 60 ml | Nước lọc : 50 ml | Đường: 10 ml | Siro Lựu ColoMix/ Chai 1kg/ 128000 vnđ: 35 ml | Bạc hà: 1 lá | Cam vàng (lát): 1 lát", "cost": "9,387", "img": "images/gallery/Concept-studio-with-products/4. Túy lựu đào hoa bg.webp", "ingPreview": "Lục Trà Nhài Mộc Lam, Trà Kombucha ColoMix, Nước lọc", "course": "Khóa truyền thống, Khóa hiện đại"}, {"id": 4, "name": "Kombucha - DÂU TÂY", "shortName": "DÂU TÂY", "cat": "Kombucha", "steps": "B1: Đong 60ml trà Kombucha + 40ml lục trà\nB2: Thêm 50ml nước lọc\nB3: Thêm 45gr mứt dâu ( có thể vắt thêm 1 trái tắc nếu cần chua hơn)\nB4: Thêm đá đến vạch 400ml lắc đều đổ ra cốc\nB5: Trang trí 1 lá bạc hà + lát chanh+ dâu thái lát", "ingredients": "Lục Trà Nhài Mộc Lam / Túi 1kg / 365000 vnđ: 40 ml | Trà Kombucha ColoMix/ Chai 1L/ 49000 vnđ: 60 ml | Nước lọc : 50 ml | Mứt dâu Lermao/ Hộp 1,36kg/ 115000 vnđ: 45 gram | Bạc hà:  lá | Chanh vàng (lát):  lát | Dâu tây:  quả", "cost": "7,282", "img": "images/gallery/Concept-studio-with-products/37. Kombucha chanh dâu bg.webp", "ingPreview": "Lục Trà Nhài Mộc Lam, Trà Kombucha ColoMix, Nước lọc", "course": "Khóa truyền thống, Khóa hiện đại"}, {"id": 5, "name": "Kombucha - TRÀ BÒNG BƯỞI", "shortName": "TRÀ BÒNG BƯỞI", "cat": "Kombucha", "steps": "B1: Đong 60ml trà Kombucha + 40ml lục trà cho vào bình lắc\nB2: Thêm 50ml nước lọc\nB3: Thêm 45gram mứt bưởi + 5ml đường phèn\nB4: Thêm đá đến vạch 400ml lắc đều đổ ra cốc\nB5: Trang trí 1 lát cam + lá bạc hà", "ingredients": "Lục Trà Nhài Mộc Lam / Túi 1kg / 365000 vnđ: 40 ml | Trà Kombucha ColoMix/ Chai 1L/ 49000 vnđ: 60 ml | Nước lọc : 50 ml | Mứt Bưởi mật ong ColoMix/ Hộp 1,25kg/ 168000 vnđ: 45 ml | Đường: 5 ml | Bạc hà: 1 lá | Cam vàng (lát): 1 lát", "cost": "10,780", "img": "images/gallery/Concept-studio-with-products/7. Hồng trà vàng son sủi bọt bg.webp", "ingPreview": "Lục Trà Nhài Mộc Lam, Trà Kombucha ColoMix, Nước lọc", "course": "Khóa truyền thống, Khóa hiện đại"}, {"id": 6, "name": "Kombucha - TRÀ VẢI HOA HỒNG", "shortName": "TRÀ VẢI HOA HỒNG", "cat": "Kombucha", "steps": "B1: Đong 60ml trà Kombucha + 40ml lục trà \n B2: Thêm 50ml nước lọc \n B3: Thêm 45gram mứt vải hoa hồng \n B4: Thêm 5ml đường phèn \n B5: Thêm đá đến vạch 400ml lắc đều đổ ra cốc \n B6: Trang trí 1 lát chanh + 1 lá bạc hà", "ingredients": "Lục Trà Nhài Mộc Lam / Túi 1kg / 365000 vnđ: 40 ml | Trà Kombucha ColoMix/ Chai 1L/ 49000 vnđ: 60 ml | Nước lọc : 50 ml | Mứt Vải Hoa hồng ColoMix/ Hộp 900g/ 125000 vnđ: 45 ml | Đường: 5 ml | Bạc hà: 1 lá | Chanh vàng (lát): 1 lát", "cost": "10,782", "img": "images/gallery/Concept-studio-with-products/38. Kombucha chanh vàng bg.webp", "ingPreview": "Lục Trà Nhài Mộc Lam, Trà Kombucha ColoMix, Nước lọc", "course": "Khóa truyền thống, Khóa hiện đại"}, {"id": 7, "name": "Kombucha - TRÀ ỔI HỒNG", "shortName": "TRÀ ỔI HỒNG", "cat": "Kombucha", "steps": "B1: Đong 60ml trà Kombucha + 40ml lục trà cho vào bình lắc\n B2: Thêm 50ml nước lọc\n B3: Thêm 45gram mứt ổi + 15ml đường phèn\n B4: Thêm đá đến vạch 400ml lắc đều đổ ra cốc\n B5: Trang trí 2 lát chanh(hoặc vài lát ổi) + lá bạc hà", "ingredients": "Lục Trà Nhài Mộc Lam / Túi 1kg / 365000 vnđ: 40 ml | Nước lọc : 50 ml | Trà Kombucha ColoMix/ Chai 1L/ 49000 vnđ: 60 ml | Mứt Ổi hồng / Hộp 1kg / 115000 vnđ: 45 gram | Đường: 15 ml | Bạc hà: 1 lá | Chanh vàng (lát): 1 lát", "cost": "10,057", "img": "images/gallery/Concept-studio-with-products/35. Coldbrew Kombucha ổi bg.webp", "ingPreview": "Lục Trà Nhài Mộc Lam, Nước lọc, Trà Kombucha ColoMix", "course": "Khóa truyền thống, Khóa hiện đại"}, {"id": 8, "name": "Kombucha - ĐÀO NHIỆT ĐỚI", "shortName": "ĐÀO NHIỆT ĐỚI", "cat": "Kombucha", "steps": "B1: Đong 60ml trà kombucha ml + 40ml lục trà cho vào bình lắc \n B2: Thêm 5ml siro nhiệt đới + 50ml nước lọc \n B3: Cân 45gram mứt Đào ( ~ 2 thìa định lượng đầy ) \n B4: Thêm đá đến vạch 400ml lắc đều đổ ra cốc \n B5: Trang trí 3 lát đào", "ingredients": "Lục Trà Nhài Mộc Lam / Túi 1kg / 365000 vnđ: 40 ml | Nước lọc : 50 ml | Trà Kombucha ColoMix/ Chai 1L/ 49000 vnđ: 60 ml | Mứt Mật Ong Đào Mao Mao/ Hộp 1,36kg/ 110000 vnđ: 45 gram | Đào ngâm Countree / Lon 820g/ 32000 vnđ: 50 gram", "cost": "9,068", "img": "images/gallery/Concept-studio-with-products/39. Kombucha táo đào bg.webp", "ingPreview": "Lục Trà Nhài Mộc Lam, Nước lọc, Trà Kombucha ColoMix", "course": "Khóa truyền thống, Khóa hiện đại"}, {"id": 9, "name": "Kombucha - TRÀ ĐÀO CAM SẢ", "shortName": "TRÀ ĐÀO CAM SẢ", "cat": "Kombucha", "steps": "B1: 30ml cốt sả tươi cho vào bình lắc \n B2: Thêm 60ml kombucha + 40ml lục trà \n B3: Thêm 15ml đường  \n B4: Thêm 30ml cốt cam sành + 5ml cốt chanh \n B5: Cân 45gram mứt Đào ( ~ 2 thìa định lượng đầy ) \n B6: Thêm đá đến vạch 400ml lắc đều đổ ra cốc \n B7: Trang trí 1 lát cam vàng , 2 lát đào + 3 lát sả", "ingredients": "Lục Trà Nhài Mộc Lam / Túi 1kg / 365000 vnđ: 40 ml | Đường: 15 ml | Trà Kombucha ColoMix/ Chai 1L/ 49000 vnđ: 60 ml | Cốt sả: 30 ml | Nước cam: 30 ml | Chanh thơm: 5 ml | Mứt Mật Ong Đào Mao Mao/ Hộp 1,36kg/ 110000 vnđ: 40 ml | Cam vàng (lát): 1 lát | Đào ngâm Countree / Lon 820g/ 32000 vnđ: 30 gram", "cost": "10,564", "img": "images/gallery/Concept-studio-with-products/43. Trà đào cam sả bg.webp", "ingPreview": "Lục Trà Nhài Mộc Lam, Đường, Trà Kombucha ColoMix", "course": "Khóa truyền thống, Khóa hiện đại"}, {"id": 10, "name": "Kombucha - CHANH LEO", "shortName": "CHANH LEO", "cat": "Kombucha", "steps": "B1: Cân 30gr chanh leo tươi cho vào bình lắc ( ~ 1 quả chanh leo )\nB2: Thêm 60ml Kombucha + 50ml nước lọc + 40ml lục trà\nB3: Thêm 35 ml đường phèn\nB4: Thêm đá đến vạch 400ml lắc đều đổ ra cốc", "ingredients": "Lục Trà Nhài Mộc Lam / Túi 1kg / 365000 vnđ: 40 ml | Trà Kombucha ColoMix/ Chai 1L/ 49000 vnđ: 60 ml | Nước lọc : 50 ml | Chanh leo: 30 gram | Đường: 35 ml", "cost": "6,802", "img": "images/gallery/Concept-studio-with-products/40. Kombucha xoài chanh leo bg.webp", "ingPreview": "Lục Trà Nhài Mộc Lam, Trà Kombucha ColoMix, Nước lọc", "course": "Khóa truyền thống, Khóa hiện đại"}, {"id": 11, "name": "Kombucha - MÃNG CẦU", "shortName": "MÃNG CẦU", "cat": "Kombucha", "steps": "B1: 50gram mứt mãng cầu cho vào cốc \nB2: Thêm 60ml Kombucha + 50ml nước lọc + 40ml lục trà\nB4: Thêm 5-15ml đường phèn tùy độ ngọt\nB5: Thêm đá đến vạch 400ml lắc đều đổ ra cốc\nB6: Trang trí 1 lát dâu + lá bạc hà", "ingredients": "Trà Kombucha ColoMix/ Chai 1L/ 49000 vnđ: 60 ml | Lục Trà Nhài Mộc Lam / Túi 1kg / 365000 vnđ: 40 ml | Nước lọc : 50 ml | Mứt mãng cầu La Fresh/ Hũ 1kg/ 128000 vnđ: 50 gram | Đường: 10 ml | Bạc hà: 1 lá | Dâu tây: 1 quả", "cost": "10,402", "img": "images/gallery/Concept-studio-with-products/6. Oolong nhãn thanh trà bg.webp", "ingPreview": "Trà Kombucha ColoMix, Lục Trà Nhài Mộc Lam, Nước lọc", "course": "Khóa truyền thống, Khóa hiện đại"}, {"id": 12, "name": "Sinh tố - KEM BƠ DỪA NON ( 350ml )", "shortName": "KEM BƠ DỪA NON ( 350ml )", "cat": "Sinh tố", "steps": "B1: Cân 90g bơ thịt cho vào máy xay ( có thể cấp đông 90g/túi ) \n B2: Thêm 30ml sữa tươi + 50ml sữa đặc \n B3: Thêm 40ml nước lọc  \n B4: Thêm 100g đá ( 2/3 cốc đá 350ml )  \n B5: Xay hỗn hợp 35s đổ ra cốc  \n B6: Có thể thêm 1 viên kem dừa trang trí trên cùng + rắc dừa nướng", "ingredients": "Bơ tươi: 90 ml | Sữa tươi tiệt trùng HAPPY BARN Ba Lan ( không đường)/ Hộp 1L/ 30000 vnđ: 30 ml | Sữa đặc Ngôi Sao Phương Nam/ Hộp 1,284kg/ 65000 vnđ: 50 ml | Nước lọc : 40 ml | Kem dừa: 1 viên | Vụn dừa nướng / Túi 500g/ 55000 vnđ: 10 gram", "cost": "10,541", "img": "images/gallery/Concept-studio-with-products/32. Bơ già dừa non bg.webp", "ingPreview": "Bơ tươi, Sữa tươi tiệt trùng HAPPY BARN Ba Lan ( không đường), Sữa đặc Ngôi Sao Phương Nam", "course": "Khóa truyền thống, Khóa hiện đại"}, {"id": 13, "name": "Matcha - MATCHA LATTE (YẾN MẠCH)", "shortName": "MATCHA LATTE (YẾN MẠCH)", "cat": "Matcha", "steps": "B1: Đong 120ml sữa tươi ( hoặc sữa yến mạch) vào ly \n B2: Thêm 15ml nước đường ( hoặc sữa đặc) khuấy đều \n B3: Thêm đá đến 3/4 cốc  \n B4: Đong riêng 3gr bột matcha + 40ml nước ấm ( 70 độ ) cho vào ca đánh tan sau đó , rót lên hỗn hợp trên\n*Nước ấm 70 độ pha bằng : 10ml nước lọc + 30 nước nóng", "ingredients": "Sữa yến mạch Oatside/ Hộp 1L/ 39000 vnđ: 120 ml | Đường: 15 ml | Bột matcha trà xanh Bạch Dương/ Túi 250g/ 218000 vnđ: 3 gram", "cost": "7,821", "img": "images/gallery/Concept-studio-with-products/14. Matcha latte bg.webp", "ingPreview": "Sữa yến mạch Oatside, Đường, Bột matcha trà xanh Bạch Dương", "course": "Khóa truyền thống, Khóa hiện đại"}, {"id": 14, "name": "Matcha - MATCHA ĐẬU ĐỎ", "shortName": "MATCHA ĐẬU ĐỎ", "cat": "Matcha", "steps": "B1: Đong 120ml sữa tươi ( hoặc sữa yến mạch) vào ly \n B2: Thêm 15ml nước đường ( hoặc sữa đặc) khuấy đều \n B3: Thêm đá đến 3/4 cốc  \n B4: Đong riêng 3gram bột matcha + 40ml nước ấm ( 70 độ ) cho vào ca đánh tan sau đó , rót lên hỗn hợp trên\n B5: Thêm 1 muỗng đậu đỏ lên trên \n\n*Nước ấm 70 độ pha bằng : 10ml nước lọc + 30 nước nóng", "ingredients": "Sữa tươi tiệt trùng HAPPY BARN Ba Lan ( không đường)/ Hộp 1L/ 30000 vnđ: 120 ml | Bột matcha trà xanh Bạch Dương/ Túi 250g/ 218000 vnđ: 3 gram | Đường: 15 ml | Đậu Đỏ Ngâm Đường Đóng Hộp Mao Mao/ Lon 930g/ 53000 vnđ: 30 gram", "cost": "8,451", "img": "images/gallery/Concept-studio-with-products/42. Matcha đậu đỏ bg.webp", "ingPreview": "Sữa tươi tiệt trùng HAPPY BARN Ba Lan ( không đường), Bột matcha trà xanh Bạch Dương, Đường", "course": "Khóa truyền thống, Khóa hiện đại"}, {"id": 15, "name": "Matcha - MATCHA DỪA NON", "shortName": "MATCHA DỪA NON", "cat": "Matcha", "steps": "B1: Đong 120ml sữa tươi ( hoặc sữa yến mạch) vào ly \n B2: Thêm 15ml nước đường ( hoặc sữa đặc) khuấy đều \n B3: Thêm đá đến 3/4 cốc  \n B4: Đong riêng 3gram bột matcha + 40ml nước ấm ( 70 độ ) cho vào ca đánh tan sau đó , rót lên hỗn hợp trên\n B5: Thêm 1 viên kem dừa lên trên cùng ( 30gr ) \n\n* Nước ấm 70 độ pha bằng : 10ml nước lọc + 30 nước nóng", "ingredients": "Sữa tươi tiệt trùng HAPPY BARN Ba Lan ( không đường)/ Hộp 1L/ 30000 vnđ: 120 ml | Đường: 15 ml | Bột matcha trà xanh Bạch Dương/ Túi 250g/ 218000 vnđ: 3 gram | Kem dừa: 1 viên", "cost": "6,861", "img": "images/gallery/Concept-studio-with-products/41. Matcha Creamy (2) bg.webp", "ingPreview": "Sữa tươi tiệt trùng HAPPY BARN Ba Lan ( không đường), Đường, Bột matcha trà xanh Bạch Dương", "course": "Khóa truyền thống, Khóa hiện đại"}, {"id": 16, "name": "Matcha - MATCHA DƯA LƯỚI", "shortName": "MATCHA DƯA LƯỚI", "cat": "Matcha", "steps": "B1: Đong 20gram mứt dưa lưới cho vào đáy cốc \n B2: Thêm đá đến 2/3 cốc  \n B3: Đong 120ml sữa yến mạch cho vào cốc  \n B4: Thêm 15ml nước đường + 10ml kem béo \n B5: Đong riêng 3gram bột matcha + 40ml nước ấm ( 70 độ ) cho vào ca đánh tan sau đó , rót lên hỗn hợp trên\n B6: Có thể Thêm 1 thìa định lượng trân châu \n\n* Nước ấm 70 độ pha bằng : 10ml nước lọc + 30 nước nóng", "ingredients": "Mứt Dưa lưới ColoMix/ Hộp 1,2kg/ 115000 vnđ: 20 gram | Sữa yến mạch Oatside/ Hộp 1L/ 39000 vnđ: 120 ml | Đường: 15 ml | Kem Béo Thực Vật Ice Hot Rich/ Hộp 454g/ 32000 vnđ: 10 ml | Bột matcha trà xanh Bạch Dương/ Túi 250g/ 218000 vnđ: 3 gram | Thạch Trân Châu Đen Nâu 3Q Zion/ Túi 2kg/ 55000 vnđ: 1 thìa", "cost": "10,470", "img": "images/gallery/Concept-studio-with-products/16. Matcha milktea bg.webp", "ingPreview": "Mứt Dưa lưới ColoMix, Sữa yến mạch Oatside, Đường", "course": "Khóa truyền thống, Khóa hiện đại"}, {"id": 17, "name": "Cafe - ĐEN ĐÁ", "shortName": "ĐEN ĐÁ", "cat": "Cafe", "steps": "B1: Đong 19gr café vào tay pha đôi (tiêu chuẩn: 18-20gr) \n B2: Phân bổ đều bề mặt café \n B3: Nén café (lực nén 5-7kg) \n B4: Lắp tay pha vào họng và chiết xuất 45ml cốt café \n B5: Thêm đường hạt để bên cạnh \n B6: \n Uống nóng: Giữ nguyên \n Uống đá: Thêm 1 cốc đá bên cạnh \n *Thêm 5-15ml đường nước vào ly khuấy đều,thêm đá nếu khách dùng thêm đường \n B7: Để tạo bọt,café cần được ủ lạnh trước khi đánh bông", "ingredients": "Cafe hạt Blend (Pha Máy)/ Túi 1kg / 325000 vnđ: 19 gram", "cost": "6,175", "img": "images/gallery/Concept-studio-with-products/17. Đen đá bg.webp", "ingPreview": "Cafe hạt Blend (Pha Máy)", "course": "Khóa hiện đại"}, {"id": 18, "name": "Cafe - NÂU ĐÁ", "shortName": "NÂU ĐÁ", "cat": "Cafe", "steps": "B1: Đong 19gr café vào tay pha đôi (tiêu chuẩn: 18-20gr) \n B2: Phân bổ đều bề mặt café \n B3: Nén café (lực nén 5-7kg) \n B4: Lắp tay pha vào họng và chiết xuất 45ml cốt café \n B5: Thêm 20ml sữa đặc vào ly, dùng máy đánh đều \n B6: Thêm đá đến gần đầy cốc \n B7: Để tạo bọt, café cần được ủ lạnh trước khi đánh bông", "ingredients": "Cafe hạt Blend (Pha Máy)/ Túi 1kg / 325000 vnđ: 19 gram | Sữa đặc Ngôi Sao Phương Nam/ Hộp 1,284kg/ 65000 vnđ: 20 ml", "cost": "7,187", "img": "images/gallery/Concept-studio-with-products/21. Sữa đá bg.webp", "ingPreview": "Cafe hạt Blend (Pha Máy), Sữa đặc Ngôi Sao Phương Nam", "course": "Khóa hiện đại"}, {"id": 19, "name": "Cafe - CAFÉ KEM MUỐI (Cốc café đá 200ml)", "shortName": "CAFÉ KEM MUỐI (Cốc café đá 200ml)", "cat": "Cafe", "steps": "B1: Chiết xuất 1 tay đôi (19gr) thu được 45ml cốt cà phê \n B2: Thêm 15ml sữa đặc KHUẤY ĐỀU \n B3: Thêm đá đến 2/3 cốc \n B4: Thêm ~ 3 thìa định lượng kem muối lên trên(35gr)", "ingredients": "Cafe hạt Blend (Pha Máy)/ Túi 1kg / 325000 vnđ: 19 gram | Sữa đặc Ngôi Sao Phương Nam/ Hộp 1,284kg/ 65000 vnđ: 15 ml | Kem muối: 3 thìa", "cost": "7,234", "img": "images/gallery/Concept-studio-with-products/23. Cà phê muối bg.webp", "ingPreview": "Cafe hạt Blend (Pha Máy), Sữa đặc Ngôi Sao Phương Nam, Kem muối", "course": "Khóa hiện đại"}, {"id": 20, "name": "Cafe - BẠC XỈU ĐÁ ( cốc 350ml)", "shortName": "BẠC XỈU ĐÁ ( cốc 350ml)", "cat": "Cafe", "steps": "B1: Đong 60ml sữa dừa(hoặc sữa tươi) + 30ml sữa đặc \n B2: Thêm đá 2/3 cốc \n B3: Chiết xuất 1 tay đôi (19gr) thu được 45ml cốt rồi cho vào 1 cốc khác dùng máy tạo bọt 100% đổ lên trên hỗn hợp", "ingredients": "Sữa dừa Amo Pastel/ Chai 1L/ 68000 vnđ: 60 ml | Sữa đặc Ngôi Sao Phương Nam/ Hộp 1,284kg/ 65000 vnđ: 30 ml | Cafe hạt Blend (Pha Máy)/ Túi 1kg / 325000 vnđ: 19 gram", "cost": "11,774", "img": "images/gallery/Concept-studio-with-products/22. Bạc xỉu bg.webp", "ingPreview": "Sữa dừa Amo Pastel, Sữa đặc Ngôi Sao Phương Nam, Cafe hạt Blend (Pha Máy)", "course": "Khóa hiện đại"}, {"id": 21, "name": "Cafe - BẠC XỈU NÓNG  ( Cốc quai 300ml )", "shortName": "BẠC XỈU NÓNG  ( Cốc quai 300ml )", "cat": "Cafe", "steps": "B1: Đong 60ml sữa tươi + 30ml sữa đặc \n B2: Thêm 120ml nước sôi \n B3: Chiết xuất 1 tay đôi (19gr) thu được 45ml cốt cho vào 1 cốc khác dùng máy tạo bọt 50% đổ lên trên hỗn hợp", "ingredients": "Sữa dừa Amo Pastel/ Chai 1L/ 68000 vnđ: 60 ml | Sữa đặc Ngôi Sao Phương Nam/ Hộp 1,284kg/ 65000 vnđ: 30 ml | Nước nóng : 120 ml | Cafe hạt Blend (Pha Máy)/ Túi 1kg / 325000 vnđ: 19 gram", "cost": "11,894", "img": "images/gallery/Concept-studio-with-products/22. Bạc xỉu bg.webp", "ingPreview": "Sữa dừa Amo Pastel, Sữa đặc Ngôi Sao Phương Nam, Nước nóng", "course": "Khóa hiện đại, Khóa truyền thống"}, {"id": 22, "name": "Cafe - AMERICANO NÓNG (Ly 250ml)", "shortName": "AMERICANO NÓNG (Ly 250ml)", "cat": "Cafe", "steps": "B1: Đong 180ml nước nóng vào ly(80 độ) \n B2: Chiết xuất tay đôi (19gr) được 45ml cốt café rót vào ly \n Dùng kèm 1-2 bánh quy", "ingredients": "Nước nóng : 180 ml | Cafe hạt Blend (Pha Máy)/ Túi 1kg / 325000 vnđ: 19 gram", "cost": "6,355", "img": "images/gallery/Concept-studio-with-products/24. Americano đá bg.webp", "ingPreview": "Nước nóng, Cafe hạt Blend (Pha Máy)", "course": "Khóa hiện đại"}, {"id": 23, "name": "Cafe - AMERICANO ĐÁ (Ly 400ml)", "shortName": "AMERICANO ĐÁ (Ly 400ml)", "cat": "Cafe", "steps": "B1: Cho đá đến gần đầy ly \n B2: Đong 180ml nước vào ly \n B3: Chiết xuất tay đôi (19gr) được 45ml cốt café rót vào ly", "ingredients": "Cafe hạt Blend (Pha Máy)/ Túi 1kg / 325000 vnđ: 19 gram | Nước nóng : 180 ml", "cost": "6,355", "img": "images/gallery/Concept-studio-with-products/24. Americano đá bg.webp", "ingPreview": "Cafe hạt Blend (Pha Máy), Nước nóng", "course": "Khóa hiện đại"}, {"id": 24, "name": "Cafe - CAPPUCCINO NÓNG (Ly 220ml)", "shortName": "CAPPUCCINO NÓNG (Ly 220ml)", "cat": "Cafe", "steps": "B1: Chiết xuất tay đôi (18gr) được 40ml cốt café vào ly \n B2: Cho 200ml sữa tươi lạnh vào ca inox, dùng cần đánh đầy bọt mịn \n B3: Xúc bọt ngập bề mặt ly rồi đổ sữa nóng vừa đánh đến đầy ly \n B4: Có thể rắc bột cacao lên trên \n Thêm đường que và sữa đặc ở ngoài, dùng kèm 1-2 bánh quy", "ingredients": "Cafe hạt Blend (Pha Máy)/ Túi 1kg / 325000 vnđ: 19 gram | Sữa tươi tiệt trùng HAPPY BARN Ba Lan ( không đường)/ Hộp 1L/ 30000 vnđ: 200 ml", "cost": "12,175", "img": "images/gallery/Concept-studio-with-products/29. Latte nóng bg.webp", "ingPreview": "Cafe hạt Blend (Pha Máy), Sữa tươi tiệt trùng HAPPY BARN Ba Lan ( không đường)", "course": "Khóa hiện đại"}, {"id": 25, "name": "Cafe - CAPPUCCINO ĐÁ (Ly 400ml)", "shortName": "CAPPUCCINO ĐÁ (Ly 400ml)", "cat": "Cafe", "steps": "B1: Cho sữa vào ca inox đánh tạo bọt trước \n B2: Cho đá vào đầy cốc, rót 180ml sữa tươi lạnh lên trên \n Thêm 10ml đường hoặc sữa đặc nếu khách muốn, khuấy đều \n B3: Hớt bọt đã đánh lên trên đến gần đầy ly \n Chiết xuất tay đơn (10gr) được 25ml cốt café dưới lên trên", "ingredients": "Cafe hạt Blend (Pha Máy)/ Túi 1kg / 325000 vnđ: 10 gram | Sữa tươi tiệt trùng HAPPY BARN Ba Lan ( không đường)/ Hộp 1L/ 30000 vnđ: 180 ml", "cost": "8,650", "img": "images/gallery/Concept-studio-with-products/33. Cà phê sữa bg.webp", "ingPreview": "Cafe hạt Blend (Pha Máy), Sữa tươi tiệt trùng HAPPY BARN Ba Lan ( không đường)", "course": "Khóa hiện đại"}, {"id": 26, "name": "Cafe - CAFÉ LATTE NÓNG (Ly 220ml)", "shortName": "CAFÉ LATTE NÓNG (Ly 220ml)", "cat": "Cafe", "steps": "B1: Chiết xuất tay đơn (10gr) được 25ml cốt café vào ly \n B2: Cho 200ml sữa tươi lạnh vào ca inox, dùng cần đánh đầy bọt mịn \n B3: Xử lý bọt sữa cho mịn, latte art trên ly \n Thêm đường que và sữa đặc ở ngoài, dùng kèm 1-2 bánh quy", "ingredients": "Cafe hạt Blend (Pha Máy)/ Túi 1kg / 325000 vnđ: 10 gram | Sữa tươi tiệt trùng HAPPY BARN Ba Lan ( không đường)/ Hộp 1L/ 30000 vnđ: 200 ml", "cost": "9,250", "img": "images/gallery/Concept-studio-with-products/28. Latte nóng bg.webp", "ingPreview": "Cafe hạt Blend (Pha Máy), Sữa tươi tiệt trùng HAPPY BARN Ba Lan ( không đường)", "course": "Khóa hiện đại"}, {"id": 27, "name": "Cafe - CAFÉ LATTE ĐÁ (Ly 400ml)", "shortName": "CAFÉ LATTE ĐÁ (Ly 400ml)", "cat": "Cafe", "steps": "B1: Cho sữa vào ca inox đánh tạo bọt trước \n B2: Cho đá vào đầy cốc, dưới 180ml sữa tươi lạnh lên trên \n Thêm 15ml đường hoặc sữa đặc nếu khách muốn, khuấy đều \n B3: Hớt bọt đã đánh lên trên đến gần đầy ly \n Chiết xuất tay đơn (10gr) được 25ml cốt cà phê rót lên trên ly", "ingredients": "Cafe hạt Blend (Pha Máy)/ Túi 1kg / 325000 vnđ: 10 gram | Sữa tươi tiệt trùng HAPPY BARN Ba Lan ( không đường)/ Hộp 1L/ 30000 vnđ: 180 ml", "cost": "8,650", "img": "images/gallery/Concept-studio-with-products/33. Cà phê sữa bg.webp", "ingPreview": "Cafe hạt Blend (Pha Máy), Sữa tươi tiệt trùng HAPPY BARN Ba Lan ( không đường)", "course": "Khóa hiện đại"}, {"id": 28, "name": "Trà sữa - TRÀ SỮA NƯỚNG", "shortName": "TRÀ SỮA NƯỚNG", "cat": "Trà sữa", "steps": "B1: Đong 55ml sữa béo \n B2: Thêm 35ml siro bí đao + 5ml đường  \n B3: Thêm đá đến 2/3 cốc ( 150gr ) Khuấy đều cho lạnh hỗn hợp \n B4: Bơm trực tiếp 140ml (gr ) Shan tuyết Nitro vào cốc  \n B5: Có thể thêm topping trân châu", "ingredients": "Sữa béo: 55 ml | Siro bí đao Bạch Dương/ Chai 2,5kg/ 155000 vnđ: 35 ml | Shan Tuyết Nitro Tea: 140 ml", "cost": "7,684", "img": "images/gallery/Concept-studio-with-products/48. Trà sữa kem trứng nướng bg.webp", "ingPreview": "Sữa béo, Siro bí đao Bạch Dương, Shan Tuyết Nitro Tea", "course": "Khóa hiện đại"}, {"id": 29, "name": "Đá xay - COOKIES CHOCOLATE", "shortName": "COOKIES CHOCOLATE", "cat": "Đá xay", "steps": "B1: Cho 2 bánh Oreo vị socola vào máy xay \n B2: Thêm 30ml sữa tươi + 25ml sốt chocolate + 5gr bột cacao. Sau đó, đổ hỗn hợp trong máy xay vào cốc \n B3: Thêm 30ml sữa đặc (có thể giảm nếu khách dùng ít ngọt) \n B4: Thêm 30g bột mix ( ~ 3 thìa định lượng ) \n B5: Thêm 250g đá ( 1 cốc đá đầy 400ml )  \n B6: Xay hỗn hợp 35s đổ ra cốc  \n B7: Xịt kem + trang trí sốt chocolate hoặc vụn bánh", "ingredients": "Bánh Oreo vị socola: 2 cái | Sữa tươi tiệt trùng HAPPY BARN Ba Lan ( không đường)/ Hộp 1L/ 30000 vnđ: 30 ml | Sốt chocolate hershey / Chai 1,36kg/ 145000 vnđ: 25 ml | Cacao nguyên chất Bạch Dương / Túi 500g/ 165000 vnđ: 5 gram | Sữa đặc Ngôi Sao Phương Nam/ Hộp 1,284kg/ 65000 vnđ: 30 ml | Bột Frappe Luave / Túi 1kg / 142000 vnđ: 30 gram", "cost": "11,337", "img": "images/gallery/Concept-studio-with-products/19. Oreo Ice Blended bg.webp", "ingPreview": "Bánh Oreo vị socola, Sữa tươi tiệt trùng HAPPY BARN Ba Lan ( không đường), Sốt chocolate hershey", "course": "Khóa hiện đại"}, {"id": 30, "name": "Đá xay - MATCHA FREEZE", "shortName": "MATCHA FREEZE", "cat": "Đá xay", "steps": "B1: Thêm 30ml sữa tươi + 30ml siro matcha vào cối \n B2: Thêm 30gr sữa đặc \n B3: Thêm 30gr bột mix + 5gr bột matcha\n B4: Thêm 250g đá \n B5: Xay hỗn hợp 35s đổ ra cốc  \n B6: Xịt kem + rắc bột matcha trang trí", "ingredients": "Sữa tươi tiệt trùng HAPPY BARN Ba Lan ( không đường)/ Hộp 1L/ 30000 vnđ: 30 ml | Siro monin matcha / Chai 700ml/ 220000 vnđ: 30 ml | Sữa đặc Ngôi Sao Phương Nam/ Hộp 1,284kg/ 65000 vnđ: 30 gram | Bột Frappe Luave / Túi 1kg / 142000 vnđ: 30 gram | Bột matcha trà xanh Bạch Dương/ Túi 250g/ 218000 vnđ: 5 gram", "cost": "20,467", "img": "images/gallery/Concept-studio-with-products/18. Matcha Ice blended bg.webp", "ingPreview": "Sữa tươi tiệt trùng HAPPY BARN Ba Lan ( không đường), Siro monin matcha, Sữa đặc Ngôi Sao Phương Nam", "course": "Khóa hiện đại"}, {"id": 31, "name": "Đá xay - CARAMEL FREEZE", "shortName": "CARAMEL FREEZE", "cat": "Đá xay", "steps": "B1: Chiết xuất tay đơn (10gr) được 25ml cốt café cho vào cối \n B2: Thêm 30ml sốt caramel + 20g sữa đặc + 20ml sữa tươi  \n B3: Thêm 30g bột mix ( ~ 3 thìa định lượng ) \n B4: Thêm 250g đá ( 1 cốc đá đầy 400ml )  \n B5: Xay hỗn hợp 35s đổ ra cốc  \n B6: Xịt kem + trang trí sốt caramel hoặc cốm bảy màu", "ingredients": "Cafe hạt tổng hợp nguyên chất (chưa xay)/ Túi 1kg / 245000 vnđ: 10 gram | Sốt Caramel ICE HOT/ Chai 1kg/ 170000 vnđ: 30 ml | Sữa đặc Ngôi Sao Phương Nam/ Hộp 1,284kg/ 65000 vnđ: 20 gram | Sữa tươi tiệt trùng HAPPY BARN Ba Lan ( không đường)/ Hộp 1L/ 30000 vnđ: 20 ml | Bột Frappe Luave / Túi 1kg / 142000 vnđ: 30 gram", "cost": "13,422", "img": "images/gallery/Concept-studio-with-products/20. Caramel Ice Blended bg.webp", "ingPreview": "Cafe hạt tổng hợp nguyên chất (chưa xay), Sốt Caramel ICE HOT, Sữa đặc Ngôi Sao Phương Nam", "course": "Khóa hiện đại"}, {"id": 32, "name": "Đá xay - CAFÉ CỐT DỪA ( 400ml )", "shortName": "CAFÉ CỐT DỪA ( 400ml )", "cat": "Đá xay", "steps": "B1: Đong 20ml sữa tươi + 70ml sữa đặc cho vào máy xay \n B2: Thêm 60ml nước cốt dừa \n B3: Thêm 270g đá ( hơn 1 cốc đá 400ml ) Đá trực tiếp trong tủ đông \n B4: Xay hỗn hợp 35s  \n B5: Thêm 25ml cốt café cho vào cốc khác, dùng máy tạo bọt 50%. Sau đó, đổ hỗn hợp trong máy xay vào cốc", "ingredients": "Sữa tươi tiệt trùng HAPPY BARN Ba Lan ( không đường)/ Hộp 1L/ 30000 vnđ: 20 ml | Sữa đặc Ngôi Sao Phương Nam/ Hộp 1,284kg/ 65000 vnđ: 70 ml | Nước cốt dừa Vico/ Hộp 330ml/ 23000 vnđ: 60 ml | Cốt cafe: 25 ml", "cost": "14,700", "img": "images/gallery/Concept-studio-with-products/27. Cà phê cốt dừa bg.webp", "ingPreview": "Sữa tươi tiệt trùng HAPPY BARN Ba Lan ( không đường), Sữa đặc Ngôi Sao Phương Nam, Nước cốt dừa Vico", "course": "Khóa hiện đại"}, {"id": 33, "name": "Cocomilk - MATCHA SỮA DỪA (CỐC 500ml)", "shortName": "MATCHA SỮA DỪA (CỐC 500ml)", "cat": "Cocomilk", "steps": "B1: Đong 30ml đường cho vào cốc \n B2: Thêm 40ml sữa béo + 60ml sữa dừa \n B3: Thêm đá đến 3/4 cốc \n B4: Đong riêng 2gram bột matcha + 40ml nước sôi ( <70 độ ) cho vào ca đánh tan sau đó , để lên hỗn hợp trên", "ingredients": "Đường: 30 ml | Sữa béo: 40 ml | Sữa dừa Amo Pastel/ Chai 1L/ 68000 vnđ: 60 ml | Bột matcha trà xanh Bạch Dương/ Túi 250g/ 218000 vnđ: 2 gram | Nước nóng : 40 ml", "cost": "8,989", "img": "images/gallery/Concept-studio-with-products/14. Matcha latte bg.webp", "ingPreview": "Đường, Sữa béo, Sữa dừa Amo Pastel", "course": "Khóa hiện đại"}, {"id": 34, "name": "Kombucha Soda - MÂM XÔI HỒNG", "shortName": "MÂM XÔI HỒNG", "cat": "Kombucha Soda", "steps": "B1: 1 lát cam vàng ( 15gr ) cho vào cốc dầm lấy vị \n B2: Thêm 10ml đường phèn + 30ml mâm xôi  \n B3: Thêm 40ml lục trà  \n B4: Thêm đá đế 2/3 cốc ( 150gr ) Khuấy đều cho lạnh hỗn hợp \n B5: Bơm trực tiếp 160ml (gr ) khí Kombucha soda vào cốc  \n B6: Trang trí 1 lát cam vàng+ 1 lá bạc hà", "ingredients": "Đường: 10 ml | Cam vàng (lát): 1 lát | Siro mâm xôi ColoMix/ Chai 750ml/ 120000 vnđ: 30 ml | Lục Trà Nhài Mộc Lam / Túi 1kg / 365000 vnđ: 40 ml | Kombucha Soda: 160 ml", "cost": "9,732", "img": "images/gallery/Concept-studio-with-products/2. Cung hỷ phát tài bg.webp", "ingPreview": "Đường, Cam vàng (lát), Siro mâm xôi ColoMix", "course": "Khóa hiện đại"}, {"id": 35, "name": "Kombucha Soda - ỔI HỒNG", "shortName": "ỔI HỒNG", "cat": "Kombucha Soda", "steps": "B1: Đong 45gr mứt ổi hồng + 5ml đường cho vào cốc \n B2: Thêm 40ml lục trà  \n B3: Thêm đá đế 2/3 cốc ( 150gr ) Khuấy đều cho lạnh hỗn hợp \n B4: Bơm trực tiếp 160ml (gr ) khí Kombucha soda vào cốc  \n B5: Trang trí 1 lát chanh  + 1 lá bạc hà", "ingredients": "Mứt Ổi hồng / Hộp 1kg / 115000 vnđ: 45 gram | Đường: 5 ml | Lục Trà Nhài Mộc Lam / Túi 1kg / 365000 vnđ: 40 ml | Kombucha Soda: 160 ml | Chanh vàng (lát): 1 lát | Bạc hà: 1 lá", "cost": "9,812", "img": "images/gallery/Concept-studio-with-products/35. Coldbrew Kombucha ổi bg.webp", "ingPreview": "Mứt Ổi hồng, Đường, Lục Trà Nhài Mộc Lam", "course": "Khóa hiện đại"}, {"id": 36, "name": "Kombucha Soda - BÒNG BƯỞI", "shortName": "BÒNG BƯỞI", "cat": "Kombucha Soda", "steps": "B1: Đong 45gr mứt bưởi + 5ml đường cho vào cốc \n B2: Thêm 40ml lục trà  \n B3: Thêm đá đế 2/3 cốc ( 150gr ) Khuấy đều cho lạnh hỗn hợp \n B4: Bơm trực tiếp 160ml (gr ) khí Kombucha soda vào cốc  \n B5: Trang trí 1 lát chanh  + 1 lá bạc hà", "ingredients": "Mứt Bưởi mật ong ColoMix/ Hộp 1,25kg/ 168000 vnđ: 45 gram | Đường: 5 ml | Lục Trà Nhài Mộc Lam / Túi 1kg / 365000 vnđ: 40 ml | Kombucha Soda: 160 ml | Chanh vàng (lát): 1 lát | Bạc hà: 1 lá", "cost": "10,685", "img": "images/gallery/Concept-studio-with-products/7. Hồng trà vàng son sủi bọt bg.webp", "ingPreview": "Mứt Bưởi mật ong ColoMix, Đường, Lục Trà Nhài Mộc Lam", "course": "Khóa hiện đại"}];
+const CAT_CLASS = {'Kombucha':'cat-kombucha','Cafe':'cat-cafe','Matcha':'cat-matcha','Đá xay':'cat-da-xay','Kombucha Soda':'cat-kombucha-soda','Sinh tố':'cat-sinh-to','Trà sữa':'cat-tra-sua','Cocomilk':'cat-cocomilk'};
+let activeCat='all', searchQ='';
+function catClass(c){return CAT_CLASS[c]||'cat-cafe';}
+function renderCards(){
+  const grid=document.getElementById('ctGrid');
+  const q=searchQ.toLowerCase();
+  const filtered=RECIPES.filter(r=>{
+    const catOk=activeCat==='all'||r.cat===activeCat;
+    const qOk=!q||r.name.toLowerCase().includes(q)||r.shortName.toLowerCase().includes(q)||r.cat.toLowerCase().includes(q);
+    return catOk&&qOk;
+  });
+  document.getElementById('ctCount').textContent=filtered.length+' công thức';
+  if(!filtered.length){grid.innerHTML='<div class="ct-empty"><i class="ti ti-mood-empty"></i><p>Không tìm thấy công thức phù hợp.</p></div>';return;}
+  grid.innerHTML=filtered.map(r=>{
+    const ing=r.ingPreview||r.ingredients.split('|').slice(0,3).map(x=>x.split(':')[0].split('/')[0].trim()).join(', ');
+    return '<div class="ct-card" onclick="openModal('+r.id+')">'
+      +'<div class="ct-card-img"><img src="'+r.img+'" alt="'+r.shortName+'" loading="lazy"></div>'
+      +'<div class="ct-card-body">'
+      +'<span class="ct-cat-badge '+catClass(r.cat)+'">'+r.cat+'</span>'
+      +'<div class="ct-card-name">'+( r.shortName&&r.shortName!=='nan'?r.shortName:r.name)+'</div>'
+      +'<div class="ct-card-footer"><span class="ct-lock-hint"><i class="ti ti-lock"></i> Dành cho học viên</span></div>'
+      +'</div></div>';
+  }).join('');
+}
+function filterCat(btn){
+  document.querySelectorAll('#ctFilters .ct-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');activeCat=btn.dataset.cat;renderCards();
+}
+function filterSearch(){searchQ=document.getElementById('ctSearch').value;renderCards();}
+function parseIngredients(ing){
+  if(!ing||ing==='nan')return[];
+  return ing.split('|').map(x=>{const p=x.split(':');return{name:p[0].split('/')[0].trim(),qty:p[1]?p[1].trim():''}}).filter(x=>x.name&&x.name!=='nan');
+}
+function parseSteps(steps){
+  if(!steps||steps==='nan')return[];
+  return steps.split('\n').map(s=>s.trim()).filter(s=>s).map(s=>s.replace(/^B\d+:\s*/,''));
+}
+function openModal(id){
+  const r=RECIPES.find(x=>x.id===id);if(!r)return;
+  document.getElementById('ctModalImgEl').src=r.img;
+  document.getElementById('ctModalImgEl').alt=r.shortName;
+  document.getElementById('ctModalCat').innerHTML='<span class="ct-cat-badge '+catClass(r.cat)+'">'+r.cat+'</span>';
+  document.getElementById('ctModalName').textContent=r.shortName&&r.shortName!=='nan'?r.shortName:r.name;
+  document.getElementById('ctModalCourse').innerHTML=r.course&&r.course!=='nan'?'<i class="ti ti-school"></i> Thuộc: '+r.course:'';
+  document.getElementById('ctModal').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeModal(e){if(e.target===document.getElementById('ctModal'))closeModalDirect();}
+function closeModalDirect(){document.getElementById('ctModal').classList.remove('open');document.body.style.overflow='';}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModalDirect();});
+window.addEventListener('scroll',()=>{
+  document.getElementById('nav').classList.toggle('scrolled',scrollY>60);
+  document.getElementById('btnTop').classList.toggle('show',scrollY>300);
+});
+function toggleMenu(){document.getElementById('mobMenu').classList.toggle('open');}
+function closeMenu(){document.getElementById('mobMenu').classList.remove('open');}
+renderCards();
+</script>
+</body>
+</html>

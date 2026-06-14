@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
@@ -124,12 +124,13 @@
     .nav-logo-sub  { font-size: 0.62rem; font-weight: 500; color: var(--muted); display: block; }
 
     .btn-login {
-      font-size: 0.8rem; font-weight: 600; padding: 9px 20px;
-      border-radius: 100px; background: var(--accent); color: #fff;
-      border: none; cursor: pointer; transition: all 0.2s; text-decoration: none;
-      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 0.83rem; font-weight: 600; padding: 7px 15px;
+      border-radius: 8px; background: transparent; color: var(--accent);
+      border: 1.5px solid var(--accent); cursor: pointer; transition: all 0.2s;
+      text-decoration: none; display: inline-flex; align-items: center; gap: 5px;
+      white-space: nowrap; line-height: 1;
     }
-    .btn-login:hover { background: var(--accent-h); }
+    .btn-login:hover { background: var(--accent); color: #fff; }
 
     .hamburger {
       display: none; flex-direction: column; gap: 5px;
@@ -226,6 +227,25 @@
       .h-stat { padding-right: 20px; margin-right: 20px; }
       .h-stat-n { font-size: 1.5rem; }
     }
+
+    /* HERO SLIDESHOW */
+    .hero-shape { overflow: hidden; }
+    .hs-img {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      object-fit: cover; object-position: center top;
+      opacity: 0; transition: opacity 1.2s ease;
+    }
+    .hs-img.active { opacity: 1; }
+
+    /* TRẢI NGHIỆM MASONRY */
+    .ls-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-top: 48px; }
+    @media (max-width: 640px) { .ls-grid { grid-template-columns: 1fr 1fr; } }
+    .ls-img { border-radius: var(--r-lg); overflow: hidden; }
+    .ls-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .ls-r1 { aspect-ratio: 3/4; }
+    .ls-r2 { aspect-ratio: 16/9; }
+    .ls-span2 { grid-column: span 2; }
+
 
     /* FEATURES */
     .features { background: var(--bg-dark); }
@@ -338,22 +358,28 @@
     .poster-foot { display: flex; align-items: center; justify-content: space-between;
       padding-top: 14px; border-top: 1px solid var(--border); }
 
-    @keyframes scroll-left  { from { transform: translateX(0); }    to { transform: translateX(-50%); } }
-    @keyframes scroll-right { from { transform: translateX(-50%); } to { transform: translateX(0); }    }
+    @keyframes scroll-left  { to   { transform: translateX(-50%); } }
+    @keyframes scroll-right { from { transform: translateX(-50%); } to { transform: translateX(0); } }
     .marquee-outer { overflow: hidden; padding: 4px 0; margin-top: 44px; }
-    .marquee-outer:hover .marquee-track { animation-play-state: paused; }
-    .marquee-track { display: flex; gap: 16px; width: max-content; }
-    .marquee-track + .marquee-track { margin-top: 16px; }
-    .go-left  { animation: scroll-left  30s linear infinite; }
-    .go-right { animation: scroll-right 25s linear infinite; }
-    .mi { flex: 0 0 176px; text-align: center; cursor: default; }
+    .marquee-track { display: flex; flex-wrap: nowrap; gap: 12px; }
+    .marquee-track.ready.go-left  { animation: scroll-left  70s linear infinite; }
+    .marquee-track.ready.go-right { animation: scroll-right 60s linear infinite; }
+    .marquee-track + .marquee-track { margin-top: 12px; }
+    .mi { flex: 0 0 130px; text-align: center; cursor: default; }
     .mi-thumb {
-      border-radius: var(--r-lg); overflow: hidden; background: var(--white);
+      border-radius: var(--r); overflow: hidden; background: var(--white);
       border: 1px solid var(--border); aspect-ratio: 1; transition: transform 0.25s, box-shadow 0.25s;
     }
     .mi:hover .mi-thumb { transform: translateY(-4px); box-shadow: var(--sh-md); }
     .mi-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .mi-cap { font-size: 0.82rem; font-weight: 500; color: var(--text-2); margin-top: 10px; }
+    .mi-cap { font-size: 0.75rem; font-weight: 500; color: var(--text-2); margin-top: 8px; }
+    @media (min-width: 768px) {
+      .marquee-track { gap: 16px; }
+      .marquee-track + .marquee-track { margin-top: 16px; }
+      .mi { flex: 0 0 176px; }
+      .mi-thumb { border-radius: var(--r-lg); }
+      .mi-cap { font-size: 0.82rem; margin-top: 10px; }
+    }
 
     /* ABOUT */
     .about { background: var(--white); }
@@ -557,6 +583,8 @@
 
       <div class="nav-right">
         <a href="#menu" class="nav-link">Menu</a>
+        <a href="gioi-thieu.html" class="nav-link">Giới Thiệu</a>
+        <a href="cong-thuc.html" class="nav-link">Công Thức</a>
         <a href="#dangky" class="nav-link">Liên Hệ</a>
         <a href="#login" class="btn-login"><i class="ti ti-lock" style="font-size:0.85rem;"></i> Đăng Nhập</a>
         <button class="hamburger" onclick="toggleMenu()" aria-label="Menu">
@@ -575,6 +603,8 @@
   <a href="#services" onclick="closeMenu()">Gói Kinh Doanh</a>
   <a href="#menu" onclick="closeMenu()">Menu Đồ Uống</a>
   <a href="#hoc-vien" onclick="closeMenu()">Học Viên</a>
+  <a href="gioi-thieu.html" onclick="closeMenu()">Giới Thiệu</a>
+  <a href="cong-thuc.html" onclick="closeMenu()">Công Thức Pha Chế</a>
   <a href="#dangky" onclick="closeMenu()">Đăng Ký / Liên Hệ</a>
   <a href="#login" onclick="closeMenu()">Đăng Nhập Nội Bộ</a>
 </div>
@@ -596,7 +626,15 @@
 <!-- HERO -->
 <section class="hero" id="home">
   <div class="hero-shape">
-    <img class="ph-img" src="images/hero.jpg" alt="Học Viện Cà Phê" onerror="this.remove()">
+    <img class="hs-img active" src="images/gallery/Life-styles-with-person/~12321.webp" alt="" loading="eager">
+    <img class="hs-img" src="images/gallery/Life-styles-with-person/~12405.webp" alt="" loading="lazy">
+    <img class="hs-img" src="images/gallery/Life-styles-with-person/~12432.webp" alt="" loading="lazy">
+    <img class="hs-img" src="images/gallery/Life-styles-with-person/~12498.webp" alt="" loading="lazy">
+    <img class="hs-img" src="images/gallery/Life-styles-with-person/~12555.webp" alt="" loading="lazy">
+    <img class="hs-img" src="images/gallery/Life-styles-with-person/~12573.webp" alt="" loading="lazy">
+    <img class="hs-img" src="images/gallery/Life-styles-with-person/~12720.webp" alt="" loading="lazy">
+    <img class="hs-img" src="images/gallery/Life-styles-with-person/~12816.webp" alt="" loading="lazy">
+    <img class="hs-img" src="images/gallery/Life-styles-with-person/~12930.webp" alt="" loading="lazy">
   </div>
   <div class="container">
     <div class="hero-body">
@@ -973,35 +1011,111 @@
     </p>
   </div><!-- /container -->
   <div class="marquee-outer">
-    <!-- Hàng 1 – cuộn trái -->
+    <!-- Hàng 1 – cuộn trái (1–25) -->
     <div class="marquee-track go-left">
-      <div class="mi"><div class="mi-thumb"><img src="images/menu/matcha-latte.png" alt="Matcha Latte" loading="lazy"></div><div class="mi-cap">Matcha Latte</div></div>
-      <div class="mi"><div class="mi-thumb"><img src="images/menu/tra-sua-tran-chau.png" alt="Trà Sữa Trân Châu" loading="lazy"></div><div class="mi-cap">Trà Sữa Trân Châu</div></div>
-      <div class="mi"><div class="mi-thumb"><img src="images/menu/ca-phe-muoi.png" alt="Cà Phê Muối" loading="lazy"></div><div class="mi-cap">Cà Phê Muối</div></div>
-      <div class="mi"><div class="mi-thumb"><img src="images/menu/ca-phe-sua.png" alt="Cà Phê Sữa" loading="lazy"></div><div class="mi-cap">Cà Phê Sữa</div></div>
-      <div class="mi"><div class="mi-thumb"><img src="images/menu/tra-dao-cam-sa.png" alt="Trà Đào Cam Sả" loading="lazy"></div><div class="mi-cap">Trà Đào Cam Sả</div></div>
-      <div class="mi"><div class="mi-thumb"><img src="images/menu/coldbrew-cam.png" alt="Coldbrew Cam" loading="lazy"></div><div class="mi-cap">Coldbrew Cam</div></div>
-      <!-- duplicate for seamless loop -->
-      <div class="mi"><div class="mi-thumb"><img src="images/menu/matcha-latte.png" alt="Matcha Latte" loading="lazy"></div><div class="mi-cap">Matcha Latte</div></div>
-      <div class="mi"><div class="mi-thumb"><img src="images/menu/tra-sua-tran-chau.png" alt="Trà Sữa Trân Châu" loading="lazy"></div><div class="mi-cap">Trà Sữa Trân Châu</div></div>
-      <div class="mi"><div class="mi-thumb"><img src="images/menu/ca-phe-muoi.png" alt="Cà Phê Muối" loading="lazy"></div><div class="mi-cap">Cà Phê Muối</div></div>
-      <div class="mi"><div class="mi-thumb"><img src="images/menu/ca-phe-sua.png" alt="Cà Phê Sữa" loading="lazy"></div><div class="mi-cap">Cà Phê Sữa</div></div>
-      <div class="mi"><div class="mi-thumb"><img src="images/menu/tra-dao-cam-sa.png" alt="Trà Đào Cam Sả" loading="lazy"></div><div class="mi-cap">Trà Đào Cam Sả</div></div>
-      <div class="mi"><div class="mi-thumb"><img src="images/menu/coldbrew-cam.png" alt="Coldbrew Cam" loading="lazy"></div><div class="mi-cap">Coldbrew Cam</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/2. Cung hỷ phát tài bg.webp" alt="Cung Hỷ Phát Tài" loading="eager"></div><div class="mi-cap">Cung Hỷ Phát Tài</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/3. Lục ngọc thiên hương bg.webp" alt="Lục Ngọc Thiên Hương" loading="eager"></div><div class="mi-cap">Lục Ngọc Thiên Hương</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/4. Túy lựu đào hoa bg.webp" alt="Túy Lựu Đào Hoa" loading="eager"></div><div class="mi-cap">Túy Lựu Đào Hoa</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/5. Kim lý hoa quế bg.webp" alt="Kim Lý Hoa Quế" loading="eager"></div><div class="mi-cap">Kim Lý Hoa Quế</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/6. Oolong nhãn thanh trà bg.webp" alt="Oolong Nhãn Thanh Trà" loading="eager"></div><div class="mi-cap">Oolong Nhãn Thanh Trà</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/7. Hồng trà vàng son sủi bọt bg.webp" alt="Hồng Trà Vàng Son" loading="eager"></div><div class="mi-cap">Hồng Trà Vàng Son</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/8. Oolong lài sữa bg.webp" alt="Oolong Lài Sữa" loading="eager"></div><div class="mi-cap">Oolong Lài Sữa</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/9. Hồng trà sữa bg.webp" alt="Hồng Trà Sữa" loading="eager"></div><div class="mi-cap">Hồng Trà Sữa</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/10. Khoai môn kem lá dứa bg.webp" alt="Khoai Môn Kem Lá Dứa" loading="eager"></div><div class="mi-cap">Khoai Môn Kem Lá Dứa</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/11. Trà sữa hạt dẻ bg.webp" alt="Trà Sữa Hạt Dẻ" loading="eager"></div><div class="mi-cap">Trà Sữa Hạt Dẻ</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/12. Sầu riêng kem lá dứa bg.webp" alt="Sầu Riêng Kem Lá Dứa" loading="eager"></div><div class="mi-cap">Sầu Riêng Kem Lá Dứa</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/13. Hồng ngọc matcha bg.webp" alt="Hồng Ngọc Matcha" loading="eager"></div><div class="mi-cap">Hồng Ngọc Matcha</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/14. Matcha latte bg.webp" alt="Matcha Latte" loading="eager"></div><div class="mi-cap">Matcha Latte</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/15. Matcha creamy (1) bg.webp" alt="Matcha Creamy" loading="eager"></div><div class="mi-cap">Matcha Creamy</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/16. Matcha milktea bg.webp" alt="Matcha Milktea" loading="eager"></div><div class="mi-cap">Matcha Milktea</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/17. Đen đá bg.webp" alt="Đen Đá" loading="eager"></div><div class="mi-cap">Đen Đá</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/18. Matcha Ice blended bg.webp" alt="Matcha Ice Blended" loading="eager"></div><div class="mi-cap">Matcha Ice Blended</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/19. Oreo Ice Blended bg.webp" alt="Oreo Ice Blended" loading="eager"></div><div class="mi-cap">Oreo Ice Blended</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/20. Caramel Ice Blended bg.webp" alt="Caramel Ice Blended" loading="eager"></div><div class="mi-cap">Caramel Ice Blended</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/21. Sữa đá bg.webp" alt="Sữa Đá" loading="eager"></div><div class="mi-cap">Sữa Đá</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/22. Bạc xỉu bg.webp" alt="Bạc Xỉu" loading="eager"></div><div class="mi-cap">Bạc Xỉu</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/23. Cà phê muối bg.webp" alt="Cà Phê Muối" loading="eager"></div><div class="mi-cap">Cà Phê Muối</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/24. Americano đá bg.webp" alt="Americano Đá" loading="eager"></div><div class="mi-cap">Americano Đá</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/25. Matcha coco ice blended bg.webp" alt="Matcha Coco Ice Blended" loading="eager"></div><div class="mi-cap">Matcha Coco</div></div>
+      <!-- duplicate -->
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/2. Cung hỷ phát tài bg.webp" alt="Cung Hỷ Phát Tài" loading="eager"></div><div class="mi-cap">Cung Hỷ Phát Tài</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/3. Lục ngọc thiên hương bg.webp" alt="Lục Ngọc Thiên Hương" loading="eager"></div><div class="mi-cap">Lục Ngọc Thiên Hương</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/4. Túy lựu đào hoa bg.webp" alt="Túy Lựu Đào Hoa" loading="eager"></div><div class="mi-cap">Túy Lựu Đào Hoa</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/5. Kim lý hoa quế bg.webp" alt="Kim Lý Hoa Quế" loading="eager"></div><div class="mi-cap">Kim Lý Hoa Quế</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/6. Oolong nhãn thanh trà bg.webp" alt="Oolong Nhãn Thanh Trà" loading="eager"></div><div class="mi-cap">Oolong Nhãn Thanh Trà</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/7. Hồng trà vàng son sủi bọt bg.webp" alt="Hồng Trà Vàng Son" loading="eager"></div><div class="mi-cap">Hồng Trà Vàng Son</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/8. Oolong lài sữa bg.webp" alt="Oolong Lài Sữa" loading="eager"></div><div class="mi-cap">Oolong Lài Sữa</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/9. Hồng trà sữa bg.webp" alt="Hồng Trà Sữa" loading="eager"></div><div class="mi-cap">Hồng Trà Sữa</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/10. Khoai môn kem lá dứa bg.webp" alt="Khoai Môn Kem Lá Dứa" loading="eager"></div><div class="mi-cap">Khoai Môn Kem Lá Dứa</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/11. Trà sữa hạt dẻ bg.webp" alt="Trà Sữa Hạt Dẻ" loading="eager"></div><div class="mi-cap">Trà Sữa Hạt Dẻ</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/12. Sầu riêng kem lá dứa bg.webp" alt="Sầu Riêng Kem Lá Dứa" loading="eager"></div><div class="mi-cap">Sầu Riêng Kem Lá Dứa</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/13. Hồng ngọc matcha bg.webp" alt="Hồng Ngọc Matcha" loading="eager"></div><div class="mi-cap">Hồng Ngọc Matcha</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/14. Matcha latte bg.webp" alt="Matcha Latte" loading="eager"></div><div class="mi-cap">Matcha Latte</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/15. Matcha creamy (1) bg.webp" alt="Matcha Creamy" loading="eager"></div><div class="mi-cap">Matcha Creamy</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/16. Matcha milktea bg.webp" alt="Matcha Milktea" loading="eager"></div><div class="mi-cap">Matcha Milktea</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/17. Đen đá bg.webp" alt="Đen Đá" loading="eager"></div><div class="mi-cap">Đen Đá</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/18. Matcha Ice blended bg.webp" alt="Matcha Ice Blended" loading="eager"></div><div class="mi-cap">Matcha Ice Blended</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/19. Oreo Ice Blended bg.webp" alt="Oreo Ice Blended" loading="eager"></div><div class="mi-cap">Oreo Ice Blended</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/20. Caramel Ice Blended bg.webp" alt="Caramel Ice Blended" loading="eager"></div><div class="mi-cap">Caramel Ice Blended</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/21. Sữa đá bg.webp" alt="Sữa Đá" loading="eager"></div><div class="mi-cap">Sữa Đá</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/22. Bạc xỉu bg.webp" alt="Bạc Xỉu" loading="eager"></div><div class="mi-cap">Bạc Xỉu</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/23. Cà phê muối bg.webp" alt="Cà Phê Muối" loading="eager"></div><div class="mi-cap">Cà Phê Muối</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/24. Americano đá bg.webp" alt="Americano Đá" loading="eager"></div><div class="mi-cap">Americano Đá</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/25. Matcha coco ice blended bg.webp" alt="Matcha Coco Ice Blended" loading="eager"></div><div class="mi-cap">Matcha Coco</div></div>
     </div>
-    <!-- Hàng 2 – cuộn phải -->
+    <!-- Hàng 2 – cuộn phải (26–50) -->
     <div class="marquee-track go-right">
-      <div class="mi"><div class="mi-thumb"><img src="images/menu/oreo-ice-blended.png" alt="Oreo Ice Blended" loading="lazy"></div><div class="mi-cap">Oreo Ice Blended</div></div>
-      <div class="mi"><div class="mi-thumb"><img src="images/menu/tra-vai.png" alt="Trà Vải" loading="lazy"></div><div class="mi-cap">Trà Vải</div></div>
-      <div class="mi"><div class="mi-thumb"><img src="images/menu/bac-xiu.png" alt="Bạc Xỉu" loading="lazy"></div><div class="mi-cap">Bạc Xỉu</div></div>
-      <div class="mi"><div class="mi-thumb"><img src="images/menu/tra-sen-vang.png" alt="Trà Sen Vàng" loading="lazy"></div><div class="mi-cap">Trà Sen Vàng</div></div>
-      <div class="mi"><div class="mi-thumb"><img src="images/menu/hong-ngoc-matcha.png" alt="Hồng Ngọc Matcha" loading="lazy"></div><div class="mi-cap">Hồng Ngọc Matcha</div></div>
-      <div class="mi"><div class="mi-thumb"><img src="images/menu/tra-sua-bo.png" alt="Trà Sữa Bơ" loading="lazy"></div><div class="mi-cap">Trà Sữa Bơ</div></div>
-      <!-- duplicate for seamless loop -->
-      <div class="mi"><div class="mi-thumb"><img src="images/menu/oreo-ice-blended.png" alt="Oreo Ice Blended" loading="lazy"></div><div class="mi-cap">Oreo Ice Blended</div></div>
-      <div class="mi"><div class="mi-thumb"><img src="images/menu/tra-vai.png" alt="Trà Vải" loading="lazy"></div><div class="mi-cap">Trà Vải</div></div>
-      <div class="mi"><div class="mi-thumb"><img src="images/menu/bac-xiu.png" alt="Bạc Xỉu" loading="lazy"></div><div class="mi-cap">Bạc Xỉu</div></div>
-      <div class="mi"><div class="mi-thumb"><img src="images/menu/tra-sen-vang.png" alt="Trà Sen Vàng" loading="lazy"></div><div class="mi-cap">Trà Sen Vàng</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/26. Matcha taro ice blended bg.webp" alt="Matcha Taro Ice Blended" loading="eager"></div><div class="mi-cap">Matcha Taro</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/27. Cà phê cốt dừa bg.webp" alt="Cà Phê Cốt Dừa" loading="eager"></div><div class="mi-cap">Cà Phê Cốt Dừa</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/28. Latte nóng bg.webp" alt="Latte Nóng" loading="eager"></div><div class="mi-cap">Latte Nóng</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/29. Latte nóng bg.webp" alt="Latte Nóng" loading="eager"></div><div class="mi-cap">Latte Nóng</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/30. Cappuccino nóng bg.webp" alt="Cappuccino Nóng" loading="eager"></div><div class="mi-cap">Cappuccino Nóng</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/31. Americano đào bg.webp" alt="Americano Đào" loading="eager"></div><div class="mi-cap">Americano Đào</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/32. Bơ già dừa non bg.webp" alt="Bơ Già Dừa Non" loading="eager"></div><div class="mi-cap">Bơ Già Dừa Non</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/33. Cà phê sữa bg.webp" alt="Cà Phê Sữa" loading="eager"></div><div class="mi-cap">Cà Phê Sữa</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/34. Coldbrew cam bg.webp" alt="Coldbrew Cam" loading="eager"></div><div class="mi-cap">Coldbrew Cam</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/35. Coldbrew Kombucha ổi bg.webp" alt="Coldbrew Kombucha Ổi" loading="eager"></div><div class="mi-cap">Coldbrew Kombucha Ổi</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/36. Đào xoài macchiato bg.webp" alt="Đào Xoài Macchiato" loading="eager"></div><div class="mi-cap">Đào Xoài Macchiato</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/37. Kombucha chanh dâu bg.webp" alt="Kombucha Chanh Dâu" loading="eager"></div><div class="mi-cap">Kombucha Chanh Dâu</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/38. Kombucha chanh vàng bg.webp" alt="Kombucha Chanh Vàng" loading="eager"></div><div class="mi-cap">Kombucha Chanh Vàng</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/39. Kombucha táo đào bg.webp" alt="Kombucha Táo Đào" loading="eager"></div><div class="mi-cap">Kombucha Táo Đào</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/40. Kombucha xoài chanh leo bg.webp" alt="Kombucha Xoài Chanh Leo" loading="eager"></div><div class="mi-cap">Kombucha Xoài</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/41. Matcha Creamy (2) bg.webp" alt="Matcha Creamy 2" loading="eager"></div><div class="mi-cap">Matcha Creamy</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/42. Matcha đậu đỏ bg.webp" alt="Matcha Đậu Đỏ" loading="eager"></div><div class="mi-cap">Matcha Đậu Đỏ</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/43. Trà đào cam sả bg.webp" alt="Trà Đào Cam Sả" loading="eager"></div><div class="mi-cap">Trà Đào Cam Sả</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/44. Trà sen vàng bg.webp" alt="Trà Sen Vàng" loading="eager"></div><div class="mi-cap">Trà Sen Vàng</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/45. Trà sữa bơ bg.webp" alt="Trà Sữa Bơ" loading="eager"></div><div class="mi-cap">Trà Sữa Bơ</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/46. Trà sữa chôm chôm bg.webp" alt="Trà Sữa Chôm Chôm" loading="eager"></div><div class="mi-cap">Trà Sữa Chôm Chôm</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/47. Trà sữa dâu bg.webp" alt="Trà Sữa Dâu" loading="eager"></div><div class="mi-cap">Trà Sữa Dâu</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/48. Trà sữa kem trứng nướng bg.webp" alt="Trà Sữa Kem Trứng Nướng" loading="eager"></div><div class="mi-cap">Kem Trứng Nướng</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/49. Trà sữa trân châu đen bg.webp" alt="Trà Sữa Trân Châu Đen" loading="eager"></div><div class="mi-cap">Trân Châu Đen</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/50. Trà vải bg.webp" alt="Trà Vải" loading="eager"></div><div class="mi-cap">Trà Vải</div></div>
+      <!-- duplicate -->
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/26. Matcha taro ice blended bg.webp" alt="Matcha Taro Ice Blended" loading="eager"></div><div class="mi-cap">Matcha Taro</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/27. Cà phê cốt dừa bg.webp" alt="Cà Phê Cốt Dừa" loading="eager"></div><div class="mi-cap">Cà Phê Cốt Dừa</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/28. Latte nóng bg.webp" alt="Latte Nóng" loading="eager"></div><div class="mi-cap">Latte Nóng</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/29. Latte nóng bg.webp" alt="Latte Nóng" loading="eager"></div><div class="mi-cap">Latte Nóng</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/30. Cappuccino nóng bg.webp" alt="Cappuccino Nóng" loading="eager"></div><div class="mi-cap">Cappuccino Nóng</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/31. Americano đào bg.webp" alt="Americano Đào" loading="eager"></div><div class="mi-cap">Americano Đào</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/32. Bơ già dừa non bg.webp" alt="Bơ Già Dừa Non" loading="eager"></div><div class="mi-cap">Bơ Già Dừa Non</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/33. Cà phê sữa bg.webp" alt="Cà Phê Sữa" loading="eager"></div><div class="mi-cap">Cà Phê Sữa</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/34. Coldbrew cam bg.webp" alt="Coldbrew Cam" loading="eager"></div><div class="mi-cap">Coldbrew Cam</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/35. Coldbrew Kombucha ổi bg.webp" alt="Coldbrew Kombucha Ổi" loading="eager"></div><div class="mi-cap">Coldbrew Kombucha Ổi</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/36. Đào xoài macchiato bg.webp" alt="Đào Xoài Macchiato" loading="eager"></div><div class="mi-cap">Đào Xoài Macchiato</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/37. Kombucha chanh dâu bg.webp" alt="Kombucha Chanh Dâu" loading="eager"></div><div class="mi-cap">Kombucha Chanh Dâu</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/38. Kombucha chanh vàng bg.webp" alt="Kombucha Chanh Vàng" loading="eager"></div><div class="mi-cap">Kombucha Chanh Vàng</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/39. Kombucha táo đào bg.webp" alt="Kombucha Táo Đào" loading="eager"></div><div class="mi-cap">Kombucha Táo Đào</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/40. Kombucha xoài chanh leo bg.webp" alt="Kombucha Xoài Chanh Leo" loading="eager"></div><div class="mi-cap">Kombucha Xoài</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/41. Matcha Creamy (2) bg.webp" alt="Matcha Creamy 2" loading="eager"></div><div class="mi-cap">Matcha Creamy</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/42. Matcha đậu đỏ bg.webp" alt="Matcha Đậu Đỏ" loading="eager"></div><div class="mi-cap">Matcha Đậu Đỏ</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/43. Trà đào cam sả bg.webp" alt="Trà Đào Cam Sả" loading="eager"></div><div class="mi-cap">Trà Đào Cam Sả</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/44. Trà sen vàng bg.webp" alt="Trà Sen Vàng" loading="eager"></div><div class="mi-cap">Trà Sen Vàng</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/45. Trà sữa bơ bg.webp" alt="Trà Sữa Bơ" loading="eager"></div><div class="mi-cap">Trà Sữa Bơ</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/46. Trà sữa chôm chôm bg.webp" alt="Trà Sữa Chôm Chôm" loading="eager"></div><div class="mi-cap">Trà Sữa Chôm Chôm</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/47. Trà sữa dâu bg.webp" alt="Trà Sữa Dâu" loading="eager"></div><div class="mi-cap">Trà Sữa Dâu</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/48. Trà sữa kem trứng nướng bg.webp" alt="Trà Sữa Kem Trứng Nướng" loading="eager"></div><div class="mi-cap">Kem Trứng Nướng</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/49. Trà sữa trân châu đen bg.webp" alt="Trà Sữa Trân Châu Đen" loading="eager"></div><div class="mi-cap">Trân Châu Đen</div></div>
+      <div class="mi"><div class="mi-thumb"><img src="images/gallery/Concept-studio-with-products/50. Trà vải bg.webp" alt="Trà Vải" loading="eager"></div><div class="mi-cap">Trà Vải</div></div>
       <div class="mi"><div class="mi-thumb"><img src="images/menu/hong-ngoc-matcha.png" alt="Hồng Ngọc Matcha" loading="lazy"></div><div class="mi-cap">Hồng Ngọc Matcha</div></div>
       <div class="mi"><div class="mi-thumb"><img src="images/menu/tra-sua-bo.png" alt="Trà Sữa Bơ" loading="lazy"></div><div class="mi-cap">Trà Sữa Bơ</div></div>
     </div>
@@ -1023,6 +1137,29 @@
     </div>
   </div>
 </section>
+
+<!-- TRẢI NGHIỆM THỰC TẾ -->
+<section class="section" style="background: var(--white);">
+  <div class="container">
+    <div style="text-align:center;">
+      <span class="tag">Trải Nghiệm Thực Tế</span>
+      <h2 class="title">Học Từ Công Thức Thật<br>Làm Từ Nguyên Liệu Thật</h2>
+      <p class="sub" style="max-width:560px; margin:0 auto;">
+        Mỗi buổi học là một trải nghiệm thực chiến — bạn tự tay pha từng ly, nắm vững công thức và mang về bí quyết kinh doanh của riêng mình.
+      </p>
+    </div>
+    <div class="ls-grid">
+      <div class="ls-img ls-r1"><img src="images/gallery/Life-styles/~11447.webp" alt="" loading="lazy"></div>
+      <div class="ls-img ls-r1"><img src="images/gallery/Life-styles/~11594_1.webp" alt="" loading="lazy"></div>
+      <div class="ls-img ls-r1"><img src="images/gallery/Life-styles/~11783.webp" alt="" loading="lazy"></div>
+      <div class="ls-img ls-span2 ls-r2"><img src="images/gallery/Life-styles/~11900.webp" alt="" loading="lazy"></div>
+      <div class="ls-img ls-r1"><img src="images/gallery/Life-styles/~12219.webp" alt="" loading="lazy"></div>
+      <div class="ls-img ls-r1"><img src="images/gallery/Life-styles/~12609.webp" alt="" loading="lazy"></div>
+      <div class="ls-img ls-span2 ls-r2"><img src="images/gallery/Life-styles/~11675.webp" alt="" loading="lazy"></div>
+    </div>
+  </div>
+</section>
+
 
 <!-- CONTACT FORM -->
 <section class="section" id="dangky">
@@ -1091,15 +1228,6 @@
       </div>
     </div>
   </div>
-</section>
-
-<!-- MAP -->
-<section style="padding:0; line-height:0; overflow:hidden;">
-  <iframe
-    src="https://maps.google.com/maps?q=26%2F23+Nguy%E1%BB%85n+Minh+Ho%C3%A0ng%2C+P.+B%E1%BA%A3y+Hi%E1%BB%81n%2C+T%C3%A2n+B%C3%ACnh%2C+TP.HCM&output=embed&hl=vi&z=17"
-    width="100%" height="360" style="border:0;display:block;" allowfullscreen loading="lazy"
-    title="Bản đồ Học Viện Cà Phê HCM">
-  </iframe>
 </section>
 
 <!-- FOOTER -->
@@ -1296,5 +1424,59 @@
   <button class="lb-close" onclick="document.getElementById('lightbox').classList.remove('active');document.body.style.overflow=''">&#x2715;</button>
   <img src="" alt="">
 </div>
+
+<script>
+(function () {
+  function initMarquee() {
+    document.querySelectorAll('.marquee-track').forEach(function (track) {
+      var items = track.querySelectorAll('.mi');
+      if (!items.length) return;
+
+      var half  = items.length / 2;
+      var iw    = items[0].getBoundingClientRect().width || 130;
+      var cs    = window.getComputedStyle(track);
+      var gap   = parseFloat(cs.columnGap) || parseFloat(cs.gap) || 12;
+      var halfW = half * (iw + gap);
+
+      // Set pixel width explicitly — tránh bug iOS với max-content
+      track.style.width = (halfW * 2) + 'px';
+
+      // Với go-right: bắt đầu từ -50% để animation chạy từ trái sang phải
+      if (track.classList.contains('go-right')) {
+        track.style.transform = 'translateX(-' + halfW + 'px)';
+      }
+
+      // Pause on hover (desktop only)
+      var outer = track.parentElement;
+      if (outer && window.matchMedia('(hover: hover)').matches) {
+        outer.addEventListener('mouseenter', function () {
+          track.style.animationPlayState = 'paused';
+        });
+        outer.addEventListener('mouseleave', function () {
+          track.style.animationPlayState = 'running';
+        });
+      }
+
+      // Trigger CSS animation sau khi width đã set
+      track.classList.add('ready');
+    });
+  }
+
+  if (document.readyState === 'complete') { initMarquee(); }
+  else { window.addEventListener('load', initMarquee); }
+})();
+
+// Hero slideshow
+(function () {
+  var slides = document.querySelectorAll('.hs-img');
+  if (!slides.length) return;
+  var cur = 0;
+  setInterval(function () {
+    slides[cur].classList.remove('active');
+    cur = (cur + 1) % slides.length;
+    slides[cur].classList.add('active');
+  }, 4500);
+})();
+</script>
 </body>
 </html>
