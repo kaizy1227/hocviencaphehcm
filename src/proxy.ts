@@ -23,16 +23,18 @@ export async function proxy(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser();
 
-  if (request.nextUrl.pathname.startsWith('/cong-thuc') && !user) {
+  if ((request.nextUrl.pathname.startsWith('/cong-thuc') || request.nextUrl.pathname.startsWith('/admin')) && !user) {
     const url = request.nextUrl.clone();
     url.pathname = '/login';
-    url.searchParams.set('redirect', '/cong-thuc');
+    url.searchParams.set('redirect', request.nextUrl.pathname);
     return NextResponse.redirect(url);
   }
 
   if (request.nextUrl.pathname === '/login' && user) {
+    const redirect = request.nextUrl.searchParams.get('redirect') ?? '/cong-thuc';
     const url = request.nextUrl.clone();
-    url.pathname = '/cong-thuc';
+    url.pathname = redirect;
+    url.search = '';
     return NextResponse.redirect(url);
   }
 
@@ -40,5 +42,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/cong-thuc', '/cong-thuc/(.*)', '/login'],
+  matcher: ['/cong-thuc', '/cong-thuc/(.*)', '/admin', '/admin/(.*)', '/login'],
 };
