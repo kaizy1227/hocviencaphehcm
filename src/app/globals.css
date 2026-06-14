@@ -491,3 +491,25 @@ footer { background: var(--bg-dark); }
 .ct-steps-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
 .ct-locked-item { font-size: 0.82rem; color: var(--text-2); display: flex; align-items: center; gap: 6px; padding: 6px 10px; background: var(--bg); border-radius: var(--r-sm); filter: blur(3px); user-select: none; }
 .ct-modal-cta { text-align: center; padding-top: 8px; border-top: 1px solid var(--border); }
+
+/* ── LOGIN page ── */
+.login-page { min-height: 100dvh; display: flex; align-items: center; justify-content: center; background: var(--bg-alt); padding: 24px; }
+.login-card { background: var(--white); border-radius: var(--r-xl); padding: 40px 36px; max-width: 400px; width: 100%; box-shadow: 0 8px 40px rgba(30,8,0,0.1); }
+@media(max-width:480px){ .login-card { padding: 28px 20px; } }
+.login-logo { text-align: center; margin-bottom: 20px; }
+.login-logo img { width: 56px; height: 56px; border-radius: 14px; object-fit: contain; }
+.login-title { font-size: 1.5rem; font-weight: 900; text-align: center; margin-bottom: 6px; }
+.login-sub { font-size: 0.83rem; color: var(--text-3); text-align: center; margin-bottom: 28px; }
+.login-form { display: flex; flex-direction: column; gap: 18px; }
+.lf-group { display: flex; flex-direction: column; gap: 6px; }
+.lf-group label { font-size: 0.82rem; font-weight: 600; color: var(--text); }
+.lf-input-wrap { position: relative; display: flex; align-items: center; }
+.lf-input-wrap .ti { position: absolute; left: 12px; color: var(--text-3); font-size: 0.95rem; pointer-events: none; }
+.lf-input-wrap input { width: 100%; padding: 10px 14px 10px 36px; border: 1.5px solid var(--border); border-radius: var(--r-md); font-size: 0.9rem; color: var(--text); background: var(--bg); outline: none; transition: border-color .18s; font-family: inherit; }
+.lf-input-wrap input:focus { border-color: var(--accent); }
+.lf-error { background: #fef2f2; border: 1px solid #fecaca; border-radius: var(--r-sm); padding: 10px 14px; font-size: 0.82rem; color: #b91c1c; display: flex; align-items: center; gap: 7px; }
+.lf-submit { width: 100%; justify-content: center; margin-top: 4px; }
+.login-footer { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 24px; font-size: 0.78rem; color: var(--text-3); }
+.login-footer a { color: var(--text-3); text-decoration: none; } .login-footer a:hover { color: var(--accent); }
+@keyframes spin { to { transform: rotate(360deg); } }
+.spin { display: inline-block; animation: spin .7s linear infinite; }

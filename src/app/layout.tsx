@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Be_Vietnam_Pro } from 'next/font/google';
 import './globals.css';
 import Navbar from '@/components/Navbar';
@@ -12,10 +12,13 @@ const beVietnam = Be_Vietnam_Pro({
   display: 'swap',
 });
 
+export const viewport: Viewport = {
+  themeColor: '#B05A10',
+};
+
 export const metadata: Metadata = {
   title: 'Học Viện Cà Phê | Nơi Khởi Nguồn Kinh Doanh Của Bạn',
   description: 'Đào tạo pha chế cà phê, trà sữa và tư vấn mở quán bài bản — từ công thức, set up menu đến vận hành kinh doanh.',
-  themeColor: '#B05A10',
   openGraph: {
     title: 'Học Viện Cà Phê | Nơi Khởi Nguồn Kinh Doanh Của Bạn',
     description: 'Đào tạo pha chế cà phê, trà sữa và tư vấn mở quán bài bản — từ công thức, set up menu đến vận hành kinh doanh.',
