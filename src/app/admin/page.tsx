@@ -27,7 +27,7 @@ type Lead = {
 type Course = {
   id: string;
   name: string;
-  category: 'chuyen-de' | 'kinh-doanh';
+  category: 'tong-hop' | 'chuyen-de' | 'kinh-doanh';
   price: string;
   duration: string | null;
   description: string | null;
@@ -49,12 +49,13 @@ const STATUS_CLASS: Record<Lead['status'], string> = {
 };
 
 const CAT_LABEL: Record<Course['category'], string> = {
+  'tong-hop': 'Khóa Tổng Hợp',
   'chuyen-de': 'Chuyên Đề Lẻ',
   'kinh-doanh': 'Gói Kinh Doanh',
 };
 
 const BLANK_COURSE: Omit<Course, 'id' | 'sort_order'> = {
-  name: '', category: 'chuyen-de', price: '', duration: '', description: '', image: '', active: true,
+  name: '', category: 'tong-hop', price: '', duration: '', description: '', image: '', active: true,
 };
 
 export default function AdminPage() {
@@ -415,6 +416,7 @@ export default function AdminPage() {
                     <div className="af-group">
                       <label>Loại *</label>
                       <select value={courseForm.category} onChange={e => setCourseForm(f => ({ ...f, category: e.target.value as Course['category'] }))}>
+                        <option value="tong-hop">Khóa Tổng Hợp</option>
                         <option value="chuyen-de">Chuyên Đề Lẻ</option>
                         <option value="kinh-doanh">Gói Kinh Doanh</option>
                       </select>
@@ -454,12 +456,12 @@ export default function AdminPage() {
             )}
 
             {/* COURSES TABLE */}
-            {(['chuyen-de', 'kinh-doanh'] as Course['category'][]).map(cat => {
+            {(['tong-hop', 'chuyen-de', 'kinh-doanh'] as Course['category'][]).map(cat => {
               const list = courses.filter(c => c.category === cat);
               return (
                 <div key={cat} style={{ marginBottom: '32px' }}>
                   <h3 className="admin-section-title" style={{ marginBottom: '12px' }}>
-                    <i className={`ti ti-${cat === 'chuyen-de' ? 'cup' : 'briefcase'}`}></i> {CAT_LABEL[cat]}
+                    <i className={`ti ti-${cat === 'tong-hop' ? 'school' : cat === 'chuyen-de' ? 'cup' : 'briefcase'}`}></i> {CAT_LABEL[cat]}
                     <span style={{ fontWeight: 400, color: 'var(--text-3)', marginLeft: '8px' }}>({list.length} khóa)</span>
                   </h3>
                   <div className="admin-table-wrap">
