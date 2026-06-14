@@ -23,7 +23,6 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser();
 
-  // Protect /cong-thuc — redirect to /login if not authenticated
   if (request.nextUrl.pathname.startsWith('/cong-thuc') && !user) {
     const url = request.nextUrl.clone();
     url.pathname = '/login';
@@ -31,7 +30,6 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Redirect logged-in users away from /login
   if (request.nextUrl.pathname === '/login' && user) {
     const url = request.nextUrl.clone();
     url.pathname = '/cong-thuc';
