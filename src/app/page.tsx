@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { createClient } from '@/lib/supabase/client';
 
 const HERO_IMGS = [
   'images/gallery/Life-styles-with-person/~12321.webp',
@@ -90,6 +91,8 @@ export default function HomePage() {
   const [lb, setLb] = useState<{ src: string; alt: string } | null>(null);
   const [fanIdx, setFanIdx] = useState(0);
   const [formDone, setFormDone] = useState(false);
+  const [formSubmitting, setFormSubmitting] = useState(false);
+  const [formError, setFormError] = useState('');
   const [selectedCourse, setSelectedCourse] = useState('');
 
   const fanTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -134,12 +137,18 @@ export default function HomePage() {
     }, 700);
   };
 
-  const submitForm = (e: React.FormEvent) => {
+  const submitForm = async (e: React.FormEvent) => {
     e.preventDefault();
     const name = nameRef.current?.value.trim();
     const phone = phoneRef.current?.value.trim();
     const course = courseRef.current?.value;
-    if (!name || !phone || !course) { alert('Vui lòng điền đầy đủ thông tin.'); return; }
+    if (!name || !phone || !course) { setFormError('Vui lòng điền đầy đủ thông tin.'); return; }
+    setFormSubmitting(true);
+    setFormError('');
+    const supabase = createClient();
+    const { error } = await supabase.from('leads').insert({ name, phone, course });
+    setFormSubmitting(false);
+    if (error) { setFormError('Có lỗi xảy ra, vui lòng thử lại hoặc liên hệ Zalo.'); return; }
     setFormDone(true);
   };
 
@@ -493,7 +502,10 @@ export default function HomePage() {
                       <option value="Khác / Tư vấn thêm">💬 Khác / Tư vấn thêm</option>
                     </select>
                   </div>
-                  <button type="submit" className="f-submit"><i className="ti ti-send"></i> Tư Vấn Miễn Phí</button>
+                  {formError && <p className="f-error"><i className="ti ti-alert-circle"></i> {formError}</p>}
+                  <button type="submit" className="f-submit" disabled={formSubmitting}>
+                    {formSubmitting ? <><i className="ti ti-loader-2 spin"></i> Đang gửi...</> : <><i className="ti ti-send"></i> Tư Vấn Miễn Phí</>}
+                  </button>
                   <p className="f-note"><i className="ti ti-shield-check" style={{fontSize:'0.8rem',verticalAlign:'middle'}}></i> Thông tin được bảo mật tuyệt đối — không chia sẻ với bên thứ ba.</p>
                 </form>
               </>
