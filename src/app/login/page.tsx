@@ -4,12 +4,21 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 
+function normalizePhone(raw: string): string {
+  let p = raw.replace(/\s+/g, '').replace(/^(\+84|84)/, '0');
+  return p;
+}
+
+function phoneToEmail(phone: string): string {
+  return `${normalizePhone(phone)}@hocviencaphehcm.vn`;
+}
+
 function LoginForm() {
   const router = useRouter();
   const params = useSearchParams();
   const redirect = params.get('redirect') ?? '/cong-thuc';
 
-  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -17,12 +26,23 @@ function LoginForm() {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError('');
+
+    const digits = normalizePhone(phone).replace(/\D/g, '');
+    if (digits.length < 9 || digits.length > 11) {
+      setError('Số điện thoại không hợp lệ.');
+      return;
+    }
+
     setLoading(true);
     const supabase = createClient();
-    const { error: err } = await supabase.auth.signInWithPassword({ email, password });
+    const { error: err } = await supabase.auth.signInWithPassword({
+      email: phoneToEmail(phone),
+      password,
+    });
     setLoading(false);
+
     if (err) {
-      setError('Email hoặc mật khẩu không đúng. Vui lòng thử lại.');
+      setError('Số điện thoại hoặc mật khẩu không đúng. Vui lòng thử lại.');
     } else {
       router.push(redirect);
       router.refresh();
@@ -32,17 +52,18 @@ function LoginForm() {
   return (
     <form className="login-form" onSubmit={handleSubmit}>
       <div className="lf-group">
-        <label htmlFor="email">Email</label>
+        <label htmlFor="phone">Số điện thoại</label>
         <div className="lf-input-wrap">
-          <i className="ti ti-mail"></i>
+          <i className="ti ti-phone"></i>
           <input
-            id="email"
-            type="email"
-            placeholder="email@example.com"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
+            id="phone"
+            type="tel"
+            placeholder="0912 345 678"
+            value={phone}
+            onChange={e => setPhone(e.target.value)}
             required
-            autoComplete="email"
+            autoComplete="tel"
+            inputMode="numeric"
           />
         </div>
       </div>
@@ -62,7 +83,11 @@ function LoginForm() {
         </div>
       </div>
 
-      {error && <div className="lf-error"><i className="ti ti-alert-circle"></i> {error}</div>}
+      {error && (
+        <div className="lf-error">
+          <i className="ti ti-alert-circle"></i> {error}
+        </div>
+      )}
 
       <button type="submit" className="btn btn-primary lf-submit" disabled={loading}>
         {loading
