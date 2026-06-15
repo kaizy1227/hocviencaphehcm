@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
+import type { LarkStudent } from '@/lib/lark';
 
 const HERO_IMGS = [
   'images/gallery/Life-styles-with-person/~12321.webp',
@@ -102,6 +103,7 @@ export default function HomePage() {
   const [tongHopCourses, setTongHopCourses] = useState(TONG_HOP_DISPLAY);
   const [leCourses, setLeCourses] = useState(LE_COURSES);
   const [services, setServices] = useState(SERVICES);
+  const [larkStudents, setLarkStudents] = useState<LarkStudent[]>([]);
 
   const fanTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const marqueeRef1 = useRef<HTMLDivElement>(null);
@@ -192,6 +194,13 @@ export default function HomePage() {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') closeLb(); };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
+  }, []);
+
+  useEffect(() => {
+    fetch('/api/lark-students')
+      .then(r => r.json())
+      .then(d => { if (d.students?.length) setLarkStudents(d.students); })
+      .catch(() => {});
   }, []);
 
   const fanPositions = [-2, -1, 0, 1, 2];
@@ -409,6 +418,25 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* LARK LIVE GRADUATES */}
+      {larkStudents.length > 0 && (
+        <div className="lk-strip-wrap">
+          <p className="lk-strip-label"><i className="ti ti-live-photo"></i> Học viên mới nhận chứng nhận</p>
+          <div className="lk-strip">
+            {larkStudents.map(s => (
+              <div key={s.id} className="lk-card">
+                <img src={s.photoUrl} alt={s.name} loading="lazy" />
+                <div className="lk-card-info">
+                  <span className="lk-card-name">{s.name}</span>
+                  {s.course && <span className="lk-card-course">{s.course}</span>}
+                  {s.date && <span className="lk-card-date">{s.date}</span>}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* MASONRY */}
       <section className="section" style={{background:'var(--white)'}}>

@@ -1099,6 +1099,46 @@ footer { background: var(--bg-dark); }
 .nl-add-btn:hover { background: var(--accent-dark); }
 .nl-add-btn.added { background: #388e3c; }
 
+/* ── Lark Live Graduates Strip ── */
+.lk-strip-wrap {
+  background: var(--bg-alt); padding: 20px 0 28px; border-top: 1px solid var(--border);
+}
+.lk-strip-label {
+  text-align: center; font-size: 0.8rem; font-weight: 600; color: var(--accent);
+  letter-spacing: 0.04em; text-transform: uppercase; margin: 0 0 16px;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.lk-strip-label i { font-size: 0.95rem; }
+.lk-strip {
+  display: flex; gap: 14px; overflow-x: auto; padding: 4px 24px 8px;
+  scrollbar-width: none;
+}
+.lk-strip::-webkit-scrollbar { display: none; }
+.lk-card {
+  flex: 0 0 160px; background: var(--white); border-radius: 12px;
+  overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,.07);
+  border: 1px solid var(--border); transition: transform .2s;
+}
+.lk-card:hover { transform: translateY(-3px); }
+.lk-card img {
+  width: 100%; height: 140px; object-fit: cover; object-position: top; display: block;
+}
+.lk-card-info {
+  padding: 10px 10px 12px; display: flex; flex-direction: column; gap: 3px;
+}
+.lk-card-name { font-size: 0.82rem; font-weight: 700; color: var(--text-1); line-height: 1.3; }
+.lk-card-course {
+  font-size: 0.7rem; font-weight: 600; color: var(--accent);
+  background: #FFF0E6; border-radius: 4px; padding: 2px 6px;
+  align-self: flex-start; margin-top: 2px;
+}
+.lk-card-date { font-size: 0.68rem; color: var(--text-3); margin-top: 1px; }
+
+@media (max-width: 640px) {
+  .lk-card { flex: 0 0 130px; }
+  .lk-card img { height: 110px; }
+}
+
 /* Order summary modal (Zalo checkout) */
 .order-modal-bg {
   position: fixed; inset: 0; background: rgba(20,6,0,.65); backdrop-filter: blur(4px);
