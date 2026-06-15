@@ -47,11 +47,11 @@ export default function NguyenLieuPage() {
           <h1>Bảng Giá <em>Nguyên Liệu</em></h1>
           <p>Nguyên liệu pha chế chất lượng cao — cung cấp cho quán cà phê, trà sữa và học viên.</p>
           <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginTop: '20px' }}>
-            <a href="https://zalo.me/0834790555" target="_blank" rel="noopener noreferrer" className="btn btn-primary">
+            <a href="https://zalo.me/0931433684" target="_blank" rel="noopener noreferrer" className="btn btn-primary">
               <i className="ti ti-brand-zalo"></i> Đặt hàng qua Zalo
             </a>
-            <a href="tel:0834790555" className="btn btn-outline" style={{ color: '#fff', borderColor: 'rgba(255,255,255,0.4)' }}>
-              <i className="ti ti-phone"></i> 0834 790 555
+            <a href="tel:0931433684" className="btn btn-outline" style={{ color: '#fff', borderColor: 'rgba(255,255,255,0.4)' }}>
+              <i className="ti ti-phone"></i> 0931.433.684
             </a>
           </div>
         </div>
@@ -127,11 +127,11 @@ export default function NguyenLieuPage() {
             <h3>Cần đặt số lượng lớn?</h3>
             <p>Liên hệ trực tiếp để được báo giá sỉ và hỗ trợ giao hàng tận nơi.</p>
             <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap', marginTop: '20px' }}>
-              <a href="https://zalo.me/0834790555" target="_blank" rel="noopener noreferrer" className="btn btn-primary">
+              <a href="https://zalo.me/0931433684" target="_blank" rel="noopener noreferrer" className="btn btn-primary">
                 <i className="ti ti-brand-zalo"></i> Chat Zalo ngay
               </a>
-              <a href="tel:0834790555" className="btn btn-outline">
-                <i className="ti ti-phone"></i> Gọi 0834 790 555
+              <a href="tel:0931433684" className="btn btn-outline">
+                <i className="ti ti-phone"></i> Gọi 0931.433.684
               </a>
             </div>
           </div>

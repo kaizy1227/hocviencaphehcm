@@ -131,9 +131,6 @@ export default function CartDrawer() {
                   ? <><i className="ti ti-circle-check"></i> Đã sao chép!</>
                   : <><i className="ti ti-copy"></i> Sao chép nội dung</>}
               </button>
-              <a className="order-zalo-btn" href="https://zalo.me/0834790555" target="_blank" rel="noopener noreferrer">
-                <i className="ti ti-brand-zalo"></i> Mở Zalo
-              </a>
             </div>
           </div>
         </div>
