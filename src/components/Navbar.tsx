@@ -8,6 +8,7 @@ import { useCart } from '@/context/CartContext';
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [expanded, setExpanded] = useState<string | null>(null);
   const [phone, setPhone] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const pathname = usePathname();
@@ -51,7 +52,8 @@ export default function Navbar() {
   }
 
   const { totalItems, openCart } = useCart();
-  const close = () => setMenuOpen(false);
+  const close = () => { setMenuOpen(false); setExpanded(null); };
+  const toggle = (key: string) => setExpanded(e => e === key ? null : key);
   const isHome = pathname === '/';
 
   return (
@@ -112,29 +114,41 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {/* HAMBURGER MENU — all links including # children */}
+      {/* HAMBURGER MENU */}
       <div className={`mob-menu${menuOpen ? ' open' : ''}`} id="mobMenu">
-        <Link href="/" onClick={close}>Trang Chủ</Link>
-        <Link href="/gioi-thieu" onClick={close}>Giới Thiệu</Link>
-        <Link href="/cong-thuc" onClick={close}>Công Thức Pha Chế</Link>
-        <Link href="/nguyen-lieu" onClick={close}>Nguyên Liệu</Link>
+
+        {/* Trang Chủ — accordion with # children */}
+        <div className="mob-parent">
+          <button className={`mob-parent-btn${expanded === 'home' ? ' open' : ''}`} onClick={() => toggle('home')}>
+            <span>Trang Chủ</span>
+            <i className="ti ti-chevron-down mob-chevron"></i>
+          </button>
+          <div className={`mob-children${expanded === 'home' ? ' open' : ''}`}>
+            <Link href="/" className="mob-child" onClick={close}><i className="ti ti-home"></i> Trang Chủ</Link>
+            <Link href="/#courses" className="mob-child" onClick={close}><i className="ti ti-school"></i> Khóa Học</Link>
+            <Link href="/#services" className="mob-child" onClick={close}><i className="ti ti-briefcase"></i> Gói Kinh Doanh</Link>
+            <Link href="/#menu" className="mob-child" onClick={close}><i className="ti ti-coffee"></i> Menu Đồ Uống</Link>
+            <Link href="/#about" className="mob-child" onClick={close}><i className="ti ti-info-circle"></i> Về Chúng Tôi</Link>
+            <Link href="/#hoc-vien" className="mob-child" onClick={close}><i className="ti ti-users"></i> Học Viên</Link>
+            <Link href="/#dangky" className="mob-child" onClick={close}><i className="ti ti-pencil"></i> Đăng Ký / Liên Hệ</Link>
+          </div>
+        </div>
+
+        <Link href="/gioi-thieu" className={`mob-top-link${pathname === '/gioi-thieu' ? ' active' : ''}`} onClick={close}>Giới Thiệu</Link>
+        <Link href="/cong-thuc" className={`mob-top-link${pathname === '/cong-thuc' ? ' active' : ''}`} onClick={close}>Công Thức Pha Chế</Link>
+        <Link href="/nguyen-lieu" className={`mob-top-link${pathname === '/nguyen-lieu' ? ' active' : ''}`} onClick={close}>Nguyên Liệu</Link>
+
         <div className="mob-divider" />
-        <Link href="/#courses" onClick={close}>Khóa Học</Link>
-        <Link href="/#services" onClick={close}>Gói Kinh Doanh</Link>
-        <Link href="/#menu" onClick={close}>Menu Đồ Uống</Link>
-        <Link href="/#about" onClick={close}>Về Chúng Tôi</Link>
-        <Link href="/#hoc-vien" onClick={close}>Học Viên</Link>
-        <Link href="/#dangky" onClick={close}>Đăng Ký / Liên Hệ</Link>
-        <div className="mob-divider" />
+
         {phone ? (
           <>
-            {isAdmin && <Link href="/admin" onClick={close}>⚙ Quản Lý Admin</Link>}
+            {isAdmin && <Link href="/admin" onClick={close} className="mob-top-link">⚙ Quản Lý Admin</Link>}
             <button className="mob-logout" onClick={() => { logout(); close(); }}>
               <i className="ti ti-logout"></i> Đăng Xuất ({phone})
             </button>
           </>
         ) : (
-          <Link href="/login" onClick={close}>Đăng Nhập Nội Bộ</Link>
+          <Link href="/login" onClick={close} className="mob-top-link">Đăng Nhập Nội Bộ</Link>
         )}
       </div>
     </>
