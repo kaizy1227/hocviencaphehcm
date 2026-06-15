@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getLarkToken } from '@/lib/lark';
 
 const LARK_API = 'https://open.larksuite.com/open-apis';
+const VIEW_ID = 'vewMHUtKed'; // "Hình ảnh trao bằng" view
 
 async function safeJson(res: Response) {
   const text = await res.text();
@@ -18,20 +19,14 @@ export async function GET() {
     const tableId = process.env.LARK_TABLE_ID;
     const h = { Authorization: `Bearer ${token}` };
 
-    // List tables in this base
-    const tablesRes = await fetch(`${LARK_API}/bitable/v1/apps/${appToken}/tables`, {
-      headers: h, cache: 'no-store',
-    });
-    const tablesJson = await safeJson(tablesRes);
-
-    // Fetch 2 records to see field names
+    // Fetch 2 records using the photo view
     const recRes = await fetch(
-      `${LARK_API}/bitable/v1/apps/${appToken}/tables/${tableId}/records?page_size=2`,
+      `${LARK_API}/bitable/v1/apps/${appToken}/tables/${tableId}/records?page_size=2&view_id=${VIEW_ID}`,
       { headers: h, cache: 'no-store' },
     );
     const recJson = await safeJson(recRes);
 
-    return NextResponse.json({ appToken, tableId, tables: tablesJson?.data, records: recJson });
+    return NextResponse.json({ appToken, tableId, viewId: VIEW_ID, records: recJson });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
