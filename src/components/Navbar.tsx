@@ -59,10 +59,11 @@ export default function Navbar() {
       <nav className={`navbar${scrolled ? ' scrolled' : ''}`} id="nav">
         <div className="container">
           <div className="nav-inner">
+            {/* LEFT — parent pages only */}
             <div className="nav-left">
               <Link href="/" className={`nav-link${isHome ? ' active' : ''}`}>Trang Chủ</Link>
-              <Link href="/#courses" className="nav-link">Khóa Học</Link>
-              <Link href="/#services" className="nav-link">Gói Kinh Doanh</Link>
+              <Link href="/gioi-thieu" className={`nav-link${pathname === '/gioi-thieu' ? ' active' : ''}`}>Giới Thiệu</Link>
+              <Link href="/cong-thuc" className={`nav-link${pathname === '/cong-thuc' ? ' active' : ''}`}>Công Thức</Link>
             </div>
 
             <Link href="/" className="nav-logo">
@@ -73,11 +74,10 @@ export default function Navbar() {
               </div>
             </Link>
 
+            {/* RIGHT — parent pages + actions */}
             <div className="nav-right">
-              <Link href="/#menu" className="nav-link">Menu</Link>
-              <Link href="/gioi-thieu" className={`nav-link${pathname === '/gioi-thieu' ? ' active' : ''}`}>Giới Thiệu</Link>
-              <Link href="/cong-thuc" className={`nav-link${pathname === '/cong-thuc' ? ' active' : ''}`}>Công Thức</Link>
-              <Link href="/#dangky" className="nav-link">Liên Hệ</Link>
+              <Link href="/nguyen-lieu" className={`nav-link${pathname === '/nguyen-lieu' ? ' active' : ''}`}>Nguyên Liệu</Link>
+              <Link href="/gioi-thieu#lien-he" className="nav-link">Liên Hệ</Link>
 
               {phone ? (
                 <div className="nav-user">
@@ -112,16 +112,20 @@ export default function Navbar() {
         </div>
       </nav>
 
+      {/* HAMBURGER MENU — all links including # children */}
       <div className={`mob-menu${menuOpen ? ' open' : ''}`} id="mobMenu">
         <Link href="/" onClick={close}>Trang Chủ</Link>
-        <Link href="/#about" onClick={close}>Về Chúng Tôi</Link>
+        <Link href="/gioi-thieu" onClick={close}>Giới Thiệu</Link>
+        <Link href="/cong-thuc" onClick={close}>Công Thức Pha Chế</Link>
+        <Link href="/nguyen-lieu" onClick={close}>Nguyên Liệu</Link>
+        <div className="mob-divider" />
         <Link href="/#courses" onClick={close}>Khóa Học</Link>
         <Link href="/#services" onClick={close}>Gói Kinh Doanh</Link>
         <Link href="/#menu" onClick={close}>Menu Đồ Uống</Link>
+        <Link href="/#about" onClick={close}>Về Chúng Tôi</Link>
         <Link href="/#hoc-vien" onClick={close}>Học Viên</Link>
-        <Link href="/gioi-thieu" onClick={close}>Giới Thiệu</Link>
-        <Link href="/cong-thuc" onClick={close}>Công Thức Pha Chế</Link>
         <Link href="/#dangky" onClick={close}>Đăng Ký / Liên Hệ</Link>
+        <div className="mob-divider" />
         {phone ? (
           <>
             {isAdmin && <Link href="/admin" onClick={close}>⚙ Quản Lý Admin</Link>}

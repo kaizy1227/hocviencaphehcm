@@ -79,7 +79,8 @@ button { font-family: inherit; }
 .mob-menu a { font-size: 0.95rem; font-weight: 500; color: var(--text-2); padding: 13px 16px; border-radius: 8px; border-bottom: 1px solid var(--border); transition: all 0.2s; }
 .mob-menu a:last-child { border-bottom: none; }
 .mob-menu a:hover { color: var(--accent); background: #FFF5ED; }
-.mob-logout { font-size: 0.95rem; font-weight: 600; color: #c0392b; padding: 13px 16px; border-radius: 8px; border: none; background: none; cursor: pointer; text-align: left; width: 100%; display: flex; align-items: center; gap: 8px; border-top: 1px solid var(--border); margin-top: 4px; }
+.mob-divider { height: 1px; background: var(--border); margin: 6px 0; }
+.mob-logout { font-size: 0.95rem; font-weight: 600; color: #c0392b; padding: 13px 16px; border-radius: 8px; border: none; background: none; cursor: pointer; text-align: left; width: 100%; display: flex; align-items: center; gap: 8px; }
 .mob-logout:hover { background: #fff5f5; }
 
 /* Navbar user state */
