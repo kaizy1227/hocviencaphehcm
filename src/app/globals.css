@@ -560,8 +560,9 @@ footer { background: var(--bg-dark); }
 
 /* ── CONG THUC page (new layout) ── */
 .ct-hero {
-  position: relative; width: 100%; min-height: 60vh;
-  display: flex; align-items: center;
+  position: relative; display: block;
+  width: 100%; box-sizing: border-box;
+  min-height: 60vh;
   overflow: hidden; background: var(--bg-dark);
 }
 .ct-hero-bg {
