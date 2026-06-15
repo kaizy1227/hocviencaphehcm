@@ -11,41 +11,38 @@ export async function GET() {
   try {
     const token = await getLarkToken();
 
-    // Step 1: look up wiki node → get bitable app_token
-    const wikiRes = await fetch(
-      `${LARK_API}/wiki/v2/spaces/nodes?token=${WIKI_TOKEN}`,
-      { headers: { Authorization: `Bearer ${token}` }, cache: 'no-store' },
-    );
-    const wikiJson = await wikiRes.json();
+    // Try 3 different wiki node endpoints to find the one that works
+    const attempts: Record<string, any> = {};
 
-    if (wikiJson.code !== 0) {
-      return NextResponse.json({ step: 'wiki_lookup_failed', wikiJson });
-    }
+    // Attempt 1: GET /wiki/v2/nodes (no space_id needed in some versions)
+    const r1 = await fetch(`${LARK_API}/wiki/v2/nodes?token=${WIKI_TOKEN}`, {
+      headers: { Authorization: `Bearer ${token}` }, cache: 'no-store',
+    });
+    attempts.nodes_v2 = await r1.json();
 
-    const node = wikiJson.data?.node;
-    const appToken = node?.obj_token;  // bitable app_token
-    const objType  = node?.obj_type;   // should be "bitable"
+    // Attempt 2: GET /wiki/v1/nodes/{node_token}
+    const r2 = await fetch(`${LARK_API}/wiki/v1/nodes/${WIKI_TOKEN}`, {
+      headers: { Authorization: `Bearer ${token}` }, cache: 'no-store',
+    });
+    attempts.nodes_v1 = await r2.json();
 
-    if (!appToken) {
-      return NextResponse.json({ step: 'no_obj_token', node });
-    }
+    // Attempt 3: GET /drive/v1/metas (batch file meta lookup)
+    const r3 = await fetch(`${LARK_API}/drive/v1/metas/batch_query`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ request_docs: [{ doc_token: WIKI_TOKEN, doc_type: 'wiki' }], with_url: true }),
+      cache: 'no-store',
+    });
+    attempts.drive_meta = await r3.json();
 
-    // Step 2: list all tables inside this base
-    const tablesRes = await fetch(
-      `${LARK_API}/bitable/v1/apps/${appToken}/tables`,
-      { headers: { Authorization: `Bearer ${token}` }, cache: 'no-store' },
-    );
-    const tablesJson = await tablesRes.json();
+    // Extract app_token from whichever succeeded
+    const appToken =
+      attempts.nodes_v2?.data?.node?.obj_token ||
+      attempts.nodes_v1?.data?.node?.obj_token ||
+      attempts.drive_meta?.data?.metas?.[0]?.doc_token ||
+      null;
 
-    // Step 3: peek 2 records from the table_id we have
-    const tableId = process.env.LARK_TABLE_ID;
-    const recRes = await fetch(
-      `${LARK_API}/bitable/v1/apps/${appToken}/tables/${tableId}/records?page_size=2`,
-      { headers: { Authorization: `Bearer ${token}` }, cache: 'no-store' },
-    );
-    const recJson = await recRes.json();
-
-    return NextResponse.json({ objType, appToken, tables: tablesJson.data, records: recJson });
+    return NextResponse.json({ appToken, attempts });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
