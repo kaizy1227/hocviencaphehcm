@@ -138,6 +138,17 @@ export default function Navbar() {
         <Link href="/cong-thuc" className={`mob-top-link${pathname === '/cong-thuc' ? ' active' : ''}`} onClick={close}>Công Thức Pha Chế</Link>
         <Link href="/nguyen-lieu" className={`mob-top-link${pathname === '/nguyen-lieu' ? ' active' : ''}`} onClick={close}>Nguyên Liệu</Link>
 
+        {/* Hình Ảnh — accordion */}
+        <div className="mob-parent">
+          <button className={`mob-parent-btn${expanded === 'hinh-anh' ? ' open' : ''}`} onClick={() => toggle('hinh-anh')}>
+            <span>Hình Ảnh</span>
+            <i className="ti ti-chevron-down mob-chevron"></i>
+          </button>
+          <div className={`mob-children${expanded === 'hinh-anh' ? ' open' : ''}`}>
+            <Link href="/hinh-anh/trao-bang" className="mob-child" onClick={close}><i className="ti ti-certificate"></i> Trao Bằng</Link>
+          </div>
+        </div>
+
         <div className="mob-divider" />
 
         {phone ? (

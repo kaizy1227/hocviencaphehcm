@@ -62,11 +62,10 @@ export async function fetchLarkStudents(): Promise<LarkStudent[]> {
           : '';
 
       const attachments: any[] = f['Hình ảnh trao bằng'] ?? [];
-      // Prefer jpg, then any image
+      // HEIC (iPhone) cannot be displayed in browsers — skip
       const img =
         attachments.find(a => a.type === 'image/jpeg' || /\.(jpg|jpeg)$/i.test(a.name ?? '')) ??
-        attachments.find(a => /\.(png|webp|heic)$/i.test(a.name ?? '')) ??
-        attachments[0];
+        attachments.find(a => a.type === 'image/png' || a.type === 'image/webp' || /\.(png|webp)$/i.test(a.name ?? ''));
 
       let photoUrl: string | null = null;
       if (img?.tmp_url) {
