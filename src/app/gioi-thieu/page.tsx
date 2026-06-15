@@ -121,77 +121,63 @@ export default function GioiThieuPage() {
       {/* INSTRUCTORS */}
       <section className="section gv-section">
         <div className="container">
-          <div style={{textAlign:'center'}}>
+          <div style={{textAlign:'center', marginBottom:'48px'}}>
             <span className="tag">Đội Ngũ Giảng Viên</span>
-            <h2 className="title">Học Từ Người Đã Làm<br /><em>Trước Bạn</em></h2>
-            <p className="sub" style={{maxWidth:'560px', margin:'0 auto'}}>Mỗi giảng viên tại Học Viện Cà Phê đều xuất thân từ thực tế — từng quản lý quán, xây dựng chuỗi, đào tạo hàng chục nhân viên trước khi đứng lớp.</p>
+            <h2 className="title">Học Từ Người Đã Làm<br /><em>Thực Chiến</em></h2>
+            <p className="sub" style={{maxWidth:'580px', margin:'0 auto'}}>Mỗi giảng viên đều đã trực tiếp quản lý quán, xây dựng chuỗi và setup menu cho hàng chục cơ sở — trước khi đứng lớp truyền nghề.</p>
           </div>
 
-          <div className="gv-grid">
-            {/* GIẢNG VIÊN 1 — Đoàn Hồng Liêm */}
-            <div className="gv-card">
-              <div className="gv-photo-wrap">
-                <img
-                  className="gv-photo"
-                  src="/images/giangvien_Liem.jpg"
-                  alt="Thầy Đoàn Hồng Liêm"
-                  onError={e => { e.currentTarget.style.display='none'; (e.currentTarget.nextElementSibling as HTMLElement)?.style.setProperty('display','flex'); }}
-                />
-                <div className="gv-photo-placeholder" style={{display:'none'}}>ĐL</div>
-              </div>
-              <div className="gv-info">
-                <div className="gv-name">Đoàn Hồng Liêm</div>
-                <div className="gv-role">☕ Chuyên Gia Cà Phê &amp; Vận Hành</div>
-                <div className="gv-badges">
+          <div className="gv-list">
+            {/* THẦY LIÊM */}
+            <div className="gv-hero-card">
+              <img className="gv-hero-bg" src="/images/giangvien_Liem.jpg" alt="" style={{objectPosition:'top center'}} />
+              <div className="gv-hero-overlay" />
+              <div className="gv-hero-content">
+                <div className="gv-hero-badges">
                   <span className="gv-badge">10 năm kinh nghiệm</span>
                   <span className="gv-badge">Cựu QL Phúc Long</span>
                   <span className="gv-badge">Sinh 1996</span>
                 </div>
-                <p className="gv-desc">
-                  Gắn bó với ngành F&amp;B từ năm 18 tuổi, Thầy Liêm từng kinh qua nhiều vị trí từ barista đến quản lý tại <strong>Phúc Long</strong> — thương hiệu trà &amp; cà phê hàng đầu Việt Nam. 10 năm đứng bar và quản lý vận hành đã tôi luyện nên một chuyên gia hiểu cà phê theo chiều sâu thực sự: từ cách chiết xuất espresso chuẩn đến tối ưu chi phí nguyên liệu và xây dựng quy trình đào tạo nhân sự bài bản cho quán mới mở.
+                <div className="gv-hero-name">Đoàn Hồng Liêm</div>
+                <div className="gv-hero-role">☕ Chuyên Gia Cà Phê &amp; Vận Hành</div>
+                <p className="gv-hero-desc">
+                  Gắn bó với ngành F&amp;B từ năm 18 tuổi, Thầy Liêm từng đảm nhiệm nhiều vị trí từ barista đến quản lý tại <strong>Phúc Long</strong> — thương hiệu cà phê &amp; trà hàng đầu Việt Nam. Không dừng lại ở vận hành, Thầy Liêm còn trực tiếp <strong>setup menu và đào tạo nhân sự</strong> cho hàng chục quán mới mở khắp cả nước.
                 </p>
-                <blockquote className="gv-quote">
-                  "Tôi đứng bar từ năm 18 tuổi và hiểu rằng: một ly cà phê ngon không bao giờ là ngẫu nhiên. Đó là tích lũy của kỹ thuật, tâm huyết — và tôi muốn truyền trọn điều đó cho các bạn."
+                <blockquote className="gv-hero-quote">
+                  "Một ly cà phê ngon không bao giờ là ngẫu nhiên — đó là tích lũy của kỹ thuật và tâm huyết. Tôi muốn truyền trọn điều đó cho các bạn."
                 </blockquote>
                 <div className="gv-skills">
-                  <span className="gv-skill">☕ Cà phê máy & espresso</span>
-                  <span className="gv-skill">🔧 Vận hành quán</span>
-                  <span className="gv-skill">👥 Đào tạo nhân sự</span>
-                  <span className="gv-skill">📊 Tối ưu chi phí</span>
+                  <span className="gv-skill-pill">☕ Cà phê máy & espresso</span>
+                  <span className="gv-skill-pill">🔧 Vận hành quán</span>
+                  <span className="gv-skill-pill">🍽️ Setup menu</span>
+                  <span className="gv-skill-pill">👥 Đào tạo nhân sự</span>
                 </div>
               </div>
             </div>
 
-            {/* GIẢNG VIÊN 2 — Bùi Trần Thiên Ân */}
-            <div className="gv-card">
-              <div className="gv-photo-wrap">
-                <img
-                  className="gv-photo"
-                  src="/images/giangvien_An.jpg"
-                  alt="Thầy Bùi Trần Thiên Ân"
-                  onError={e => { e.currentTarget.style.display='none'; (e.currentTarget.nextElementSibling as HTMLElement)?.style.setProperty('display','flex'); }}
-                />
-                <div className="gv-photo-placeholder" style={{display:'none'}}>TÂ</div>
-              </div>
-              <div className="gv-info">
-                <div className="gv-name">Bùi Trần Thiên Ân</div>
-                <div className="gv-role">🍵 Chuyên Gia Trà &amp; Sáng Tạo Hot Trend</div>
-                <div className="gv-badges">
+            {/* THẦY ÂN */}
+            <div className="gv-hero-card gv-hero-reverse">
+              <img className="gv-hero-bg" src="/images/giangvien_An.jpg" alt="" style={{objectPosition:'top center'}} />
+              <div className="gv-hero-overlay" />
+              <div className="gv-hero-content">
+                <div className="gv-hero-badges">
                   <span className="gv-badge">8 năm kinh nghiệm</span>
-                  <span className="gv-badge">Cựu trainer AiCha (~20 cơ sở)</span>
+                  <span className="gv-badge">Cựu Trainer AiCha</span>
                   <span className="gv-badge">Sinh 1997</span>
                 </div>
-                <p className="gv-desc">
-                  Với 8 năm trong ngành F&amp;B, Thầy Ân đã xây dựng hệ thống đào tạo và quản lý nhân sự cho chuỗi trà sữa <strong>AiCha</strong> — phát triển đến gần 20 cửa hàng. Am hiểu sâu về các dòng trà từ truyền thống Việt Nam đến oolong Đài Loan, Thầy Ân có khả năng đặc biệt trong việc phát triển đồ uống <strong>hot trend</strong> — nhiều công thức sáng tạo đã trở thành bestseller thực sự tại chuỗi AiCha trong thời gian đó.
+                <div className="gv-hero-name">Bùi Trần Thiên Ân</div>
+                <div className="gv-hero-role">🍵 Chuyên Gia Trà &amp; Sáng Tạo Hot Trend</div>
+                <p className="gv-hero-desc">
+                  Với 8 năm trong ngành F&amp;B, Thầy Ân từng là trainer chính cho chuỗi trà sữa <strong>AiCha</strong> — có thời điểm đạt đến gần 20 cửa hàng. Ngoài ra, Thầy Ân đã trực tiếp <strong>setup menu và phát triển công thức</strong> cho hàng chục quán trà sữa &amp; cà phê, tạo ra nhiều đồ uống <strong>hot trend</strong> được thị trường đón nhận.
                 </p>
-                <blockquote className="gv-quote">
-                  "8 năm xây dựng menu cho chuỗi trà sữa dạy tôi điều này: người học nhanh nhất không phải người thông minh nhất — mà là người dám thử, dám sai và không bỏ cuộc."
+                <blockquote className="gv-hero-quote">
+                  "Người học nhanh nhất không phải người thông minh nhất — mà là người dám thử, dám sai và không bỏ cuộc."
                 </blockquote>
                 <div className="gv-skills">
-                  <span className="gv-skill">🍵 Trà Việt Nam & Đài Loan</span>
-                  <span className="gv-skill">✨ Sáng tạo hot trend</span>
-                  <span className="gv-skill">👥 Đào tạo chuỗi</span>
-                  <span className="gv-skill">🧋 Trà sữa & topping</span>
+                  <span className="gv-skill-pill">🍵 Trà Việt Nam & Đài Loan</span>
+                  <span className="gv-skill-pill">✨ Sáng tạo hot trend</span>
+                  <span className="gv-skill-pill">🍽️ Setup menu</span>
+                  <span className="gv-skill-pill">👥 Đào tạo chuỗi</span>
                 </div>
               </div>
             </div>

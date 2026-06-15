@@ -1,4 +1,4 @@
-@import '@tabler/icons-webfont/dist/tabler-icons.min.css';
+﻿@import '@tabler/icons-webfont/dist/tabler-icons.min.css';
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -569,26 +569,30 @@ footer { background: var(--bg-dark); }
 .ct-modal-cta { text-align: center; padding-top: 8px; border-top: 1px solid var(--border); }
 
 /* ── GIẢNG VIÊN section ── */
-.gv-section { background: var(--white); }
-.gv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-top: 48px; }
-.gv-card { background: var(--bg); border-radius: var(--r-xl); padding: 32px 28px; display: flex; gap: 24px; border: 1.5px solid var(--border); transition: box-shadow .2s; }
-.gv-card:hover { box-shadow: 0 8px 32px rgba(176,90,16,0.1); border-color: rgba(176,90,16,0.25); }
-.gv-photo-wrap { flex-shrink: 0; }
-.gv-photo { width: 110px; height: 110px; border-radius: 50%; object-fit: cover; border: 3px solid var(--bg-alt); box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
-.gv-photo-placeholder { width: 110px; height: 110px; border-radius: 50%; background: linear-gradient(135deg, var(--accent) 0%, #d97a30 100%); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; font-weight: 900; color: #fff; letter-spacing: 1px; box-shadow: 0 4px 16px rgba(176,90,16,0.28); }
-.gv-info { flex: 1; min-width: 0; }
-.gv-name { font-size: 1.15rem; font-weight: 800; color: var(--text); margin-bottom: 3px; }
-.gv-role { color: var(--accent); font-size: 0.82rem; font-weight: 700; letter-spacing: 0.01em; margin-bottom: 12px; }
-.gv-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
-.gv-badge { background: rgba(176,90,16,0.1); color: var(--accent); border-radius: 99px; padding: 3px 11px; font-size: 0.73rem; font-weight: 700; }
-.gv-desc { font-size: 0.845rem; color: var(--text-2); line-height: 1.75; margin-bottom: 14px; }
-.gv-desc strong { color: var(--text); }
-.gv-skills { display: flex; flex-wrap: wrap; gap: 7px; }
-.gv-skill { background: var(--white); border: 1.5px solid var(--border); border-radius: var(--r-sm); padding: 4px 11px; font-size: 0.74rem; color: var(--text-2); font-weight: 500; }
-.gv-quote { margin: 0 0 14px; padding: 10px 14px; border-left: 3px solid var(--accent); background: rgba(176,90,16,0.05); border-radius: 0 var(--r-sm) var(--r-sm) 0; font-size: 0.83rem; color: var(--text-2); line-height: 1.7; font-style: italic; }
-@media(max-width:600px){ .gv-quote { text-align: left; border-left: none; border-top: 3px solid var(--accent); border-radius: 0 0 var(--r-sm) var(--r-sm); padding: 10px 12px; } }
-@media(max-width:900px){ .gv-grid { grid-template-columns: 1fr; gap: 20px; } }
-@media(max-width:600px){ .gv-card { flex-direction: column; align-items: center; text-align: center; padding: 28px 20px; } .gv-badges, .gv-skills { justify-content: center; } }
+.gv-section { background: var(--bg-dark); padding-top: 72px; padding-bottom: 72px; }
+.gv-section .tag { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.75); border-color: rgba(255,255,255,0.15); }
+.gv-section .title { color: #fff; }
+.gv-section .title em { color: #e8954a; }
+.gv-section .sub { color: rgba(255,255,255,0.55); }
+.gv-list { display: flex; flex-direction: column; gap: 28px; }
+.gv-hero-card { position: relative; height: 500px; border-radius: var(--r-xl); overflow: hidden; box-shadow: 0 24px 64px rgba(0,0,0,0.36); }
+.gv-hero-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: top center; transition: transform .6s ease; }
+.gv-hero-card:hover .gv-hero-bg { transform: scale(1.03); }
+.gv-hero-overlay { position: absolute; inset: 0; background: linear-gradient(100deg, rgba(8,3,1,0) 0%, rgba(8,3,1,0.08) 28%, rgba(8,3,1,0.78) 52%, rgba(8,3,1,0.97) 100%); }
+.gv-hero-reverse .gv-hero-overlay { background: linear-gradient(260deg, rgba(8,3,1,0) 0%, rgba(8,3,1,0.08) 28%, rgba(8,3,1,0.78) 52%, rgba(8,3,1,0.97) 100%); }
+.gv-hero-content { position: absolute; right: 0; top: 0; bottom: 0; width: 57%; display: flex; flex-direction: column; justify-content: center; padding: 48px 52px; }
+.gv-hero-reverse .gv-hero-content { right: auto; left: 0; }
+.gv-hero-name { font-size: 2rem; font-weight: 900; color: #fff; margin-bottom: 4px; line-height: 1.15; letter-spacing: -0.02em; }
+.gv-hero-role { color: #e8954a; font-size: 0.8rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 18px; }
+.gv-hero-badges { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 18px; }
+.gv-badge { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.88); border-radius: 99px; padding: 4px 13px; font-size: 0.72rem; font-weight: 700; border: 1px solid rgba(255,255,255,0.18); }
+.gv-hero-desc { font-size: 0.875rem; color: rgba(255,255,255,0.65); line-height: 1.78; margin-bottom: 18px; }
+.gv-hero-desc strong { color: rgba(255,255,255,0.92); }
+.gv-hero-quote { margin: 0 0 20px; padding: 13px 18px; border-left: 3px solid #e8954a; background: rgba(255,255,255,0.06); border-radius: 0 10px 10px 0; font-size: 0.845rem; color: rgba(255,255,255,0.88); line-height: 1.72; font-style: italic; }
+.gv-skills { display: flex; flex-wrap: wrap; gap: 8px; }
+.gv-skill-pill { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.16); border-radius: 99px; padding: 5px 13px; font-size: 0.73rem; color: rgba(255,255,255,0.72); font-weight: 600; }
+@media(max-width:960px){ .gv-hero-card { height: 520px; } .gv-hero-content, .gv-hero-reverse .gv-hero-content { width: 65%; padding: 36px 40px; } }
+@media(max-width:640px){ .gv-hero-card { height: 580px; } .gv-hero-overlay { background: linear-gradient(to top, rgba(8,3,1,0.97) 46%, rgba(8,3,1,0.55) 68%, transparent 100%) !important; } .gv-hero-content, .gv-hero-reverse .gv-hero-content { width: 100%; right: 0; left: 0; top: auto; bottom: 0; padding: 20px 22px 28px; justify-content: flex-end; } .gv-hero-name { font-size: 1.5rem; } .gv-hero-desc { display: none; } }
 
 /* ── LOGIN page ── */
 .login-page { min-height: 100dvh; display: flex; align-items: center; justify-content: center; background: var(--bg-alt); padding: 24px; }
