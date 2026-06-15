@@ -575,15 +575,14 @@ footer { background: var(--bg-dark); }
 .gv-section .title em { color: #e8954a; }
 .gv-section .sub { color: rgba(255,255,255,0.55); }
 .gv-list { display: flex; flex-direction: column; gap: 28px; }
-.gv-hero-card { position: relative; height: 500px; border-radius: var(--r-xl); overflow: hidden; box-shadow: 0 24px 64px rgba(0,0,0,0.36); }
-.gv-hero-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: top center; transition: transform .6s ease; }
-.gv-hero-card:hover .gv-hero-bg { transform: scale(1.03); }
-.gv-hero-overlay { position: absolute; inset: 0; background: linear-gradient(100deg, rgba(8,3,1,0) 0%, rgba(8,3,1,0.08) 28%, rgba(8,3,1,0.78) 52%, rgba(8,3,1,0.97) 100%); }
-.gv-hero-reverse .gv-hero-overlay { background: linear-gradient(260deg, rgba(8,3,1,0) 0%, rgba(8,3,1,0.08) 28%, rgba(8,3,1,0.78) 52%, rgba(8,3,1,0.97) 100%); }
-.gv-hero-content { position: absolute; right: 0; top: 0; bottom: 0; width: 57%; display: flex; flex-direction: column; justify-content: center; padding: 48px 52px; }
-.gv-hero-reverse .gv-hero-content { right: auto; left: 0; }
-.gv-hero-name { font-size: 2rem; font-weight: 900; color: #fff; margin-bottom: 4px; line-height: 1.15; letter-spacing: -0.02em; }
-.gv-hero-role { color: #e8954a; font-size: 0.8rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 18px; }
+.gv-card2 { display: grid; grid-template-columns: 42% 58%; border-radius: var(--r-xl); overflow: hidden; box-shadow: 0 20px 56px rgba(0,0,0,0.32); min-height: 480px; }
+.gv-card2-reverse { grid-template-columns: 58% 42%; }
+.gv-photo-side { position: relative; overflow: hidden; }
+.gv-photo-side img { width: 100%; height: 100%; object-fit: cover; object-position: top center; transition: transform .6s ease; display: block; }
+.gv-card2:hover .gv-photo-side img { transform: scale(1.04); }
+.gv-text-side { background: var(--bg-dark); padding: 44px 48px; display: flex; flex-direction: column; justify-content: center; }
+.gv-hero-name { font-size: 1.9rem; font-weight: 900; color: #fff; margin-bottom: 4px; line-height: 1.15; letter-spacing: -0.02em; }
+.gv-hero-role { color: #e8954a; font-size: 0.78rem; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 18px; }
 .gv-hero-badges { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 18px; }
 .gv-badge { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.88); border-radius: 99px; padding: 4px 13px; font-size: 0.72rem; font-weight: 700; border: 1px solid rgba(255,255,255,0.18); }
 .gv-hero-desc { font-size: 0.875rem; color: rgba(255,255,255,0.65); line-height: 1.78; margin-bottom: 18px; }
@@ -591,9 +590,8 @@ footer { background: var(--bg-dark); }
 .gv-hero-quote { margin: 0 0 20px; padding: 13px 18px; border-left: 3px solid #e8954a; background: rgba(255,255,255,0.06); border-radius: 0 10px 10px 0; font-size: 0.845rem; color: rgba(255,255,255,0.88); line-height: 1.72; font-style: italic; }
 .gv-skills { display: flex; flex-wrap: wrap; gap: 8px; }
 .gv-skill-pill { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.16); border-radius: 99px; padding: 5px 13px; font-size: 0.73rem; color: rgba(255,255,255,0.72); font-weight: 600; }
-@media(max-width:960px){ .gv-hero-card { height: 520px; } .gv-hero-content, .gv-hero-reverse .gv-hero-content { width: 65%; padding: 36px 40px; } }
-@media(max-width:640px){ .gv-hero-card { height: 580px; } .gv-hero-overlay { background: linear-gradient(to top, rgba(8,3,1,0.97) 46%, rgba(8,3,1,0.55) 68%, transparent 100%) !important; } .gv-hero-content, .gv-hero-reverse .gv-hero-content { width: 100%; right: 0; left: 0; top: auto; bottom: 0; padding: 20px 22px 28px; justify-content: flex-end; } .gv-hero-name { font-size: 1.5rem; } .gv-hero-desc { display: none; } }
-
+@media(max-width:860px){ .gv-card2, .gv-card2-reverse { grid-template-columns: 1fr; min-height: auto; } .gv-photo-side { height: 320px; } .gv-card2-reverse .gv-photo-side { order: -1; } .gv-text-side { padding: 32px 28px; } .gv-hero-name { font-size: 1.5rem; } }
+@media(max-width:480px){ .gv-photo-side { height: 260px; } .gv-text-side { padding: 24px 20px; } }
 /* ── LOGIN page ── */
 .login-page { min-height: 100dvh; display: flex; align-items: center; justify-content: center; background: var(--bg-alt); padding: 24px; }
 .login-card { background: var(--white); border-radius: var(--r-xl); padding: 40px 36px; max-width: 400px; width: 100%; box-shadow: 0 8px 40px rgba(30,8,0,0.1); }

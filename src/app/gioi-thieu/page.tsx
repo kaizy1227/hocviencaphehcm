@@ -128,20 +128,22 @@ export default function GioiThieuPage() {
           </div>
 
           <div className="gv-list">
-            {/* THẦY LIÊM */}
-            <div className="gv-hero-card">
-              <img className="gv-hero-bg" src="/images/giangvien_Liem.jpg" alt="" style={{objectPosition:'top center'}} />
-              <div className="gv-hero-overlay" />
-              <div className="gv-hero-content">
+
+            {/* THẦY LIÊM — ảnh trái, nội dung phải */}
+            <div className="gv-card2">
+              <div className="gv-photo-side">
+                <img src="/images/giangvien_Liem.jpg" alt="Thầy Đoàn Hồng Liêm" />
+              </div>
+              <div className="gv-text-side">
                 <div className="gv-hero-badges">
+                  <span className="gv-badge">Trưởng PĐT Học Viện</span>
                   <span className="gv-badge">10 năm kinh nghiệm</span>
                   <span className="gv-badge">Cựu QL Phúc Long</span>
-                  <span className="gv-badge">Sinh 1996</span>
                 </div>
                 <div className="gv-hero-name">Đoàn Hồng Liêm</div>
-                <div className="gv-hero-role">☕ Chuyên Gia Cà Phê &amp; Vận Hành</div>
+                <div className="gv-hero-role">☕ Trưởng Phòng Đào Tạo · Chuyên Gia Cà Phê</div>
                 <p className="gv-hero-desc">
-                  Gắn bó với ngành F&amp;B từ năm 18 tuổi, Thầy Liêm từng đảm nhiệm nhiều vị trí từ barista đến quản lý tại <strong>Phúc Long</strong> — thương hiệu cà phê &amp; trà hàng đầu Việt Nam. Không dừng lại ở vận hành, Thầy Liêm còn trực tiếp <strong>setup menu và đào tạo nhân sự</strong> cho hàng chục quán mới mở khắp cả nước.
+                  Gắn bó với ngành F&amp;B từ năm 18 tuổi, Thầy Liêm từng đảm nhiệm nhiều vị trí từ barista đến quản lý tại <strong>Phúc Long</strong> — thương hiệu cà phê &amp; trà hàng đầu Việt Nam. Hiện là <strong>Trưởng Phòng Đào Tạo</strong> tại Học Viện Cà Phê Chi Nhánh Miền Nam, Thầy Liêm đã trực tiếp setup menu và đào tạo nhân sự cho hàng chục quán mới mở khắp cả nước.
                 </p>
                 <blockquote className="gv-hero-quote">
                   "Một ly cà phê ngon không bao giờ là ngẫu nhiên — đó là tích lũy của kỹ thuật và tâm huyết. Tôi muốn truyền trọn điều đó cho các bạn."
@@ -155,32 +157,34 @@ export default function GioiThieuPage() {
               </div>
             </div>
 
-            {/* THẦY ÂN */}
-            <div className="gv-hero-card gv-hero-reverse">
-              <img className="gv-hero-bg" src="/images/giangvien_An.jpg" alt="" style={{objectPosition:'top center'}} />
-              <div className="gv-hero-overlay" />
-              <div className="gv-hero-content">
+            {/* THẦY ÂN — nội dung trái, ảnh phải */}
+            <div className="gv-card2 gv-card2-reverse">
+              <div className="gv-text-side">
                 <div className="gv-hero-badges">
+                  <span className="gv-badge">Nền tảng Nghệ Thuật</span>
                   <span className="gv-badge">8 năm kinh nghiệm</span>
                   <span className="gv-badge">Cựu Trainer AiCha</span>
-                  <span className="gv-badge">Sinh 1997</span>
                 </div>
                 <div className="gv-hero-name">Bùi Trần Thiên Ân</div>
-                <div className="gv-hero-role">🍵 Chuyên Gia Trà &amp; Sáng Tạo Hot Trend</div>
+                <div className="gv-hero-role">🍵 Chuyên Gia Sáng Tạo Đồ Uống</div>
                 <p className="gv-hero-desc">
-                  Với 8 năm trong ngành F&amp;B, Thầy Ân từng là trainer chính cho chuỗi trà sữa <strong>AiCha</strong> — có thời điểm đạt đến gần 20 cửa hàng. Ngoài ra, Thầy Ân đã trực tiếp <strong>setup menu và phát triển công thức</strong> cho hàng chục quán trà sữa &amp; cà phê, tạo ra nhiều đồ uống <strong>hot trend</strong> được thị trường đón nhận.
+                  Xuất thân từ sinh viên <strong>ngành Nghệ Thuật</strong>, Thầy Ân mang gu thẩm mỹ độc đáo vào từng ly đồ uống. Với 8 năm kinh nghiệm F&amp;B — từng là trainer chuỗi AiCha có thời điểm đạt gần 20 cửa hàng — Thầy sở hữu kho công thức <strong>trà trái cây, trà sữa</strong> với decor bắt mắt. Những ly nước đẹp trong ảnh chụp tại Học Viện đều do chính tay Thầy Ân làm và decor.
                 </p>
                 <blockquote className="gv-hero-quote">
                   "Người học nhanh nhất không phải người thông minh nhất — mà là người dám thử, dám sai và không bỏ cuộc."
                 </blockquote>
                 <div className="gv-skills">
-                  <span className="gv-skill-pill">🍵 Trà Việt Nam & Đài Loan</span>
+                  <span className="gv-skill-pill">🍵 Trà trái cây & trà sữa</span>
                   <span className="gv-skill-pill">✨ Sáng tạo hot trend</span>
+                  <span className="gv-skill-pill">🎨 Decor & trình bày</span>
                   <span className="gv-skill-pill">🍽️ Setup menu</span>
-                  <span className="gv-skill-pill">👥 Đào tạo chuỗi</span>
                 </div>
               </div>
+              <div className="gv-photo-side">
+                <img src="/images/giangvien_An.jpg" alt="Thầy Bùi Trần Thiên Ân" />
+              </div>
             </div>
+
           </div>
         </div>
       </section>
