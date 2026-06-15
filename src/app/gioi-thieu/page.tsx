@@ -138,12 +138,12 @@ export default function GioiThieuPage() {
                 <div className="gv-hero-badges">
                   <span className="gv-badge">Trưởng PĐT Học Viện</span>
                   <span className="gv-badge">10 năm kinh nghiệm</span>
-                  <span className="gv-badge">Cựu QL Phúc Long</span>
+                  <span className="gv-badge">Cựu QL chuỗi Coffee</span>
                 </div>
                 <div className="gv-hero-name">Đoàn Hồng Liêm</div>
                 <div className="gv-hero-role">☕ Trưởng Phòng Đào Tạo · Chuyên Gia Cà Phê</div>
                 <p className="gv-hero-desc">
-                  Gắn bó với ngành F&amp;B từ năm 18 tuổi, Thầy Liêm từng đảm nhiệm nhiều vị trí từ barista đến quản lý tại <strong>Phúc Long</strong> — thương hiệu cà phê &amp; trà hàng đầu Việt Nam. Hiện là <strong>Trưởng Phòng Đào Tạo</strong> tại Học Viện Cà Phê Chi Nhánh Miền Nam, Thầy Liêm đã trực tiếp setup menu và đào tạo nhân sự cho hàng chục quán mới mở khắp cả nước.
+                  Gắn bó với ngành F&amp;B như một lẽ tự nhiên - và kể từ đó, chưa một lần rời bước. Hành trình ấy bắt đầu từ vị trí barista rồi dần vươn lên quản lý tại nhiều chuỗi quán cà phê lớn, tích lũy qua từng ca làm, từng tách cà phê, từng đội nhóm được dẫn dắt. Những năm tháng ấy đã tôi luyện nên một người thầy không chỉ giỏi nghề, mà còn thấu hiểu nghề đến tận gốc rễ. Hiện là <strong>Trưởng Phòng Đào Tạo</strong> tại Học Viện Cà Phê Chi Nhánh Miền Nam, Giảng viên Liêm đã trực tiếp xây dựng menu và đào tạo nhân sự cho hàng chục quán mới mở trải dài khắp cả nước - mỗi nơi anh đặt chân đến, đều để lại một dấu ấn khó phai.
                 </p>
                 <blockquote className="gv-hero-quote">
                   "Một ly cà phê ngon không bao giờ là ngẫu nhiên — đó là tích lũy của kỹ thuật và tâm huyết. Tôi muốn truyền trọn điều đó cho các bạn."
@@ -162,13 +162,13 @@ export default function GioiThieuPage() {
               <div className="gv-text-side">
                 <div className="gv-hero-badges">
                   <span className="gv-badge">Nền tảng Nghệ Thuật</span>
-                  <span className="gv-badge">8 năm kinh nghiệm</span>
-                  <span className="gv-badge">Cựu Trainer AiCha</span>
+                  <span className="gv-badge">6 năm kinh nghiệm</span>
+                  <span className="gv-badge">Cựu Trainer chuỗi trà sữa AiCha</span>
                 </div>
                 <div className="gv-hero-name">Bùi Trần Thiên Ân</div>
                 <div className="gv-hero-role">🍵 Chuyên Gia Sáng Tạo Đồ Uống</div>
                 <p className="gv-hero-desc">
-                  Xuất thân từ sinh viên <strong>ngành Nghệ Thuật</strong>, Thầy Ân mang gu thẩm mỹ độc đáo vào từng ly đồ uống. Với 8 năm kinh nghiệm F&amp;B — từng là trainer chuỗi AiCha có thời điểm đạt gần 20 cửa hàng — Thầy sở hữu kho công thức <strong>trà trái cây, trà sữa</strong> với decor bắt mắt. Những ly nước đẹp trong ảnh chụp tại Học Viện đều do chính tay Thầy Ân làm và decor.
+                  Xuất thân từ mái trường <strong>Nghệ Thuật</strong>, Giảng viên Thiên Ân mang trong mình một gu thẩm mỹ riêng biệt — thứ ngôn ngữ không lời mà anh dùng để thổi linh hồn vào từng ly thức uống. Trải qua 6 năm gắn bó với ngành F&amp;B, từng đảm nhận vai trò trainer cho chuỗi trà sữa AiCha ở thời điểm thương hiệu vươn tới gần 20 cửa hàng, anh tích lũy cho mình một kho công thức phong phú về <strong>trà trái cây, trà sữa</strong> nơi hương vị tinh tế hòa quyện cùng nghệ thuật trang trí bắt mắt. Mỗi ly nước được chụp lại tại Học Viện đều do chính tay anh tạo ra và trình bày — một sự tỉ mỉ nho nhỏ, nhưng đủ để nói lên tất cả.
                 </p>
                 <blockquote className="gv-hero-quote">
                   "Người học nhanh nhất không phải người thông minh nhất — mà là người dám thử, dám sai và không bỏ cuộc."

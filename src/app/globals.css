@@ -633,7 +633,19 @@ footer { background: var(--bg-dark); }
 .lf-input-wrap input:focus { border-color: var(--accent); }
 .lf-error { background: #fef2f2; border: 1px solid #fecaca; border-radius: var(--r-sm); padding: 10px 14px; font-size: 0.82rem; color: #b91c1c; display: flex; align-items: center; gap: 7px; }
 .lf-submit { width: 100%; justify-content: center; margin-top: 4px; }
-.login-footer { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 24px; font-size: 0.78rem; color: var(--text-3); }
+.login-register-cta {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  margin-top: 20px; padding: 14px 16px;
+  background: var(--bg-alt); border-radius: 10px;
+  font-size: 0.84rem; color: var(--text-3);
+}
+.login-register-link {
+  display: inline-flex; align-items: center; gap: 5px;
+  color: var(--accent); font-weight: 700; text-decoration: none;
+  transition: color .15s;
+}
+.login-register-link:hover { color: var(--accent-h); }
+.login-footer { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 16px; font-size: 0.78rem; color: var(--text-3); }
 .login-footer a { color: var(--text-3); text-decoration: none; } .login-footer a:hover { color: var(--accent); }
 @keyframes spin { to { transform: rotate(360deg); } }
 .spin { display: inline-block; animation: spin .7s linear infinite; }

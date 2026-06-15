@@ -112,6 +112,13 @@ export default function LoginPage() {
           <LoginForm />
         </Suspense>
 
+        <div className="login-register-cta">
+          <span>Chưa có tài khoản?</span>
+          <Link href="/dang-ky-hoc-vien" className="login-register-link">
+            <i className="ti ti-user-plus"></i> Đăng ký ngay
+          </Link>
+        </div>
+
         <div className="login-footer">
           <Link href="/">← Về trang chủ</Link>
           <span>·</span>
