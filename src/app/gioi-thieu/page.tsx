@@ -1,6 +1,60 @@
 'use client';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState, FormEvent } from 'react';
 import Link from 'next/link';
+import { createClient } from '@/lib/supabase/client';
+
+function LienHeForm() {
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [done, setDone] = useState(false);
+  const [error, setError] = useState('');
+
+  async function handleSubmit(e: FormEvent) {
+    e.preventDefault();
+    if (!name.trim() || !phone.trim()) { setError('Vui lòng điền tên và số điện thoại.'); return; }
+    setLoading(true); setError('');
+    const supabase = createClient();
+    const courseNote = message.trim() ? `Liên hệ chung: ${message.trim()}` : 'Liên hệ chung';
+    const { error: err } = await supabase.from('leads').insert({ name: name.trim(), phone: phone.trim(), course: courseNote, location: 'Không rõ' });
+    setLoading(false);
+    if (err) { setError('Có lỗi xảy ra, vui lòng thử lại hoặc nhắn Zalo.'); return; }
+    setDone(true);
+  }
+
+  if (done) return (
+    <div className="lh-success">
+      <div className="lh-success-ico"><i className="ti ti-circle-check"></i></div>
+      <h3>Đã nhận thông tin!</h3>
+      <p>Đội ngũ Học Viện sẽ liên hệ lại với bạn trong vòng 30 phút.</p>
+      <a href="https://zalo.me/0834790555" target="_blank" rel="noopener" className="lh-zalo-btn">
+        <i className="ti ti-brand-zalo"></i> Nhắn ngay qua Zalo
+      </a>
+    </div>
+  );
+
+  return (
+    <form className="lh-form" onSubmit={handleSubmit}>
+      <div className="lh-field">
+        <label>Họ và tên <span>*</span></label>
+        <input type="text" placeholder="Nguyễn Văn A" value={name} onChange={e => setName(e.target.value)} required />
+      </div>
+      <div className="lh-field">
+        <label>Số điện thoại <span>*</span></label>
+        <input type="tel" placeholder="0912 345 678" value={phone} onChange={e => setPhone(e.target.value)} required inputMode="numeric" />
+      </div>
+      <div className="lh-field">
+        <label>Nội dung (không bắt buộc)</label>
+        <textarea placeholder="Bạn muốn hỏi về khóa học nào? Hoặc cần tư vấn gì?" value={message} onChange={e => setMessage(e.target.value)} rows={4} />
+      </div>
+      {error && <p className="lh-error"><i className="ti ti-alert-circle"></i> {error}</p>}
+      <button type="submit" className="lh-submit" disabled={loading}>
+        {loading ? <><i className="ti ti-loader-2 spin"></i> Đang gửi...</> : <><i className="ti ti-send"></i> Gửi thông tin</>}
+      </button>
+    </form>
+  );
+}
 
 export default function GioiThieuPage() {
   const baristaRef = useRef<HTMLDivElement>(null);
@@ -244,6 +298,31 @@ export default function GioiThieuPage() {
               <div className="val-ico"><i className="ti ti-award"></i></div>
               <h3>Chất Lượng Thực Chiến</h3>
               <p>Mọi công thức, quy trình và kiến thức kinh doanh đều được rút ra từ kinh nghiệm vận hành quán thực tế — không phải lý thuyết sách vở hay sao chép từ nguồn khác.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* LIÊN HỆ */}
+      <section className="lh-section" id="lien-he">
+        <div className="container">
+          <div className="lh-inner">
+            {/* LEFT — info */}
+            <div className="lh-info">
+              <span className="section-tag">Liên Hệ</span>
+              <h2>Hãy Để Chúng Tôi<br />Tư Vấn Cho Bạn</h2>
+              <p>Điền form hoặc nhắn Zalo — đội ngũ sẽ phản hồi trong vòng 30 phút trong giờ hành chính.</p>
+              <ul className="lh-contacts">
+                <li><i className="ti ti-phone"></i><div><strong>Hotline</strong><span>0919 761 800</span></div></li>
+                <li><i className="ti ti-brand-zalo"></i><div><strong>Zalo</strong><a href="https://zalo.me/0834790555" target="_blank" rel="noopener">0834 790 555</a></div></li>
+                <li><i className="ti ti-map-pin"></i><div><strong>Địa chỉ</strong><span>241/19 Tân Kỳ Tân Quý, P. Tân Sơn Nhì, Q. Tân Phú, TP.HCM</span></div></li>
+                <li><i className="ti ti-clock"></i><div><strong>Giờ làm việc</strong><span>Thứ 2 – Thứ 7: 8:00 – 17:30</span></div></li>
+              </ul>
+            </div>
+            {/* RIGHT — form */}
+            <div className="lh-form-wrap">
+              <p className="lh-form-hed">Gửi thông tin tư vấn miễn phí</p>
+              <LienHeForm />
             </div>
           </div>
         </div>

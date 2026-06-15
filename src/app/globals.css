@@ -507,6 +507,44 @@ footer { background: var(--bg-dark); }
 .val-card h3 { font-size: 1.1rem; font-weight: 800; margin-bottom: 12px; }
 .val-card p { font-size: 0.88rem; color: var(--text-2); line-height: 1.7; }
 
+/* LIÊN HỆ */
+.lh-section { padding: 80px 0; background: var(--bg-alt); }
+.lh-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: start; }
+.lh-info { padding-top: 8px; }
+.lh-info h2 { font-size: clamp(1.6rem,2.8vw,2.2rem); font-weight: 900; color: var(--bg-dark); line-height: 1.2; margin: 12px 0 16px; }
+.lh-info > p { color: var(--text-2); line-height: 1.75; margin-bottom: 32px; }
+.lh-contacts { list-style: none; display: flex; flex-direction: column; gap: 18px; }
+.lh-contacts li { display: flex; align-items: flex-start; gap: 14px; }
+.lh-contacts li i { font-size: 1.15rem; color: var(--accent); margin-top: 2px; flex-shrink: 0; }
+.lh-contacts li div { display: flex; flex-direction: column; gap: 2px; }
+.lh-contacts li strong { font-size: 0.78rem; text-transform: uppercase; letter-spacing: .06em; color: var(--text-3); font-weight: 700; }
+.lh-contacts li span, .lh-contacts li a { font-size: 0.93rem; color: var(--text); text-decoration: none; line-height: 1.5; }
+.lh-contacts li a { color: var(--accent); font-weight: 600; }
+.lh-contacts li a:hover { text-decoration: underline; }
+
+.lh-form-wrap { background: #fff; border-radius: 16px; padding: 32px; box-shadow: 0 4px 24px rgba(0,0,0,.08); }
+.lh-form-hed { font-size: 1.05rem; font-weight: 800; color: var(--bg-dark); margin-bottom: 20px; }
+.lh-form { display: flex; flex-direction: column; gap: 16px; }
+.lh-field { display: flex; flex-direction: column; gap: 6px; }
+.lh-field label { font-size: 0.82rem; font-weight: 700; color: var(--text-2); }
+.lh-field label span { color: var(--accent); }
+.lh-field input, .lh-field textarea { border: 1.5px solid var(--border); border-radius: 10px; padding: 11px 14px; font-size: 0.92rem; color: var(--text); background: var(--bg); transition: border-color .2s; font-family: inherit; resize: vertical; }
+.lh-field input:focus, .lh-field textarea:focus { outline: none; border-color: var(--accent); }
+.lh-error { color: #c0392b; font-size: 0.83rem; display: flex; align-items: center; gap: 6px; }
+.lh-submit { background: var(--accent); color: #fff; border: none; border-radius: 10px; padding: 13px 24px; font-size: 0.93rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: background .2s; }
+.lh-submit:hover { background: #8f4509; }
+.lh-submit:disabled { opacity: .65; cursor: not-allowed; }
+.lh-success { text-align: center; padding: 24px 0; }
+.lh-success-ico { font-size: 3rem; color: #27ae60; margin-bottom: 12px; }
+.lh-success h3 { font-size: 1.2rem; font-weight: 800; color: var(--bg-dark); margin-bottom: 8px; }
+.lh-success p { color: var(--text-2); font-size: 0.9rem; margin-bottom: 20px; }
+.lh-zalo-btn { display: inline-flex; align-items: center; gap: 8px; background: #0068ff; color: #fff; font-weight: 700; font-size: 0.9rem; padding: 12px 22px; border-radius: 10px; text-decoration: none; transition: background .2s; }
+.lh-zalo-btn:hover { background: #0051cc; }
+@media (max-width: 768px) {
+  .lh-inner { grid-template-columns: 1fr; gap: 40px; }
+  .lh-form-wrap { padding: 24px; }
+}
+
 /* GT CTA */
 .gt-cta { position: relative; padding: 96px 0; overflow: hidden; }
 .gt-cta-bg { position: absolute; inset: 0; }
