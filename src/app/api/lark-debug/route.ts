@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import { getLarkToken } from '@/lib/lark';
 
 const LARK_API = 'https://open.larksuite.com/open-apis';
-const WIKI_TOKEN = 'HHFpwTjphiUo49kN3HJl9fc5gm1';
 
 async function safeJson(res: Response) {
   const text = await res.text();
@@ -15,45 +14,24 @@ export async function GET() {
   }
   try {
     const token = await getLarkToken();
-    const h = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
+    const appToken = process.env.LARK_BASE_APP_TOKEN;
+    const tableId = process.env.LARK_TABLE_ID;
+    const h = { Authorization: `Bearer ${token}` };
 
-    // Get drive metadata for the wiki node — returns obj_token (bitable app_token)
-    const metaRes = await fetch(`${LARK_API}/drive/v1/metas/batch_query`, {
-      method: 'POST',
-      headers: h,
-      body: JSON.stringify({
-        request_docs: [{ doc_token: WIKI_TOKEN, doc_type: 'wiki' }],
-        with_url: true,
-      }),
-      cache: 'no-store',
+    // List tables in this base
+    const tablesRes = await fetch(`${LARK_API}/bitable/v1/apps/${appToken}/tables`, {
+      headers: h, cache: 'no-store',
     });
-    const metaJson = await safeJson(metaRes);
+    const tablesJson = await safeJson(tablesRes);
 
-    // The wiki meta may return the base obj_token under extra_info or title
-    const meta = metaJson?.data?.metas?.[0];
+    // Fetch 2 records to see field names
+    const recRes = await fetch(
+      `${LARK_API}/bitable/v1/apps/${appToken}/tables/${tableId}/records?page_size=2`,
+      { headers: h, cache: 'no-store' },
+    );
+    const recJson = await safeJson(recRes);
 
-    // Also try listing wiki spaces to find our space_id, then get node info
-    const spacesRes = await fetch(`${LARK_API}/wiki/v2/spaces?page_size=20`, {
-      headers: { Authorization: `Bearer ${token}` },
-      cache: 'no-store',
-    });
-    const spacesJson = await safeJson(spacesRes);
-
-    // If we got spaces, try to find node in first space
-    let nodeInfo = null;
-    const spaces: any[] = spacesJson?.data?.items ?? [];
-    for (const space of spaces.slice(0, 3)) {
-      const nodeRes = await fetch(
-        `${LARK_API}/wiki/v2/spaces/${space.space_id}/nodes/${WIKI_TOKEN}`,
-        { headers: { Authorization: `Bearer ${token}` }, cache: 'no-store' }
-      );
-      const nodeJson = await safeJson(nodeRes);
-      if (nodeJson?.code === 0) { nodeInfo = nodeJson.data?.node; break; }
-    }
-
-    const appToken = nodeInfo?.obj_token ?? null;
-
-    return NextResponse.json({ appToken, nodeInfo, meta, spaces: spacesJson?.data });
+    return NextResponse.json({ appToken, tableId, tables: tablesJson?.data, records: recJson });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
