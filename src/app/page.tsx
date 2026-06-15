@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 
@@ -94,22 +95,15 @@ const SERVICES = [
 ];
 
 export default function HomePage() {
+  const router = useRouter();
   const [heroIdx, setHeroIdx] = useState(0);
   const [lb, setLb] = useState<{ src: string; alt: string } | null>(null);
   const [fanIdx, setFanIdx] = useState(0);
-  const [formDone, setFormDone] = useState(false);
-  const [formSubmitting, setFormSubmitting] = useState(false);
-  const [formError, setFormError] = useState('');
-  const [selectedCourse, setSelectedCourse] = useState('');
   const [tongHopCourses, setTongHopCourses] = useState(TONG_HOP_DISPLAY);
   const [leCourses, setLeCourses] = useState(LE_COURSES);
   const [services, setServices] = useState(SERVICES);
 
   const fanTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const nameRef = useRef<HTMLInputElement>(null);
-  const phoneRef = useRef<HTMLInputElement>(null);
-  const courseRef = useRef<HTMLSelectElement>(null);
-  const locationRef = useRef<HTMLSelectElement>(null);
   const marqueeRef1 = useRef<HTMLDivElement>(null);
   const marqueeRef2 = useRef<HTMLDivElement>(null);
   const masonryRef = useRef<HTMLDivElement>(null);
@@ -131,37 +125,7 @@ export default function HomePage() {
   };
 
   const dangKy = (course: string) => {
-    document.getElementById('dangky')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    setTimeout(() => {
-      setSelectedCourse(course);
-      if (courseRef.current) {
-        courseRef.current.focus();
-        courseRef.current.style.borderColor = '#B05A10';
-        courseRef.current.style.boxShadow = '0 0 0 3px rgba(176,90,16,0.12)';
-        setTimeout(() => {
-          if (courseRef.current) {
-            courseRef.current.style.borderColor = '';
-            courseRef.current.style.boxShadow = '';
-          }
-        }, 2200);
-      }
-    }, 700);
-  };
-
-  const submitForm = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const name = nameRef.current?.value.trim();
-    const phone = phoneRef.current?.value.trim();
-    const course = courseRef.current?.value;
-    const location = locationRef.current?.value;
-    if (!name || !phone || !course || !location) { setFormError('Vui lòng điền đầy đủ thông tin.'); return; }
-    setFormSubmitting(true);
-    setFormError('');
-    const supabase = createClient();
-    const { error } = await supabase.from('leads').insert({ name, phone, course, location });
-    setFormSubmitting(false);
-    if (error) { setFormError('Có lỗi xảy ra, vui lòng thử lại hoặc liên hệ Zalo.'); return; }
-    setFormDone(true);
+    router.push(`/dang-ky?course=${encodeURIComponent(course)}`);
   };
 
   useEffect(() => {
@@ -255,7 +219,7 @@ export default function HomePage() {
             <p className="hero-sub">Đào tạo pha chế cà phê, trà sữa và tư vấn mở quán bài bản — từ công thức, set up menu đến vận hành kinh doanh.</p>
             <div className="hero-btns">
               <Link href="#courses" className="btn btn-primary"><i className="ti ti-book-2"></i> Xem Khóa Học</Link>
-              <Link href="#dangky" className="btn btn-outline">Đăng Ký Tư Vấn</Link>
+              <Link href="/dang-ky" className="btn btn-outline">Đăng Ký Tư Vấn</Link>
             </div>
             <div className="hero-stats">
               <div className="h-stat"><div className="h-stat-n">11</div><div className="h-stat-l">Khóa &amp; chuyên đề</div></div>
@@ -301,7 +265,7 @@ export default function HomePage() {
         <div className="container">
           <div className="courses-head">
             <div><span className="tag">Khóa Pha Chế Tổng Hợp</span><h2 className="title">Các Khóa Học Pha Chế</h2></div>
-            <Link href="#dangky" className="btn btn-outline">Tư Vấn Thêm →</Link>
+            <Link href="/dang-ky" className="btn btn-outline">Tư Vấn Thêm →</Link>
           </div>
           <div className="course-grid">
             {tongHopCourses.map(c => (
@@ -363,7 +327,7 @@ export default function HomePage() {
                   <div className="check-row" key={t}><div className="check-dot"><i className="ti ti-check" style={{fontSize:'0.7rem'}}></i></div><span>{t}</span></div>
                 ))}
               </div>
-              <Link href="#dangky" className="btn btn-primary"><i className="ti ti-phone"></i> Liên Hệ Tư Vấn</Link>
+              <Link href="/dang-ky" className="btn btn-primary"><i className="ti ti-phone"></i> Liên Hệ Tư Vấn</Link>
             </div>
           </div>
         </div>
@@ -462,104 +426,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* CONTACT FORM */}
-      <section className="section" id="dangky">
-        <div className="container">
-          <div style={{textAlign:'center'}}>
-            <span className="tag">Đăng Ký Tư Vấn</span>
-            <h2 className="title">Bắt Đầu Hành Trình Kinh Doanh</h2>
-            <p className="sub" style={{maxWidth:'520px', margin:'0 auto'}}>Để lại thông tin — đội ngũ tư vấn sẽ liên hệ trong vòng <strong>30 phút</strong> để giải đáp mọi thắc mắc và đặt lịch học thử miễn phí.</p>
-          </div>
-          <div className="form-card">
-            {!formDone ? (
-              <>
-                <p className="form-hed">Thông tin đăng ký</p>
-                <p className="form-sub">Vui lòng điền đầy đủ để nhận tư vấn hoàn toàn miễn phí.</p>
-                <form onSubmit={submitForm} noValidate>
-                  <div className="fg">
-                    <label className="fl-lbl" htmlFor="f-name">Họ và Tên <em>*</em></label>
-                    <input className="fi" type="text" id="f-name" placeholder="Ví dụ: Nguyễn Văn An" required ref={nameRef} />
-                  </div>
-                  <div className="fg">
-                    <label className="fl-lbl" htmlFor="f-phone">Số Điện Thoại <em>*</em></label>
-                    <input className="fi" type="tel" id="f-phone" placeholder="Ví dụ: 0901 234 567" required ref={phoneRef} />
-                  </div>
-                  <div className="fg">
-                    <label className="fl-lbl" htmlFor="f-location">Khu vực của bạn <em>*</em></label>
-                    <select className="fs" id="f-location" required ref={locationRef} defaultValue="">
-                      <option value="" disabled>-- Chọn tỉnh / thành phố --</option>
-                      <optgroup label="Chi nhánh Học Viện Cà Phê">
-                        <option value="Hồ Chí Minh">🏙 Hồ Chí Minh (Chi nhánh HCM)</option>
-                        <option value="Hà Nội">🏛 Hà Nội (Chi nhánh Hà Nội)</option>
-                      </optgroup>
-                      <optgroup label="Miền Nam">
-                        <option value="Bình Dương">Bình Dương</option>
-                        <option value="Đồng Nai">Đồng Nai</option>
-                        <option value="Long An">Long An</option>
-                        <option value="Tiền Giang">Tiền Giang</option>
-                        <option value="Vũng Tàu">Vũng Tàu</option>
-                        <option value="Cần Thơ">Cần Thơ</option>
-                      </optgroup>
-                      <optgroup label="Miền Trung">
-                        <option value="Đà Nẵng">Đà Nẵng</option>
-                        <option value="Huế">Huế</option>
-                        <option value="Nha Trang">Nha Trang</option>
-                        <option value="Đà Lạt">Đà Lạt</option>
-                        <option value="Quy Nhơn">Quy Nhơn</option>
-                      </optgroup>
-                      <optgroup label="Miền Bắc">
-                        <option value="Hải Phòng">Hải Phòng</option>
-                        <option value="Hải Dương">Hải Dương</option>
-                        <option value="Bắc Ninh">Bắc Ninh</option>
-                        <option value="Nam Định">Nam Định</option>
-                      </optgroup>
-                      <option value="Tỉnh / Thành khác">Tỉnh / Thành khác</option>
-                    </select>
-                  </div>
-                  <div className="fg">
-                    <label className="fl-lbl" htmlFor="f-course">Bạn quan tâm đến khóa học / dịch vụ nào? <em>*</em></label>
-                    <select className="fs" id="f-course" required ref={courseRef} value={selectedCourse} onChange={e => setSelectedCourse(e.target.value)}>
-                      <option value="" disabled>-- Chọn khóa học hoặc dịch vụ --</option>
-                      <optgroup label="Khóa pha chế tổng hợp">
-                        <option value="Tổng Hợp Truyền Thống">🧋 Tổng Hợp Truyền Thống (3 ngày · 5.2tr)</option>
-                        <option value="Tổng Hợp Hiện Đại">🍵 Tổng Hợp Hiện Đại (4 ngày · 7.5tr)</option>
-                        <option value="Cà Phê Máy Nâng Cao">☕ Cà Phê Máy Nâng Cao (3 ngày · 8.3tr)</option>
-                      </optgroup>
-                      <optgroup label="Chuyên đề lẻ (1 ngày)">
-                        <option value="Cà Phê Máy Cơ Bản">Cà Phê Máy Cơ Bản (2.5tr)</option>
-                        <option value="Trà Sữa Hiện Đại">Trà Sữa Hiện Đại (2.5tr)</option>
-                        <option value="Trà Trái Cây & Matcha">Trà Trái Cây &amp; Matcha (2.5tr)</option>
-                        <option value="Đá Xay & Sinh Tố">Đá Xay &amp; Sinh Tố (2.5tr)</option>
-                        <option value="Trà Sữa Truyền Thống">Trà Sữa Truyền Thống (2.2tr)</option>
-                        <option value="Cà Phê Phin – Đá Xay & Sữa Chua">Cà Phê Phin – Đá Xay &amp; Sữa Chua (2.2tr)</option>
-                        <option value="Nâng Cấp Menu Nitro Soda">Nâng Cấp Menu Nitro Soda (2.5tr)</option>
-                        <option value="Khóa Chọn Món Kèm 1-1">Khóa Chọn Món Kèm 1–1 (3tr)</option>
-                      </optgroup>
-                      <optgroup label="Gói kinh doanh">
-                        <option value="Khóa Khởi Nghiệp">🚀 Khóa Khởi Nghiệp (4tr)</option>
-                        <option value="Gói Set Up Menu">📋 Gói Set Up Menu (7tr)</option>
-                        <option value="Đào Tạo Vận Hành">🏪 Đào Tạo Vận Hành (15tr)</option>
-                      </optgroup>
-                      <option value="Khác / Tư vấn thêm">💬 Khác / Tư vấn thêm</option>
-                    </select>
-                  </div>
-                  {formError && <p className="f-error"><i className="ti ti-alert-circle"></i> {formError}</p>}
-                  <button type="submit" className="f-submit" disabled={formSubmitting}>
-                    {formSubmitting ? <><i className="ti ti-loader-2 spin"></i> Đang gửi...</> : <><i className="ti ti-send"></i> Tư Vấn Miễn Phí</>}
-                  </button>
-                  <p className="f-note"><i className="ti ti-shield-check" style={{fontSize:'0.8rem',verticalAlign:'middle'}}></i> Thông tin được bảo mật tuyệt đối — không chia sẻ với bên thứ ba.</p>
-                </form>
-              </>
-            ) : (
-              <div className="f-ok" style={{display:'block'}}>
-                <div className="f-ok-ico">🎉</div>
-                <h3>Đăng ký thành công!</h3>
-                <p>Cảm ơn bạn. Tư vấn viên sẽ liên hệ trong vòng <strong>30 phút</strong>.</p>
-              </div>
-            )}
-          </div>
-        </div>
-      </section>
     </>
   );
 }

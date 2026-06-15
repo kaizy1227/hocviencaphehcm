@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
+import { useCart } from '@/context/CartContext';
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -49,6 +50,7 @@ export default function Navbar() {
     router.refresh();
   }
 
+  const { totalItems, openCart } = useCart();
   const close = () => setMenuOpen(false);
   const isHome = pathname === '/';
 
@@ -98,6 +100,10 @@ export default function Navbar() {
                 </Link>
               )}
 
+              <button className="nav-cart-btn" onClick={openCart} aria-label="Giỏ hàng">
+                <i className="ti ti-shopping-cart"></i>
+                {totalItems > 0 && <span className="nav-cart-badge">{totalItems}</span>}
+              </button>
               <button className="hamburger" onClick={() => setMenuOpen(o => !o)} aria-label="Menu">
                 <span></span><span></span><span></span>
               </button>

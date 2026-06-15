@@ -23,6 +23,12 @@ export async function proxy(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser();
 
+  if (request.nextUrl.pathname === '/dang-ky-hoc-vien' && user) {
+    const url = request.nextUrl.clone();
+    url.pathname = '/cong-thuc';
+    return NextResponse.redirect(url);
+  }
+
   if ((request.nextUrl.pathname.startsWith('/cong-thuc') || request.nextUrl.pathname.startsWith('/admin')) && !user) {
     const url = request.nextUrl.clone();
     url.pathname = '/login';
@@ -42,5 +48,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/cong-thuc', '/cong-thuc/(.*)', '/admin', '/admin/(.*)', '/login'],
+  matcher: ['/cong-thuc', '/cong-thuc/(.*)', '/admin', '/admin/(.*)', '/login', '/dang-ky-hoc-vien'],
 };

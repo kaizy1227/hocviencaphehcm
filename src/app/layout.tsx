@@ -4,6 +4,8 @@ import './globals.css';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import FloatingButtons from '@/components/FloatingButtons';
+import CartDrawer from '@/components/CartDrawer';
+import { CartProvider } from '@/context/CartContext';
 
 const beVietnam = Be_Vietnam_Pro({
   variable: '--font-be-vietnam',
@@ -17,15 +19,28 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: 'Học Viện Cà Phê | Nơi Khởi Nguồn Kinh Doanh Của Bạn',
+  metadataBase: new URL('https://hocviencaphehcm-next.vercel.app'),
+  title: {
+    default: 'Học Viện Cà Phê | Nơi Khởi Nguồn Kinh Doanh Của Bạn',
+    template: '%s | Học Viện Cà Phê HCM',
+  },
   description: 'Đào tạo pha chế cà phê, trà sữa và tư vấn mở quán bài bản — từ công thức, set up menu đến vận hành kinh doanh.',
   openGraph: {
+    siteName: 'Học Viện Cà Phê HCM',
     title: 'Học Viện Cà Phê | Nơi Khởi Nguồn Kinh Doanh Của Bạn',
     description: 'Đào tạo pha chế cà phê, trà sữa và tư vấn mở quán bài bản — từ công thức, set up menu đến vận hành kinh doanh.',
-    images: ['/images/gallery/Life-styles-with-person/~12816.webp'],
+    images: [{ url: '/images/about.jpg', width: 1200, height: 630, alt: 'Học Viện Cà Phê HCM' }],
+    url: 'https://hocviencaphehcm-next.vercel.app',
     type: 'website',
+    locale: 'vi_VN',
   },
-  twitter: { card: 'summary_large_image' },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Học Viện Cà Phê | Nơi Khởi Nguồn Kinh Doanh Của Bạn',
+    description: 'Đào tạo pha chế cà phê, trà sữa và tư vấn mở quán bài bản — từ công thức, set up menu đến vận hành kinh doanh.',
+    images: ['/images/about.jpg'],
+  },
+  alternates: { canonical: '/' },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -36,10 +51,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="apple-touch-icon" href="/images/logo.png" />
       </head>
       <body>
-        <Navbar />
-        <FloatingButtons />
-        {children}
-        <Footer />
+        <CartProvider>
+          <Navbar />
+          <FloatingButtons />
+          <CartDrawer />
+          {children}
+          <Footer />
+        </CartProvider>
       </body>
     </html>
   );
