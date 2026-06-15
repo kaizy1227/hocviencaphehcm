@@ -1,19 +1,32 @@
 'use client';
+import { useState } from 'react';
 import { useCart } from '@/context/CartContext';
 import Link from 'next/link';
 
 export default function CartDrawer() {
   const { items, totalItems, totalPrice, removeItem, updateQty, clearCart, isOpen, closeCart } = useCart();
+  const [showOrderModal, setShowOrderModal] = useState(false);
+  const [copied, setCopied] = useState(false);
 
-  const handleCheckout = () => {
-    if (items.length === 0) return;
-    const lines = items.map(i =>
-      `- ${i.name} (${i.unit}) x${i.quantity}: ${(i.price * i.quantity).toLocaleString('vi-VN')}đ`
-    ).join('\n');
-    const msg = `Xin chào Học Viện Cà Phê! Tôi muốn đặt nguyên liệu:\n${lines}\nTổng cộng: ${totalPrice.toLocaleString('vi-VN')}đ`;
-    try { navigator.clipboard.writeText(msg); } catch {}
-    window.open('https://zalo.me/0834790555', '_blank');
+  const orderText = items.length > 0
+    ? `Xin chào Học Viện Cà Phê!\nTôi muốn đặt nguyên liệu:\n${
+        items.map(i => `- ${i.name} (${i.unit}) x${i.quantity}: ${(i.price * i.quantity).toLocaleString('vi-VN')}đ`).join('\n')
+      }\nTổng cộng: ${totalPrice.toLocaleString('vi-VN')}đ`
+    : '';
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(orderText);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // fallback: select textarea
+      const ta = document.getElementById('order-text-ta') as HTMLTextAreaElement;
+      if (ta) { ta.select(); document.execCommand('copy'); setCopied(true); setTimeout(() => setCopied(false), 2000); }
+    }
   };
+
+  const handleOpenZalo = () => window.open('https://zalo.me/0834790555', '_blank');
 
   return (
     <>
@@ -69,12 +82,9 @@ export default function CartDrawer() {
                 <span>Tổng cộng</span>
                 <strong>{totalPrice.toLocaleString('vi-VN')}đ</strong>
               </div>
-              <button className="btn btn-primary cart-checkout" onClick={handleCheckout}>
+              <button className="btn btn-primary cart-checkout" onClick={() => setShowOrderModal(true)}>
                 <i className="ti ti-brand-zalo"></i> Đặt hàng qua Zalo
               </button>
-              <p className="cart-note">
-                <i className="ti ti-info-circle"></i> Nội dung đơn hàng sẽ được sao chép tự động, paste vào Zalo để hoàn tất.
-              </p>
               <button className="cart-clear" onClick={clearCart}>
                 <i className="ti ti-trash"></i> Xóa giỏ hàng
               </button>
@@ -82,6 +92,26 @@ export default function CartDrawer() {
           </>
         )}
       </div>
+
+      {/* Order modal */}
+      {showOrderModal && (
+        <div className="order-modal-bg" onClick={() => setShowOrderModal(false)}>
+          <div className="order-modal" onClick={e => e.stopPropagation()}>
+            <button className="order-modal-close" onClick={() => setShowOrderModal(false)}><i className="ti ti-x"></i></button>
+            <h3><i className="ti ti-clipboard-text"></i> Nội dung đơn hàng</h3>
+            <p className="order-modal-hint">Sao chép nội dung bên dưới, rồi paste vào Zalo để hoàn tất đặt hàng.</p>
+            <textarea id="order-text-ta" className="order-text-area" readOnly value={orderText} rows={8} />
+            <div className="order-modal-btns">
+              <button className="btn btn-outline order-copy-btn" onClick={handleCopy}>
+                {copied ? <><i className="ti ti-check"></i> Đã sao chép!</> : <><i className="ti ti-copy"></i> Sao chép nội dung</>}
+              </button>
+              <button className="btn btn-primary order-zalo-btn" onClick={handleOpenZalo}>
+                <i className="ti ti-brand-zalo"></i> Mở Zalo
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
