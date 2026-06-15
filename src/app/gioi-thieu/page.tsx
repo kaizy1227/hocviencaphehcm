@@ -313,10 +313,10 @@ export default function GioiThieuPage() {
               <h2>Hãy Để Chúng Tôi<br />Tư Vấn Cho Bạn</h2>
               <p>Điền form hoặc nhắn Zalo — đội ngũ sẽ phản hồi trong vòng 30 phút trong giờ hành chính.</p>
               <ul className="lh-contacts">
-                <li><i className="ti ti-phone"></i><div><strong>Hotline</strong><span>0919 761 800</span></div></li>
-                <li><i className="ti ti-brand-zalo"></i><div><strong>Zalo</strong><a href="https://zalo.me/0834790555" target="_blank" rel="noopener">0834 790 555</a></div></li>
-                <li><i className="ti ti-map-pin"></i><div><strong>Địa chỉ</strong><span>241/19 Tân Kỳ Tân Quý, P. Tân Sơn Nhì, Q. Tân Phú, TP.HCM</span></div></li>
-                <li><i className="ti ti-clock"></i><div><strong>Giờ làm việc</strong><span>Thứ 2 – Thứ 7: 8:00 – 17:30</span></div></li>
+                <li><i className="ti ti-phone"></i><div><strong>Hotline</strong><a href="tel:0834790555">0834.790.555</a></div></li>
+                <li><i className="ti ti-brand-zalo"></i><div><strong>Zalo</strong><a href="https://zalo.me/0834790555" target="_blank" rel="noopener">0834.790.555</a></div></li>
+                <li><i className="ti ti-map-pin"></i><div><strong>Địa chỉ</strong><span>26/23 Nguyễn Minh Hoàng, P. Bảy Hiền, Tân Bình, TP.HCM</span></div></li>
+                <li><i className="ti ti-clock"></i><div><strong>Giờ làm việc</strong><span>Thứ 2 – Thứ 7: 8h30 – 17h30</span></div></li>
               </ul>
             </div>
             {/* RIGHT — form */}
