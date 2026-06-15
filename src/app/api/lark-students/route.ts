@@ -9,9 +9,8 @@ export async function GET() {
   }
   try {
     const students = await fetchLarkStudents();
-    return NextResponse.json({ students });
-  } catch (err) {
-    console.error('[lark-students]', err);
-    return NextResponse.json({ students: [] });
+    return NextResponse.json({ students, count: students.length });
+  } catch (err: any) {
+    return NextResponse.json({ students: [], error: err.message, stack: err.stack?.slice(0, 500) });
   }
 }
