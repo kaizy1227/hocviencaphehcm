@@ -24,8 +24,8 @@
   --sh-lg:    0 8px 48px rgba(30,10,0,0.14);
 }
 
-html { scroll-behavior: smooth; }
-body { font-family: var(--font-be-vietnam), system-ui, sans-serif; background: var(--bg); color: var(--text); line-height: 1.65; overflow-x: hidden; }
+html { scroll-behavior: smooth; overflow-x: hidden; max-width: 100%; }
+body { font-family: var(--font-be-vietnam), system-ui, sans-serif; background: var(--bg); color: var(--text); line-height: 1.65; overflow-x: hidden; max-width: 100%; }
 img { max-width: 100%; display: block; }
 a { text-decoration: none; color: inherit; }
 ul { list-style: none; }
@@ -739,14 +739,15 @@ footer { background: var(--bg-dark); }
 .ct-course-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
 @media(max-width:640px){
   .ct-controls { flex-direction: column; align-items: stretch; gap: 8px; padding: 10px 0; }
-  .ct-cats { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; padding-bottom: 2px; }
+  .ct-cats { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; padding-bottom: 2px; min-width: 0; width: 100%; }
   .ct-cats::-webkit-scrollbar { display: none; }
   .ct-btn { flex-shrink: 0; }
   .ct-course-row { flex-direction: column; align-items: flex-start; gap: 7px; padding: 8px 0 2px; margin-top: 6px; }
-  .ct-courses { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; width: 100%; padding-bottom: 2px; }
+  .ct-courses { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; width: 100%; min-width: 0; padding-bottom: 2px; }
   .ct-courses::-webkit-scrollbar { display: none; }
   .ct-course-btn { flex-shrink: 0; }
   .ct-search-wrap { min-width: unset; width: 100%; }
+  .ct-controls-wrap { overflow: hidden; }
 }
 
 /* Hero overlay: solid dark (no gradient needed) */
