@@ -585,6 +585,8 @@ footer { background: var(--bg-dark); }
 .gv-desc strong { color: var(--text); }
 .gv-skills { display: flex; flex-wrap: wrap; gap: 7px; }
 .gv-skill { background: var(--white); border: 1.5px solid var(--border); border-radius: var(--r-sm); padding: 4px 11px; font-size: 0.74rem; color: var(--text-2); font-weight: 500; }
+.gv-quote { margin: 0 0 14px; padding: 10px 14px; border-left: 3px solid var(--accent); background: rgba(176,90,16,0.05); border-radius: 0 var(--r-sm) var(--r-sm) 0; font-size: 0.83rem; color: var(--text-2); line-height: 1.7; font-style: italic; }
+@media(max-width:600px){ .gv-quote { text-align: left; border-left: none; border-top: 3px solid var(--accent); border-radius: 0 0 var(--r-sm) var(--r-sm); padding: 10px 12px; } }
 @media(max-width:900px){ .gv-grid { grid-template-columns: 1fr; gap: 20px; } }
 @media(max-width:600px){ .gv-card { flex-direction: column; align-items: center; text-align: center; padding: 28px 20px; } .gv-badges, .gv-skills { justify-content: center; } }
 
