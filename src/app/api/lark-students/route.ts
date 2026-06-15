@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server';
 import { fetchLarkStudents } from '@/lib/lark';
 
-// Revalidate every 10 minutes — tmp_urls from Lark last ~30 min
-export const revalidate = 600;
+export const dynamic = 'force-dynamic';
 
 export async function GET() {
   if (!process.env.LARK_APP_ID) {
