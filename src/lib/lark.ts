@@ -35,7 +35,7 @@ export async function fetchLarkStudents(): Promise<LarkStudent[]> {
   const appToken = process.env.LARK_BASE_APP_TOKEN!;
   const tableId = process.env.LARK_TABLE_ID!;
 
-  // Fetch records from "Hình ảnh trao bằng" view
+  // Fetch all records from "Hình ảnh trao bằng" view
   const res = await fetch(
     `${LARK_API}/bitable/v1/apps/${appToken}/tables/${tableId}/records?page_size=100&view_id=${VIEW_ID}`,
     { headers: { Authorization: `Bearer ${token}` }, cache: 'no-store' },
@@ -45,48 +45,9 @@ export async function fetchLarkStudents(): Promise<LarkStudent[]> {
 
   const items: any[] = json.data?.items ?? [];
 
-  // Collect file_tokens for the best image in each record
-  const fileTokens: string[] = [];
-  const recordTokenMap: Record<string, string> = {};
-  let extraParam = '';
-
-  for (const item of items) {
-    const attachments: any[] = item.fields['Hình ảnh trao bằng'] ?? [];
-    // Prefer jpg, fallback to any image
-    const img =
-      attachments.find(a => a.type === 'image/jpeg' || /\.(jpg|jpeg)$/i.test(a.name ?? '')) ??
-      attachments.find(a => /\.(png|webp|heic)$/i.test(a.name ?? '')) ??
-      attachments[0];
-
-    if (img?.file_token) {
-      fileTokens.push(img.file_token);
-      recordTokenMap[item.record_id] = img.file_token;
-      // Extract extra param from first attachment's tmp_url (has correct rev)
-      if (!extraParam && img.tmp_url) {
-        try {
-          extraParam = new URL(img.tmp_url).searchParams.get('extra') ?? '';
-        } catch {}
-      }
-    }
-  }
-
-  // Batch get real CDN download URLs
-  const tokenUrlMap: Record<string, string> = {};
-  if (fileTokens.length > 0) {
-    const urlRes = await fetch(
-      `${LARK_API}/drive/v1/medias/batch_get_tmp_download_url?file_tokens=${fileTokens.join(',')}&extra=${extraParam}`,
-      { headers: { Authorization: `Bearer ${token}` }, cache: 'no-store' },
-    );
-    const urlJson = await urlRes.json();
-    if (urlJson.code === 0) {
-      for (const entry of urlJson.data?.tmp_download_urls ?? []) {
-        tokenUrlMap[entry.file_token] = entry.tmp_download_url;
-      }
-    }
-  }
-
-  return items
-    .map(item => {
+  // For each record, call its attachment's tmp_url directly (proven to work)
+  const withPhotos = await Promise.all(
+    items.map(async item => {
       const f = item.fields;
 
       const nameArr: any[] = f['Tên HV'] ?? f['Tên học viên'] ?? [];
@@ -100,10 +61,28 @@ export async function fetchLarkStudents(): Promise<LarkStudent[]> {
             })
           : '';
 
-      const fileToken = recordTokenMap[item.record_id];
-      const photoUrl = fileToken ? (tokenUrlMap[fileToken] ?? null) : null;
+      const attachments: any[] = f['Hình ảnh trao bằng'] ?? [];
+      // Prefer jpg, then any image
+      const img =
+        attachments.find(a => a.type === 'image/jpeg' || /\.(jpg|jpeg)$/i.test(a.name ?? '')) ??
+        attachments.find(a => /\.(png|webp|heic)$/i.test(a.name ?? '')) ??
+        attachments[0];
+
+      let photoUrl: string | null = null;
+      if (img?.tmp_url) {
+        try {
+          const urlRes = await fetch(img.tmp_url, {
+            headers: { Authorization: `Bearer ${token}` },
+            cache: 'no-store',
+          });
+          const urlJson = await urlRes.json();
+          photoUrl = urlJson?.data?.tmp_download_urls?.[0]?.tmp_download_url ?? null;
+        } catch {}
+      }
 
       return { id: item.record_id, name, date, course: '', photoUrl };
-    })
-    .filter((s): s is LarkStudent => !!s.name && !!s.photoUrl);
+    }),
+  );
+
+  return withPhotos.filter((s): s is LarkStudent => !!s.name && !!s.photoUrl);
 }
