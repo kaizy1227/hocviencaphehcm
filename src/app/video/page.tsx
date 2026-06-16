@@ -11,7 +11,13 @@ function channelIcon(ch: string) {
   return 'ti ti-video';
 }
 
-function VideoPlayer({ url, poster, title }: { url: string; poster: string | null; title: string }) {
+function localThumb(videoName: string | null): string | undefined {
+  if (!videoName) return undefined;
+  const base = videoName.replace(/\.[^.]+$/, ''); // bỏ đuôi .mov/.mp4
+  return `/videos/thumbs/${encodeURIComponent(base)}.jpg`;
+}
+
+function VideoPlayer({ url, poster, title }: { url: string; poster: string | null | undefined; title: string }) {
   const [errored, setErrored] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -121,7 +127,7 @@ export default function VideoPage() {
                 <div key={v.id} className="vd-card">
                   <div className="vd-media">
                     {v.videoUrl ? (
-                      <VideoPlayer url={v.videoUrl} poster={v.thumbnailUrl} title={v.title} />
+                      <VideoPlayer url={v.videoUrl} poster={v.thumbnailUrl ?? localThumb(v.videoName)} title={v.title} />
                     ) : v.downloadUrl ? (
                       <div className="vd-placeholder">
                         {v.thumbnailUrl && (

@@ -160,6 +160,7 @@ export interface LarkVideo {
   videoUrl: string | null;
   thumbnailUrl: string | null;
   downloadUrl: string | null;
+  videoName: string | null;   // tên file gốc, dùng để map thumbnail local
 }
 
 export async function fetchLarkVideos(): Promise<LarkVideo[]> {
@@ -205,7 +206,8 @@ export async function fetchLarkVideos(): Promise<LarkVideo[]> {
         resolveAttachmentUrl(token, img, extraParam),
       ]);
 
-      return { id: item.record_id, title, channel, date, videoUrl, thumbnailUrl, downloadUrl };
+      const videoName = (vid ?? mov)?.name ?? null;
+      return { id: item.record_id, title, channel, date, videoUrl, thumbnailUrl, downloadUrl, videoName };
     }),
   );
 
