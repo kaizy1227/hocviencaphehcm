@@ -17,24 +17,16 @@ const HERO_IMGS = [
 ];
 
 const STUDENTS = [
-  { img: 'images/students/tran-hoang-thinh.jpg',     name: 'Anh Trần Hoàng Thịnh',        review: 'Ban đầu mình còn lo lắng không theo kịp, nhưng thầy cô dạy rất cặn kẽ, thực hành ngay tại lớp. Khóa học bổ ích hơn mình nghĩ nhiều!' },
-  { img: 'images/students/nguyen-phuong-hong.jpg',   name: 'Chị Nguyễn Phượng Hồng',      review: 'Mình đã thử nhiều chỗ học pha chế nhưng ở đây dạy bài bản và tâm huyết nhất. Học xong là tự tin hẳn, không còn lo khi đứng bar nữa.' },
-  { img: 'images/students/le-trong-nghia.jpg',       name: 'Anh Lê Trọng Nghĩa',          review: 'Chất lượng đào tạo thực sự ổn, không qua loa hay hời hợt. Mình học xong là mở quán được luôn, không phải loay hoay gì thêm nữa.' },
-  { img: 'images/students/nguyen-nhat-dien.jpg',     name: 'Anh Nguyễn Nhật Điền',        review: 'Cảm ơn thầy cô đã kiên nhẫn hướng dẫn! Từ người chưa biết gì về pha chế, giờ mình tự tin làm menu cà phê cho quán của mình rồi.' },
-  { img: 'images/students/nguyen-thi-ut-tham.jpg',   name: 'Chị Nguyễn Thị Út Thắm',     review: 'Từ cách pha đến cách trình bày, thầy cô đều hướng dẫn rất chi tiết. Khóa học ngắn mà hiệu quả, đáng để đầu tư cho nghề của mình.' },
-  { img: 'images/students/le-the-phong.jpg',         name: 'Anh Lê Thế Phong',            review: 'Mình học khóa cà phê máy, thầy cô hướng dẫn rất nhiệt tình, tận tâm từng động tác nhỏ. Ra về là tự pha được ngay, rất đáng tiền!' },
-  { img: 'images/students/nguyen-van-thao.jpg',      name: 'Anh Nguyễn Văn Thảo',         review: 'Học ở đây không chỉ học công thức mà còn hiểu cách tính cost, quản lý nguyên liệu. Kiến thức thực chiến, áp dụng được ngay vào quán.' },
-  { img: 'images/students/pham-nhut-tan.jpg',        name: 'Anh Phạm Nhựt Tân',           review: 'Khóa học vừa ngắn vừa đủ, không quá dài dòng nhưng vẫn đầy đủ kỹ năng. Giảng viên chia sẻ kinh nghiệm thực tế rất hay!' },
-  { img: 'images/students/hy-quay-mui.jpg',          name: 'Chị Hỷ Quay Mùi',             review: 'Học xong là mở quán được ngay, từ menu đến pha chế đều rất chuẩn. Chị rất hài lòng với dịch vụ tư vấn và hỗ trợ sau khóa học.' },
-  { img: 'images/students/lay-sivmey.jpg',           name: 'Chị Lay Sivmey',               review: 'Mình từ Campuchia sang học, thầy cô rất kiên nhẫn và tận tình. Giờ mình pha trà sữa chuẩn lắm, cảm ơn Học Viện Cà Phê nhiều!' },
-  { img: 'images/students/lyda-sokpov.jpg',          name: 'Chị Lyda Sokpov',              review: 'Công thức rõ ràng, dễ hiểu, về nhà là pha được ngay cho gia đình. Đây là lần đầu mình học pha chế chuyên nghiệp và rất vui vì chọn đúng chỗ.' },
-  { img: 'images/students/le-thi-ngoc-trang.jpg',   name: 'Chị Lê Thị Ngọc Trang',       review: 'Chị học khóa trà sữa hiện đại, thấy công thức sáng tạo và thực tế lắm. Mở quán mấy tháng rồi, khách khen đồ uống ngon, chị vui lắm!' },
-  { img: 'images/students/phan-thi-kim-xuong.jpg',  name: 'Chị Phan Thị Kim Xương',      review: 'Mình học gói khởi nghiệp, được tư vấn rất kỹ từ menu đến cách tính giá. Mở quán rồi mà vẫn được hỗ trợ, không cảm giác bị bỏ rơi.' },
-  { img: 'images/students/phou-lay-duo.jpg',         name: 'Chị Phou Sivchou & Lay Sivmey', review: 'Hai chị em cùng nhau học khóa tổng hợp, vui lắm! Về quê mở quán cùng nhau, nhờ kiến thức từ đây mà tự tin hơn rất nhiều.' },
-  { img: 'images/students/phou-sivchou.jpg',         name: 'Chị Phou Sivchou',             review: 'Thầy cô rất tốt bụng và kiên nhẫn, chỉ dẫn từng bước tỉ mỉ. Bây giờ chị pha được trà sữa ngon đúng chuẩn và rất tự tin rồi!' },
-  { img: 'images/students/truong-thi-thuy-dung.jpg', name: 'Chị Trương Thị Thùy Dung',   review: 'Chị học khóa đá xay và sinh tố, tưởng đơn giản nhưng có nhiều bí quyết hay. Thầy cô chia sẻ kinh nghiệm thực tế, không giấu nghề.' },
-  { img: 'images/students/tran-nhu-ngoc.jpg',        name: 'Chị Trần Như Ngọc',           review: 'Mình là người mới hoàn toàn nhưng sau khóa học thấy tự tin lắm. Thực hành trực tiếp tại lớp giúp mình nhớ lâu, không bị quên công thức.' },
-  { img: 'images/students/vo-thi-nhat-hoa.jpg',      name: 'Chị Võ Thị Nhật Hòa',        review: 'Đầu tư vào khóa học này là quyết định đúng đắn nhất của chị. Từ chưa biết gì đến tự làm menu trà sữa cho quán, thầy cô hỗ trợ rất nhiệt tình.' },
+  { img: 'images/students/nguyen-phuong-hong.jpg',   name: 'Chị Nguyễn Phượng Hồng',   review: 'Mình đã thử nhiều chỗ học pha chế nhưng ở đây dạy bài bản và tâm huyết nhất. Học xong là tự tin hẳn, không còn lo khi đứng bar nữa.' },
+  { img: 'images/students/le-trong-nghia.jpg',       name: 'Anh Lê Trọng Nghĩa',       review: 'Chất lượng đào tạo thực sự ổn, không qua loa hay hời hợt. Mình học xong là mở quán được luôn, không phải loay hoay gì thêm nữa.' },
+  { img: 'images/students/nguyen-nhat-dien.jpg',     name: 'Anh Nguyễn Nhật Điền',     review: 'Cảm ơn thầy cô đã kiên nhẫn hướng dẫn! Từ người chưa biết gì về pha chế, giờ mình tự tin làm menu cà phê cho quán của mình rồi.' },
+  { img: 'images/students/le-the-phong.jpg',         name: 'Anh Lê Thế Phong',         review: 'Mình học khóa cà phê máy, thầy cô hướng dẫn rất nhiệt tình, tận tâm từng động tác nhỏ. Ra về là tự pha được ngay, rất đáng tiền!' },
+  { img: 'images/students/pham-nhut-tan.jpg',        name: 'Anh Phạm Nhựt Tân',        review: 'Khóa học vừa ngắn vừa đủ, không quá dài dòng nhưng vẫn đầy đủ kỹ năng. Giảng viên chia sẻ kinh nghiệm thực tế rất hay!' },
+  { img: 'images/students/lay-sivmey.jpg',           name: 'Chị Lay Sivmey',            review: 'Mình từ Campuchia sang học, thầy cô rất kiên nhẫn và tận tình. Giờ mình pha trà sữa chuẩn lắm, cảm ơn Học Viện Cà Phê nhiều!' },
+  { img: 'images/students/phan-thi-kim-xuong.jpg',  name: 'Chị Phan Thị Kim Xương',   review: 'Mình học gói khởi nghiệp, được tư vấn rất kỹ từ menu đến cách tính giá. Mở quán rồi mà vẫn được hỗ trợ, không cảm giác bị bỏ rơi.' },
+  { img: 'images/students/phou-sivchou.jpg',         name: 'Chị Phou Sivchou',          review: 'Thầy cô rất tốt bụng và kiên nhẫn, chỉ dẫn từng bước tỉ mỉ. Bây giờ chị pha được trà sữa ngon đúng chuẩn và rất tự tin rồi!' },
+  { img: 'images/students/truong-thi-thuy-dung.jpg', name: 'Chị Trương Thị Thùy Dung', review: 'Chị học khóa đá xay và sinh tố, tưởng đơn giản nhưng có nhiều bí quyết hay. Thầy cô chia sẻ kinh nghiệm thực tế, không giấu nghề.' },
+  { img: 'images/students/tran-nhu-ngoc.jpg',        name: 'Chị Trần Như Ngọc',         review: 'Mình là người mới hoàn toàn nhưng sau khóa học thấy tự tin lắm. Thực hành trực tiếp tại lớp giúp mình nhớ lâu, không bị quên công thức.' },
 ];
 
 const MENU_ROW1: [string, string][] = [
@@ -392,8 +384,9 @@ export default function HomePage() {
               const s = STUDENTS[idx];
               return (
                 <div key={`fan-${p}`} className="fan-card" data-pos={p} onClick={p !== 0 ? () => { setFanIdx(idx); resetFanTimer(); } : undefined}>
-                  <div className="fan-photo">
+                  <div className={`fan-photo${p === 0 ? ' fan-photo--zoom' : ''}`} onClick={p === 0 ? () => openLb(`/${s.img}`, s.name) : undefined}>
                     <img src={`/${s.img}`} alt={s.name} loading="lazy" onError={e => { const c = e.currentTarget.closest('.fan-card') as HTMLElement; if (c) c.style.display='none'; }} />
+                    {p === 0 && <span className="fan-zoom-icon"><i className="ti ti-zoom-in"></i></span>}
                   </div>
                   <div className="fan-info">
                     <div className="fan-name">{s.name}</div>
