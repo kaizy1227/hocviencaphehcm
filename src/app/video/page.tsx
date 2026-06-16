@@ -122,6 +122,26 @@ export default function VideoPage() {
                   <div className="vd-media">
                     {v.videoUrl ? (
                       <VideoPlayer url={v.videoUrl} poster={v.thumbnailUrl} title={v.title} />
+                    ) : v.downloadUrl ? (
+                      <div className="vd-placeholder">
+                        {v.thumbnailUrl && (
+                          <img src={v.thumbnailUrl} alt={v.title} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+                        )}
+                        <a
+                          href={v.downloadUrl}
+                          download
+                          target="_blank"
+                          rel="noopener"
+                          style={{
+                            position: 'relative', zIndex: 1,
+                            background: 'rgba(0,0,0,.6)', color: '#fff',
+                            fontSize: '.78rem', padding: '8px 16px', borderRadius: 8,
+                            display: 'flex', alignItems: 'center', gap: 6,
+                          }}
+                        >
+                          <i className="ti ti-download" /> Tải về để xem (.mov)
+                        </a>
+                      </div>
                     ) : v.thumbnailUrl ? (
                       <img src={v.thumbnailUrl} alt={v.title} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                     ) : (

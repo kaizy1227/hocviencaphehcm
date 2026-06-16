@@ -139,9 +139,17 @@ const VIDEO_VIEW  = 'vewi5SvmuY';
 
 function isPlayable(a: any): boolean {
   return (
-    /^video\//i.test(a.type ?? '') ||
-    /\.(mp4|mov|webm|m4v|avi|mkv)$/i.test(a.name ?? '')
+    /^video\/mp4$/i.test(a.type ?? '') ||
+    /^video\/webm$/i.test(a.type ?? '') ||
+    /\.(mp4|webm|m4v)$/i.test(a.name ?? '')
   );
+}
+
+function isNonPlayableVideo(a: any): boolean {
+  return (
+    /^video\//i.test(a.type ?? '') ||
+    /\.(mov|avi|mkv|3gp|hevc)$/i.test(a.name ?? '')
+  ) && !isPlayable(a);
 }
 
 export interface LarkVideo {
@@ -151,6 +159,7 @@ export interface LarkVideo {
   date: string;
   videoUrl: string | null;
   thumbnailUrl: string | null;
+  downloadUrl: string | null;
 }
 
 export async function fetchLarkVideos(): Promise<LarkVideo[]> {
@@ -188,13 +197,15 @@ export async function fetchLarkVideos(): Promise<LarkVideo[]> {
 
       const attachments: any[] = f['Tệp tin đính kèm'] ?? [];
       const vid = attachments.find(isPlayable) ?? null;
+      const mov = vid ? null : (attachments.find(isNonPlayableVideo) ?? null);
       const img = attachments.find(isDisplayable) ?? null;
-      const [videoUrl, thumbnailUrl] = await Promise.all([
+      const [videoUrl, downloadUrl, thumbnailUrl] = await Promise.all([
         resolveAttachmentUrl(token, vid, extraParam),
+        resolveAttachmentUrl(token, mov, extraParam),
         resolveAttachmentUrl(token, img, extraParam),
       ]);
 
-      return { id: item.record_id, title, channel, date, videoUrl, thumbnailUrl };
+      return { id: item.record_id, title, channel, date, videoUrl, thumbnailUrl, downloadUrl };
     }),
   );
 
