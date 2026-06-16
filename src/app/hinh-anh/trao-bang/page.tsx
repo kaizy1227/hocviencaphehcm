@@ -1,20 +1,19 @@
-import type { Metadata } from 'next';
-import { fetchLarkStudents } from '@/lib/lark';
+'use client';
+import { useEffect, useState } from 'react';
+import type { LarkStudent } from '@/lib/lark';
 
-export const dynamic = 'force-dynamic';
+export default function TraoBangPage() {
+  const [students, setStudents] = useState<LarkStudent[]>([]);
+  const [loading, setLoading] = useState(true);
 
-export const metadata: Metadata = {
-  title: 'Học Viên Nhận Chứng Nhận',
-  description: 'Hình ảnh học viên hoàn thành khóa học và nhận chứng nhận tại Học Viện Cà Phê HCM.',
-};
+  useEffect(() => {
+    fetch('/api/lark-students')
+      .then(r => r.json())
+      .then(d => setStudents(d.students ?? []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
 
-export default async function TraoBangPage() {
-  let students: Awaited<ReturnType<typeof fetchLarkStudents>> = [];
-  try {
-    if (process.env.LARK_APP_ID) students = await fetchLarkStudents();
-  } catch {}
-
-  // Sort newest first
   const sorted = [...students].sort((a, b) => b.date.localeCompare(a.date));
 
   return (
@@ -27,17 +26,21 @@ export default async function TraoBangPage() {
           <p className="sub" style={{ maxWidth: 520, margin: '0 auto' }}>
             Mỗi học viên hoàn thành khóa học đều nhận chứng nhận từ Học Viện Cà Phê — bước đầu trên hành trình kinh doanh của riêng bạn.
           </p>
-          <div className="tb-count">
-            <i className="ti ti-certificate"></i> {sorted.length} học viên đã nhận chứng nhận
-          </div>
+          {!loading && (
+            <div className="tb-count">
+              <i className="ti ti-certificate"></i> {sorted.length} học viên đã nhận chứng nhận
+            </div>
+          )}
         </div>
       </section>
 
       {/* GRID */}
       <section className="section tb-grid-section" style={{ background: 'var(--bg-alt)' }}>
         <div className="container">
-          {sorted.length === 0 ? (
-            <p style={{ textAlign: 'center', color: 'var(--text-3)' }}>Đang tải dữ liệu…</p>
+          {loading ? (
+            <p style={{ textAlign: 'center', color: 'var(--text-3)', padding: '60px 0' }}>Đang tải…</p>
+          ) : sorted.length === 0 ? (
+            <p style={{ textAlign: 'center', color: 'var(--text-3)', padding: '60px 0' }}>Chưa có dữ liệu.</p>
           ) : (
             <div className="tb-grid">
               {sorted.map(s => (
@@ -47,7 +50,10 @@ export default async function TraoBangPage() {
                       src={s.photoUrl}
                       alt={s.name}
                       loading="lazy"
-                      onError={e => { (e.currentTarget.closest('.tb-card') as HTMLElement | null)?.remove(); }}
+                      onError={e => {
+                        const card = (e.currentTarget as HTMLImageElement).closest('.tb-card') as HTMLElement | null;
+                        if (card) card.style.display = 'none';
+                      }}
                     />
                   </div>
                   <div className="tb-card-info">

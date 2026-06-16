@@ -79,6 +79,7 @@ export default function Navbar() {
             {/* RIGHT — parent pages + actions */}
             <div className="nav-right">
               <Link href="/nguyen-lieu" className={`nav-link${pathname === '/nguyen-lieu' ? ' active' : ''}`}>Nguyên Liệu</Link>
+              <Link href="/hinh-anh/trao-bang" className={`nav-link${pathname.startsWith('/hinh-anh') ? ' active' : ''}`}>Hình Ảnh</Link>
               <Link href="/gioi-thieu#lien-he" className="nav-link">Liên Hệ</Link>
 
               {phone ? (
