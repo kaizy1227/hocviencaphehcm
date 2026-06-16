@@ -46,15 +46,22 @@ export default function TraoBangPage() {
               {sorted.map(s => (
                 <div key={s.id} className="tb-card">
                   <div className="tb-card-img">
-                    <img
-                      src={s.photoUrl}
-                      alt={s.name}
-                      loading="lazy"
-                      onError={e => {
-                        const card = (e.currentTarget as HTMLImageElement).closest('.tb-card') as HTMLElement | null;
-                        if (card) card.style.display = 'none';
-                      }}
-                    />
+                    {s.photoUrl ? (
+                      <img
+                        src={s.photoUrl}
+                        alt={s.name}
+                        loading="lazy"
+                        onError={e => {
+                          const el = e.currentTarget as HTMLImageElement;
+                          el.style.display = 'none';
+                          const ph = el.nextElementSibling as HTMLElement | null;
+                          if (ph) ph.style.display = 'flex';
+                        }}
+                      />
+                    ) : null}
+                    <div className="tb-placeholder" style={{ display: s.photoUrl ? 'none' : 'flex' }}>
+                      <i className="ti ti-certificate"></i>
+                    </div>
                   </div>
                   <div className="tb-card-info">
                     <span className="tb-card-name">{s.name.trim()}</span>

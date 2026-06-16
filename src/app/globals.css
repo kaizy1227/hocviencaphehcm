@@ -1126,8 +1126,9 @@ footer { background: var(--bg-dark); }
   transition: transform .2s, box-shadow .2s;
 }
 .tb-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
-.tb-card-img { width: 100%; aspect-ratio: 3/4; overflow: hidden; background: var(--bg-alt); }
+.tb-card-img { width: 100%; aspect-ratio: 3/4; overflow: hidden; background: var(--bg-alt); position: relative; }
 .tb-card-img img { width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; }
+.tb-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #F2E8DC; color: var(--accent); font-size: 2.5rem; }
 .tb-card-info { padding: 14px 14px 16px; display: flex; flex-direction: column; gap: 4px; }
 .tb-card-name { font-size: 0.9rem; font-weight: 700; color: var(--text-1); line-height: 1.3; }
 .tb-card-date { font-size: 0.75rem; color: var(--text-3); }

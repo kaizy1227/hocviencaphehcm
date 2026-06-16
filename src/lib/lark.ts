@@ -27,7 +27,7 @@ export interface LarkStudent {
   name: string;
   date: string;
   course: string;
-  photoUrl: string;
+  photoUrl: string | null;
 }
 
 export async function fetchLarkStudents(): Promise<LarkStudent[]> {
@@ -62,10 +62,11 @@ export async function fetchLarkStudents(): Promise<LarkStudent[]> {
           : '';
 
       const attachments: any[] = f['Hình ảnh trao bằng'] ?? [];
-      // HEIC (iPhone) cannot be displayed in browsers — skip
+      // Prefer JPEG/PNG/WebP; fallback to any attachment (HEIC shown as placeholder)
       const img =
         attachments.find(a => a.type === 'image/jpeg' || /\.(jpg|jpeg)$/i.test(a.name ?? '')) ??
-        attachments.find(a => a.type === 'image/png' || a.type === 'image/webp' || /\.(png|webp)$/i.test(a.name ?? ''));
+        attachments.find(a => a.type === 'image/png' || a.type === 'image/webp' || /\.(png|webp)$/i.test(a.name ?? '')) ??
+        null;
 
       let photoUrl: string | null = null;
       if (img?.tmp_url) {
@@ -83,5 +84,5 @@ export async function fetchLarkStudents(): Promise<LarkStudent[]> {
     }),
   );
 
-  return withPhotos.filter((s): s is LarkStudent => !!s.name && !!s.photoUrl);
+  return withPhotos.filter(s => !!s.name);
 }
