@@ -21,6 +21,11 @@ type Course = {
 type Product = {
   id: string; stt: number; name: string; unit: string;
   price: number; image_url: string; category: string; active: boolean;
+  phan_loai: 'thuong-mai' | 'thuong-hieu';
+};
+type Tool = {
+  id: string; stt: number; name: string; unit: string;
+  price: number; image_url: string; category: string; active: boolean;
 };
 
 const RECIPE_COURSES = ['Tổng hợp hiện đại', 'Tổng hợp truyền thống'];
@@ -39,14 +44,17 @@ const BLANK_COURSE: Omit<Course, 'id' | 'sort_order'> = {
   name: '', category: 'tong-hop', price: '', duration: '', description: '', image: '', active: true,
 };
 const BLANK_PRODUCT: Omit<Product, 'id'> = {
-  stt: 0, name: '', unit: '', price: 0, image_url: '', category: 'Nguyên liệu', active: true,
+  stt: 0, name: '', unit: '', price: 0, image_url: '', category: 'Nguyên liệu', active: true, phan_loai: 'thuong-mai',
+};
+const BLANK_TOOL: Omit<Tool, 'id'> = {
+  stt: 0, name: '', unit: '', price: 0, image_url: '', category: 'Dụng cụ pha chế', active: true,
 };
 
 export default function AdminPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [activeTab, setActiveTab] = useState<'leads' | 'students' | 'content' | 'products'>('leads');
+  const [activeTab, setActiveTab] = useState<'leads' | 'students' | 'content' | 'products' | 'tools'>('leads');
 
   // Students
   const [students, setStudents] = useState<Student[]>([]);
@@ -86,6 +94,17 @@ export default function AdminPage() {
   const [uploadingImg, setUploadingImg] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
+  // Tools (Dụng Cụ)
+  const [tools, setTools] = useState<Tool[]>([]);
+  const [toolForm, setToolForm] = useState<Omit<Tool, 'id'>>(BLANK_TOOL);
+  const [toolFormError, setToolFormError] = useState('');
+  const [savingTool, setSavingTool] = useState(false);
+  const [deletingTool, setDeletingTool] = useState<string | null>(null);
+  const [editingTool, setEditingTool] = useState<Tool | null>(null);
+  const [showAddTool, setShowAddTool] = useState(false);
+  const [uploadingToolImg, setUploadingToolImg] = useState(false);
+  const toolFileRef = useRef<HTMLInputElement>(null);
+
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getSession().then(async ({ data: { session } }) => {
@@ -93,7 +112,7 @@ export default function AdminPage() {
       const admin = session.user.app_metadata?.role === 'admin';
       setIsAdmin(admin);
       if (!admin) { setLoading(false); return; }
-      await Promise.all([loadStudents(), loadLeads(), loadCourses(), loadProducts()]);
+      await Promise.all([loadStudents(), loadLeads(), loadCourses(), loadProducts(), loadTools()]);
       setLoading(false);
     });
   }, []);
@@ -113,6 +132,10 @@ export default function AdminPage() {
   async function loadProducts() {
     const { data } = await createClient().from('products').select('*').order('stt');
     setProducts(data ?? []);
+  }
+  async function loadTools() {
+    const { data } = await createClient().from('dung_cu').select('*').order('stt');
+    setTools(data ?? []);
   }
 
   // --- STUDENTS ---
@@ -191,7 +214,7 @@ export default function AdminPage() {
   // --- PRODUCTS ---
   function startEditProduct(p: Product) {
     setEditingProduct(p);
-    setProductForm({ stt: p.stt, name: p.name, unit: p.unit, price: p.price, image_url: p.image_url, category: p.category, active: p.active });
+    setProductForm({ stt: p.stt, name: p.name, unit: p.unit, price: p.price, image_url: p.image_url, category: p.category, active: p.active, phan_loai: p.phan_loai ?? 'thuong-mai' });
     setShowAddProduct(false); setProductFormError('');
   }
   function cancelProductEdit() { setEditingProduct(null); setShowAddProduct(false); setProductForm(BLANK_PRODUCT); setProductFormError(''); }
@@ -212,7 +235,7 @@ export default function AdminPage() {
     e.preventDefault();
     if (!productForm.name.trim()) { setProductFormError('Vui lòng điền tên sản phẩm.'); return; }
     setSavingProduct(true); setProductFormError('');
-    const payload = { stt: productForm.stt, name: productForm.name.trim(), unit: productForm.unit.trim(), price: productForm.price, image_url: productForm.image_url.trim(), category: productForm.category.trim(), active: productForm.active };
+    const payload = { stt: productForm.stt, name: productForm.name.trim(), unit: productForm.unit.trim(), price: productForm.price, image_url: productForm.image_url.trim(), category: productForm.category.trim(), active: productForm.active, phan_loai: productForm.phan_loai };
     const { error } = editingProduct
       ? await createClient().from('products').update(payload).eq('id', editingProduct.id)
       : await createClient().from('products').insert(payload);
@@ -230,6 +253,50 @@ export default function AdminPage() {
   async function toggleProductActive(p: Product) {
     await createClient().from('products').update({ active: !p.active }).eq('id', p.id);
     await loadProducts();
+  }
+
+  // --- TOOLS (DỤNG CỤ) ---
+  function startEditTool(t: Tool) {
+    setEditingTool(t);
+    setToolForm({ stt: t.stt, name: t.name, unit: t.unit, price: t.price, image_url: t.image_url, category: t.category, active: t.active });
+    setShowAddTool(false); setToolFormError('');
+  }
+  function cancelToolEdit() { setEditingTool(null); setShowAddTool(false); setToolForm(BLANK_TOOL); setToolFormError(''); }
+
+  async function handleToolImageUpload(file: File) {
+    setUploadingToolImg(true);
+    const supabase = createClient();
+    const ext = file.name.split('.').pop() ?? 'jpg';
+    const path = `${Date.now()}.${ext}`;
+    const { data, error } = await supabase.storage.from('products').upload(path, file, { upsert: true });
+    setUploadingToolImg(false);
+    if (error) { setToolFormError('Upload ảnh thất bại: ' + error.message); return; }
+    const { data: { publicUrl } } = supabase.storage.from('products').getPublicUrl(data.path);
+    setToolForm(f => ({ ...f, image_url: publicUrl }));
+  }
+
+  async function saveTool(e: FormEvent) {
+    e.preventDefault();
+    if (!toolForm.name.trim()) { setToolFormError('Vui lòng điền tên sản phẩm.'); return; }
+    setSavingTool(true); setToolFormError('');
+    const payload = { stt: toolForm.stt, name: toolForm.name.trim(), unit: toolForm.unit.trim(), price: toolForm.price, image_url: toolForm.image_url.trim(), category: toolForm.category.trim(), active: toolForm.active };
+    const { error } = editingTool
+      ? await createClient().from('dung_cu').update(payload).eq('id', editingTool.id)
+      : await createClient().from('dung_cu').insert(payload);
+    setSavingTool(false);
+    if (error) { setToolFormError('Lỗi: ' + error.message); return; }
+    cancelToolEdit(); await loadTools();
+  }
+
+  async function deleteTool(id: string) {
+    if (!confirm('Xóa sản phẩm này?')) return;
+    setDeletingTool(id);
+    await createClient().from('dung_cu').delete().eq('id', id);
+    setDeletingTool(null); await loadTools();
+  }
+  async function toggleToolActive(t: Tool) {
+    await createClient().from('dung_cu').update({ active: !t.active }).eq('id', t.id);
+    await loadTools();
   }
 
   // --- FILTER ---
@@ -271,7 +338,8 @@ export default function AdminPage() {
               <strong>{newLeadsCount}</strong> yêu cầu mới ·{' '}
               <strong>{students.length}</strong> học viên ·{' '}
               <strong>{courses.length}</strong> khóa học ·{' '}
-              <strong>{products.length}</strong> sản phẩm
+              <strong>{products.length}</strong> nguyên liệu ·{' '}
+              <strong>{tools.length}</strong> dụng cụ
             </p>
           </div>
         </div>
@@ -290,6 +358,9 @@ export default function AdminPage() {
           </button>
           <button className={`admin-tab${activeTab === 'products' ? ' active' : ''}`} onClick={() => setActiveTab('products')}>
             <i className="ti ti-package"></i> Nguyên Liệu
+          </button>
+          <button className={`admin-tab${activeTab === 'tools' ? ' active' : ''}`} onClick={() => setActiveTab('tools')}>
+            <i className="ti ti-tool"></i> Dụng Cụ
           </button>
         </div>
 
@@ -489,6 +560,133 @@ export default function AdminPage() {
           </>
         )}
 
+        {/* ======= TOOLS TAB (DỤNG CỤ) ======= */}
+        {activeTab === 'tools' && (
+          <>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
+              <p style={{ color: 'var(--text-3)', fontSize: '0.85rem', margin: 0 }}>
+                Bảng giá dụng cụ hiển thị tại{' '}
+                <Link href="/dung-cu" target="_blank" style={{ color: 'var(--accent)' }}>/dung-cu <i className="ti ti-external-link" style={{ fontSize: '0.75rem' }}></i></Link>
+              </p>
+              <button className="btn btn-primary" onClick={() => { setShowAddTool(v => !v); setEditingTool(null); setToolForm(BLANK_TOOL); }}>
+                <i className={`ti ti-${showAddTool ? 'x' : 'plus'}`}></i> {showAddTool ? 'Đóng' : 'Thêm Dụng Cụ'}
+              </button>
+            </div>
+
+            {(showAddTool || editingTool) && (
+              <div className="admin-add-card">
+                <h3 className="admin-section-title">{editingTool ? `Sửa: ${editingTool.name}` : 'Thêm Dụng Cụ Mới'}</h3>
+                <form className="admin-form" onSubmit={saveTool}>
+                  <div className="admin-form-grid">
+                    <div className="af-group">
+                      <label>STT</label>
+                      <input type="number" min={0} value={toolForm.stt} onChange={e => setToolForm(f => ({ ...f, stt: +e.target.value }))} />
+                    </div>
+                    <div className="af-group af-full">
+                      <label>Tên sản phẩm *</label>
+                      <input type="text" placeholder="Ca đánh sữa inox 350ml" value={toolForm.name} onChange={e => setToolForm(f => ({ ...f, name: e.target.value }))} required />
+                    </div>
+                    <div className="af-group">
+                      <label>Quy cách</label>
+                      <input type="text" placeholder="cái / bộ / cây..." value={toolForm.unit} onChange={e => setToolForm(f => ({ ...f, unit: e.target.value }))} />
+                    </div>
+                    <div className="af-group">
+                      <label>Giá bán (VNĐ)</label>
+                      <input type="number" min={0} step={1000} placeholder="70000" value={toolForm.price || ''} onChange={e => setToolForm(f => ({ ...f, price: +e.target.value }))} />
+                    </div>
+                    <div className="af-group">
+                      <label>Danh mục</label>
+                      <select value={toolForm.category} onChange={e => setToolForm(f => ({ ...f, category: e.target.value }))}>
+                        <option>Dụng cụ pha chế</option>
+                        <option>Dụng cụ phục vụ</option>
+                        <option>Linh phụ kiện máy cà phê - sinh tố</option>
+                        <option>Máy móc pha chế</option>
+                        <option>Thiết bị thu ngân</option>
+                      </select>
+                    </div>
+                    <div className="af-group af-full">
+                      <label>Hình ảnh</label>
+                      <div className="prod-img-row">
+                        {toolForm.image_url && (
+                          <img src={toolForm.image_url} alt="preview" className="prod-img-preview" />
+                        )}
+                        <div style={{ flex: 1 }}>
+                          <input
+                            type="text"
+                            placeholder="URL ảnh hoặc /images/dung-cu/..."
+                            value={toolForm.image_url}
+                            onChange={e => setToolForm(f => ({ ...f, image_url: e.target.value }))}
+                            style={{ marginBottom: '8px' }}
+                          />
+                          <input ref={toolFileRef} type="file" accept="image/*" style={{ display: 'none' }}
+                            onChange={e => { const f = e.target.files?.[0]; if (f) handleToolImageUpload(f); }} />
+                          <button type="button" className="btn btn-outline" style={{ fontSize: '0.8rem', padding: '6px 14px' }}
+                            onClick={() => toolFileRef.current?.click()} disabled={uploadingToolImg}>
+                            {uploadingToolImg ? <><i className="ti ti-loader-2 spin"></i> Đang upload...</> : <><i className="ti ti-upload"></i> Chọn ảnh từ máy</>}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="af-group">
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                        <input type="checkbox" checked={toolForm.active} onChange={e => setToolForm(f => ({ ...f, active: e.target.checked }))} />
+                        Hiển thị bảng giá
+                      </label>
+                    </div>
+                  </div>
+                  {toolFormError && <div className="lf-error" style={{ marginBottom: '12px' }}><i className="ti ti-alert-circle"></i> {toolFormError}</div>}
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <button type="submit" className="btn btn-primary" disabled={savingTool || uploadingToolImg}>
+                      {savingTool ? <><i className="ti ti-loader-2 spin"></i> Đang lưu...</> : <><i className="ti ti-check"></i> {editingTool ? 'Cập Nhật' : 'Thêm Dụng Cụ'}</>}
+                    </button>
+                    <button type="button" className="btn btn-outline" onClick={cancelToolEdit}>Hủy</button>
+                  </div>
+                </form>
+              </div>
+            )}
+
+            <div className="admin-table-wrap">
+              <table className="admin-table">
+                <thead>
+                  <tr><th>STT</th><th>Ảnh</th><th>Tên Sản Phẩm</th><th>Quy Cách</th><th>Giá Bán</th><th>Danh Mục</th><th>Hiện</th><th></th></tr>
+                </thead>
+                <tbody>
+                  {tools.length === 0 ? (
+                    <tr><td colSpan={8} className="admin-empty">Chưa có dụng cụ nào — nhấn "Thêm Dụng Cụ" để bắt đầu</td></tr>
+                  ) : tools.map(t => (
+                    <tr key={t.id} style={{ opacity: t.active ? 1 : 0.45 }}>
+                      <td className="admin-num">{t.stt || '—'}</td>
+                      <td>
+                        {t.image_url
+                          ? <img src={t.image_url} alt={t.name} style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: '6px' }} />
+                          : <div style={{ width: '48px', height: '48px', background: 'var(--border)', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><i className="ti ti-tool" style={{ color: 'var(--muted)' }}></i></div>
+                        }
+                      </td>
+                      <td className="admin-name">{t.name}</td>
+                      <td className="admin-date">{t.unit || '—'}</td>
+                      <td style={{ fontWeight: 700, color: 'var(--accent)', whiteSpace: 'nowrap' }}>
+                        {t.price ? t.price.toLocaleString('vi-VN') + 'đ' : '—'}
+                      </td>
+                      <td><span className="admin-course-tag" style={{ fontSize: '0.75rem' }}>{t.category}</span></td>
+                      <td>
+                        <button className={`course-toggle${t.active ? ' on' : ''}`} onClick={() => toggleToolActive(t)} title={t.active ? 'Đang hiện' : 'Đang ẩn'}>
+                          <i className={`ti ti-${t.active ? 'eye' : 'eye-off'}`}></i>
+                        </button>
+                      </td>
+                      <td style={{ display: 'flex', gap: '4px' }}>
+                        <button className="admin-edit-btn" onClick={() => startEditTool(t)} title="Sửa"><i className="ti ti-pencil"></i></button>
+                        <button className="admin-del-btn" onClick={() => deleteTool(t.id)} disabled={deletingTool === t.id} title="Xóa">
+                          {deletingTool === t.id ? <i className="ti ti-loader-2 spin"></i> : <i className="ti ti-trash"></i>}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
+
         {/* ======= PRODUCTS TAB ======= */}
         {activeTab === 'products' && (
           <>
@@ -527,6 +725,13 @@ export default function AdminPage() {
                     <div className="af-group">
                       <label>Danh mục</label>
                       <input type="text" placeholder="Nguyên liệu, Bột, Siro..." value={productForm.category} onChange={e => setProductForm(f => ({ ...f, category: e.target.value }))} />
+                    </div>
+                    <div className="af-group">
+                      <label>Phân loại</label>
+                      <select value={productForm.phan_loai} onChange={e => setProductForm(f => ({ ...f, phan_loai: e.target.value as Product['phan_loai'] }))}>
+                        <option value="thuong-mai">Thương Mại — bán thoải mái</option>
+                        <option value="thuong-hieu">Thương Hiệu — chỉ học viên</option>
+                      </select>
                     </div>
                     <div className="af-group af-full">
                       <label>Hình ảnh</label>
@@ -573,11 +778,11 @@ export default function AdminPage() {
             <div className="admin-table-wrap">
               <table className="admin-table">
                 <thead>
-                  <tr><th>STT</th><th>Ảnh</th><th>Tên Sản Phẩm</th><th>Quy Cách</th><th>Giá Bán</th><th>Danh Mục</th><th>Hiện</th><th></th></tr>
+                  <tr><th>STT</th><th>Ảnh</th><th>Tên Sản Phẩm</th><th>Quy Cách</th><th>Giá Bán</th><th>Danh Mục</th><th>Phân Loại</th><th>Hiện</th><th></th></tr>
                 </thead>
                 <tbody>
                   {products.length === 0 ? (
-                    <tr><td colSpan={8} className="admin-empty">Chưa có sản phẩm nào — nhấn "Thêm Sản Phẩm" để bắt đầu</td></tr>
+                    <tr><td colSpan={9} className="admin-empty">Chưa có sản phẩm nào — nhấn "Thêm Sản Phẩm" để bắt đầu</td></tr>
                   ) : products.map(p => (
                     <tr key={p.id} style={{ opacity: p.active ? 1 : 0.45 }}>
                       <td className="admin-num">{p.stt || '—'}</td>
@@ -593,6 +798,11 @@ export default function AdminPage() {
                         {p.price ? p.price.toLocaleString('vi-VN') + 'đ' : '—'}
                       </td>
                       <td><span className="admin-course-tag" style={{ fontSize: '0.75rem' }}>{p.category}</span></td>
+                      <td>
+                        <span className={`pl-badge pl-badge--${p.phan_loai ?? 'thuong-mai'}`}>
+                          {p.phan_loai === 'thuong-hieu' ? <><i className="ti ti-shield-star"></i> Thương Hiệu</> : <><i className="ti ti-shopping-bag"></i> Thương Mại</>}
+                        </span>
+                      </td>
                       <td>
                         <button className={`course-toggle${p.active ? ' on' : ''}`} onClick={() => toggleProductActive(p)} title={p.active ? 'Đang hiện' : 'Đang ẩn'}>
                           <i className={`ti ti-${p.active ? 'eye' : 'eye-off'}`}></i>

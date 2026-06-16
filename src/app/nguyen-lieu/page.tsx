@@ -7,12 +7,14 @@ import { useCart } from '@/context/CartContext';
 type Product = {
   id: string; stt: number; name: string; unit: string;
   price: number; image_url: string; category: string;
+  phan_loai: 'thuong-mai' | 'thuong-hieu';
 };
 
 export default function NguyenLieuPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState('Tất cả');
+  const [activePhanLoai, setActivePhanLoai] = useState<'all' | 'thuong-mai' | 'thuong-hieu'>('all');
   const [addedIds, setAddedIds] = useState<Set<string>>(new Set());
   const { addItem } = useCart();
 
@@ -26,7 +28,9 @@ export default function NguyenLieuPage() {
   }, []);
 
   const categories = ['Tất cả', ...Array.from(new Set(products.map(p => p.category)))];
-  const filtered = activeCategory === 'Tất cả' ? products : products.filter(p => p.category === activeCategory);
+  const filtered = products
+    .filter(p => activeCategory === 'Tất cả' || p.category === activeCategory)
+    .filter(p => activePhanLoai === 'all' || p.phan_loai === activePhanLoai);
 
   const handleAddToCart = useCallback((p: Product) => {
     addItem({ id: p.id, name: p.name, price: p.price, image_url: p.image_url, unit: p.unit });
@@ -58,17 +62,28 @@ export default function NguyenLieuPage() {
       </section>
 
       {/* FILTER */}
-      {categories.length > 2 && (
-        <div className="nl-filter-wrap">
-          <div className="container">
+      <div className="nl-filter-wrap">
+        <div className="container" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          {/* Phân loại */}
+          <div className="nl-filter">
+            <button className={`ct-btn${activePhanLoai === 'all' ? ' active' : ''}`} onClick={() => setActivePhanLoai('all')}>Tất cả</button>
+            <button className={`ct-btn ct-btn--tm${activePhanLoai === 'thuong-mai' ? ' active' : ''}`} onClick={() => setActivePhanLoai('thuong-mai')}>
+              <i className="ti ti-shopping-bag"></i> Thương Mại
+            </button>
+            <button className={`ct-btn ct-btn--th${activePhanLoai === 'thuong-hieu' ? ' active' : ''}`} onClick={() => setActivePhanLoai('thuong-hieu')}>
+              <i className="ti ti-shield-star"></i> Thương Hiệu
+            </button>
+          </div>
+          {/* Danh mục */}
+          {categories.length > 2 && (
             <div className="nl-filter">
               {categories.map(c => (
                 <button key={c} className={`ct-btn${activeCategory === c ? ' active' : ''}`} onClick={() => setActiveCategory(c)}>{c}</button>
               ))}
             </div>
-          </div>
+          )}
         </div>
-      )}
+      </div>
 
       {/* CONTENT */}
       <section className="section" style={{ background: 'var(--bg)', paddingTop: '40px' }}>
@@ -100,7 +115,12 @@ export default function NguyenLieuPage() {
                       <span className="nl-card-num">#{p.stt || i + 1}</span>
                     </div>
                     <div className="nl-card-body">
-                      <span className="nl-card-cat">{p.category}</span>
+                      <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '6px' }}>
+                        <span className="nl-card-cat">{p.category}</span>
+                        {p.phan_loai === 'thuong-hieu' && (
+                          <span className="nl-badge-th"><i className="ti ti-shield-star"></i> Thương Hiệu</span>
+                        )}
+                      </div>
                       <h3 className="nl-card-name">{p.name}</h3>
                       {p.unit && <p className="nl-card-unit"><i className="ti ti-ruler-2"></i> {p.unit}</p>}
                       <div className="nl-card-foot">
