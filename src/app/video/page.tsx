@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { LarkVideo } from '@/lib/lark';
 
 function channelIcon(ch: string) {
@@ -9,6 +9,48 @@ function channelIcon(ch: string) {
   if (c.includes('facebook'))  return 'ti ti-brand-facebook';
   if (c.includes('instagram')) return 'ti ti-brand-instagram';
   return 'ti ti-video';
+}
+
+function VideoPlayer({ url, poster, title }: { url: string; poster: string | null; title: string }) {
+  const [errored, setErrored] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  if (errored) {
+    return (
+      <div className="vd-placeholder" style={{ gap: 14 }}>
+        {poster
+          ? <img src={poster} alt={title} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+          : <i className="ti ti-video-off" style={{ fontSize: '2.5rem' }} />}
+        <a
+          href={url}
+          download
+          target="_blank"
+          rel="noopener"
+          style={{
+            position: 'relative', zIndex: 1,
+            background: 'rgba(0,0,0,.6)', color: '#fff',
+            fontSize: '.78rem', padding: '7px 14px', borderRadius: 8,
+            display: 'flex', alignItems: 'center', gap: 6,
+          }}
+        >
+          <i className="ti ti-download" /> Tải về để xem
+        </a>
+      </div>
+    );
+  }
+
+  return (
+    <video
+      ref={videoRef}
+      src={url}
+      controls
+      playsInline
+      preload="metadata"
+      poster={poster ?? undefined}
+      onError={() => setErrored(true)}
+      style={{ width: '100%', height: '100%', objectFit: 'contain', background: '#000', display: 'block' }}
+    />
+  );
 }
 
 export default function VideoPage() {
@@ -79,13 +121,9 @@ export default function VideoPage() {
                 <div key={v.id} className="vd-card">
                   <div className="vd-media">
                     {v.videoUrl ? (
-                      <video
-                        src={v.videoUrl}
-                        controls
-                        playsInline
-                        preload="metadata"
-                        style={{ width: '100%', height: '100%', objectFit: 'contain', background: '#000', display: 'block' }}
-                      />
+                      <VideoPlayer url={v.videoUrl} poster={v.thumbnailUrl} title={v.title} />
+                    ) : v.thumbnailUrl ? (
+                      <img src={v.thumbnailUrl} alt={v.title} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                     ) : (
                       <div className="vd-placeholder">
                         <i className="ti ti-video" style={{ fontSize: '2.5rem' }} />

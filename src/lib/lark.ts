@@ -150,6 +150,7 @@ export interface LarkVideo {
   channel: string;
   date: string;
   videoUrl: string | null;
+  thumbnailUrl: string | null;
 }
 
 export async function fetchLarkVideos(): Promise<LarkVideo[]> {
@@ -187,9 +188,13 @@ export async function fetchLarkVideos(): Promise<LarkVideo[]> {
 
       const attachments: any[] = f['Tệp tin đính kèm'] ?? [];
       const vid = attachments.find(isPlayable) ?? null;
-      const videoUrl = await resolveAttachmentUrl(token, vid, extraParam);
+      const img = attachments.find(isDisplayable) ?? null;
+      const [videoUrl, thumbnailUrl] = await Promise.all([
+        resolveAttachmentUrl(token, vid, extraParam),
+        resolveAttachmentUrl(token, img, extraParam),
+      ]);
 
-      return { id: item.record_id, title, channel, date, videoUrl };
+      return { id: item.record_id, title, channel, date, videoUrl, thumbnailUrl };
     }),
   );
 
