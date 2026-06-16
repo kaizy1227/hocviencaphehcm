@@ -22,37 +22,46 @@ function VideoPlayer({ url, poster, title }: { url: string; poster: string | nul
   const [autoThumb, setAutoThumb] = useState<string | undefined>(undefined);
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  // Tự extract thumbnail client-side khi không có poster tĩnh
+  // Tự extract thumbnail client-side qua proxy (tránh CORS của Lark CDN)
   useEffect(() => {
     if (poster || !url) return;
     const vid = document.createElement('video');
-    vid.crossOrigin = 'anonymous';
     vid.preload = 'metadata';
     vid.muted = true;
     vid.playsInline = true;
 
-    const onMeta = () => { vid.currentTime = Math.min(1, (vid.duration || 2) * 0.1); };
-    const onSeeked = () => {
+    const capture = () => {
+      if (!vid.videoWidth) return;
       try {
         const canvas = document.createElement('canvas');
-        canvas.width = vid.videoWidth || 320;
-        canvas.height = vid.videoHeight || 568;
+        canvas.width = vid.videoWidth;
+        canvas.height = vid.videoHeight;
         const ctx = canvas.getContext('2d');
         if (ctx) {
           ctx.drawImage(vid, 0, 0, canvas.width, canvas.height);
           setAutoThumb(canvas.toDataURL('image/jpeg', 0.85));
         }
       } catch {
-        // CORS block — bỏ qua, không ảnh hưởng playback
+        // canvas tainted — fallback im lặng
       } finally {
         vid.src = '';
       }
     };
 
+    const onMeta = () => {
+      // seek đến giây 1 để lấy frame có nội dung hơn
+      vid.currentTime = Math.min(1, (vid.duration || 2) * 0.1);
+    };
+    const onSeeked = capture;
+    const onData   = () => { if (!vid.seeking) capture(); }; // fallback nếu seek không fire
+
     vid.addEventListener('loadedmetadata', onMeta);
     vid.addEventListener('seeked', onSeeked);
+    vid.addEventListener('loadeddata', onData);
     vid.addEventListener('error', () => {});
-    vid.src = url;
+
+    // Dùng proxy để bypass CORS: server fetch Lark URL, trả về cùng domain
+    vid.src = `/api/video-proxy?url=${encodeURIComponent(url)}`;
     return () => { vid.src = ''; };
   }, [url, poster]);
 
