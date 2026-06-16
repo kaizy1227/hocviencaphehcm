@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { LarkVideo } from '@/lib/lark';
 
 function channelIcon(ch: string) {
@@ -19,53 +19,9 @@ function localThumb(videoName: string | null): string | undefined {
 
 function VideoPlayer({ url, poster, title }: { url: string; poster: string | null | undefined; title: string }) {
   const [errored, setErrored] = useState(false);
-  const [autoThumb, setAutoThumb] = useState<string | undefined>(undefined);
-  const videoRef = useRef<HTMLVideoElement>(null);
 
-  // Tự extract thumbnail client-side qua proxy (tránh CORS của Lark CDN)
-  useEffect(() => {
-    if (poster || !url) return;
-    const vid = document.createElement('video');
-    vid.preload = 'metadata';
-    vid.muted = true;
-    vid.playsInline = true;
-
-    const capture = () => {
-      if (!vid.videoWidth) return;
-      try {
-        const canvas = document.createElement('canvas');
-        canvas.width = vid.videoWidth;
-        canvas.height = vid.videoHeight;
-        const ctx = canvas.getContext('2d');
-        if (ctx) {
-          ctx.drawImage(vid, 0, 0, canvas.width, canvas.height);
-          setAutoThumb(canvas.toDataURL('image/jpeg', 0.85));
-        }
-      } catch {
-        // canvas tainted — fallback im lặng
-      } finally {
-        vid.src = '';
-      }
-    };
-
-    const onMeta = () => {
-      // seek đến giây 1 để lấy frame có nội dung hơn
-      vid.currentTime = Math.min(1, (vid.duration || 2) * 0.1);
-    };
-    const onSeeked = capture;
-    const onData   = () => { if (!vid.seeking) capture(); }; // fallback nếu seek không fire
-
-    vid.addEventListener('loadedmetadata', onMeta);
-    vid.addEventListener('seeked', onSeeked);
-    vid.addEventListener('loadeddata', onData);
-    vid.addEventListener('error', () => {});
-
-    // Dùng proxy để bypass CORS: server fetch Lark URL, trả về cùng domain
-    vid.src = `/api/video-proxy?url=${encodeURIComponent(url)}`;
-    return () => { vid.src = ''; };
-  }, [url, poster]);
-
-  const effectivePoster = poster ?? autoThumb;
+  // Nếu không có poster tĩnh → dùng API server-side để extract thumbnail
+  const effectivePoster = poster ?? `/api/video-thumb?url=${encodeURIComponent(url)}`;
 
   if (errored) {
     return (
@@ -93,7 +49,6 @@ function VideoPlayer({ url, poster, title }: { url: string; poster: string | nul
 
   return (
     <video
-      ref={videoRef}
       src={url}
       controls
       playsInline
