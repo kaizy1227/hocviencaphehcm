@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
@@ -51,6 +51,29 @@ export default function Navbar() {
     router.refresh();
   }
 
+  const [ddOpen, setDdOpen] = useState(false);
+  const ddRef = useRef<HTMLDivElement>(null);
+  const [spOpen, setSpOpen] = useState(false);
+  const spRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!ddOpen) return;
+    const onOutside = (e: MouseEvent) => {
+      if (ddRef.current && !ddRef.current.contains(e.target as Node)) setDdOpen(false);
+    };
+    document.addEventListener('mousedown', onOutside);
+    return () => document.removeEventListener('mousedown', onOutside);
+  }, [ddOpen]);
+
+  useEffect(() => {
+    if (!spOpen) return;
+    const onOutside = (e: MouseEvent) => {
+      if (spRef.current && !spRef.current.contains(e.target as Node)) setSpOpen(false);
+    };
+    document.addEventListener('mousedown', onOutside);
+    return () => document.removeEventListener('mousedown', onOutside);
+  }, [spOpen]);
+
   const { totalItems, openCart } = useCart();
   const close = () => { setMenuOpen(false); setExpanded(null); };
   const toggle = (key: string) => setExpanded(e => e === key ? null : key);
@@ -70,16 +93,55 @@ export default function Navbar() {
 
             <Link href="/" className="nav-logo">
               <img src="/images/logo.png" className="nav-logo-icon" alt="Học Viện Cà Phê" />
-              <div>
-                <span className="nav-logo-main">Học Viện Cà Phê</span>
-                <span className="nav-logo-sub">Coffee &amp; Tea Academy</span>
-              </div>
             </Link>
 
             {/* RIGHT — parent pages + actions */}
             <div className="nav-right">
-              <Link href="/nguyen-lieu" className={`nav-link${pathname === '/nguyen-lieu' ? ' active' : ''}`}>Nguyên Liệu</Link>
-              <Link href="/hinh-anh/trao-bang" className={`nav-link${pathname.startsWith('/hinh-anh') ? ' active' : ''}`}>Hình Ảnh</Link>
+              {/* Sản Phẩm — desktop dropdown (click-toggle) */}
+              <div
+                ref={spRef}
+                className={`nav-dropdown-wrap${(pathname === '/nguyen-lieu' || pathname === '/dung-cu') ? ' active' : ''}${spOpen ? ' open' : ''}`}
+              >
+                <button
+                  className="nav-link nav-dropdown-trigger"
+                  onClick={() => setSpOpen(o => !o)}
+                  aria-expanded={spOpen}
+                >
+                  Sản Phẩm <i className="ti ti-chevron-down nav-dd-chevron"></i>
+                </button>
+                <div className="nav-dropdown-menu">
+                  <Link href="/nguyen-lieu" className="nav-dd-item" onClick={() => { setSpOpen(false); close(); }}>
+                    <i className="ti ti-bottle"></i> Nguyên Liệu
+                  </Link>
+                  <Link href="/dung-cu" className="nav-dd-item" onClick={() => { setSpOpen(false); close(); }}>
+                    <i className="ti ti-coffee"></i> Dụng Cụ
+                  </Link>
+                </div>
+              </div>
+
+              {/* Hình Ảnh — desktop dropdown (click-toggle) */}
+              <div
+                ref={ddRef}
+                className={`nav-dropdown-wrap${pathname.startsWith('/hinh-anh') ? ' active' : ''}${ddOpen ? ' open' : ''}`}
+              >
+                <button
+                  className="nav-link nav-dropdown-trigger"
+                  onClick={() => setDdOpen(o => !o)}
+                  aria-expanded={ddOpen}
+                >
+                  Hình Ảnh <i className="ti ti-chevron-down nav-dd-chevron"></i>
+                </button>
+                <div className="nav-dropdown-menu">
+                  <Link href="/hinh-anh/trao-bang" className="nav-dd-item" onClick={() => { setDdOpen(false); close(); }}>
+                    <i className="ti ti-certificate"></i> Trao Bằng
+                  </Link>
+                  <Link href="/hinh-anh/lop-hoc" className="nav-dd-item" onClick={() => { setDdOpen(false); close(); }}>
+                    <i className="ti ti-school"></i> Lớp Học
+                  </Link>
+                </div>
+              </div>
+
+              <Link href="/video" className={`nav-link${pathname === '/video' ? ' active' : ''}`}>Video</Link>
               <Link href="/gioi-thieu#lien-he" className="nav-link">Liên Hệ</Link>
 
               {phone ? (
@@ -137,7 +199,19 @@ export default function Navbar() {
 
         <Link href="/gioi-thieu" className={`mob-top-link${pathname === '/gioi-thieu' ? ' active' : ''}`} onClick={close}>Giới Thiệu</Link>
         <Link href="/cong-thuc" className={`mob-top-link${pathname === '/cong-thuc' ? ' active' : ''}`} onClick={close}>Công Thức Pha Chế</Link>
-        <Link href="/nguyen-lieu" className={`mob-top-link${pathname === '/nguyen-lieu' ? ' active' : ''}`} onClick={close}>Nguyên Liệu</Link>
+        <Link href="/video" className={`mob-top-link${pathname === '/video' ? ' active' : ''}`} onClick={close}>Video</Link>
+
+        {/* Sản Phẩm — accordion */}
+        <div className="mob-parent">
+          <button className={`mob-parent-btn${expanded === 'san-pham' ? ' open' : ''}`} onClick={() => toggle('san-pham')}>
+            <span>Sản Phẩm</span>
+            <i className="ti ti-chevron-down mob-chevron"></i>
+          </button>
+          <div className={`mob-children${expanded === 'san-pham' ? ' open' : ''}`}>
+            <Link href="/nguyen-lieu" className="mob-child" onClick={close}><i className="ti ti-bottle"></i> Nguyên Liệu</Link>
+            <Link href="/dung-cu" className="mob-child" onClick={close}><i className="ti ti-coffee"></i> Dụng Cụ</Link>
+          </div>
+        </div>
 
         {/* Hình Ảnh — accordion */}
         <div className="mob-parent">
@@ -147,6 +221,7 @@ export default function Navbar() {
           </button>
           <div className={`mob-children${expanded === 'hinh-anh' ? ' open' : ''}`}>
             <Link href="/hinh-anh/trao-bang" className="mob-child" onClick={close}><i className="ti ti-certificate"></i> Trao Bằng</Link>
+            <Link href="/hinh-anh/lop-hoc" className="mob-child" onClick={close}><i className="ti ti-school"></i> Lớp Học</Link>
           </div>
         </div>
 
