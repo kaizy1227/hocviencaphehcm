@@ -19,13 +19,50 @@ function localThumb(videoName: string | null): string | undefined {
 
 function VideoPlayer({ url, poster, title }: { url: string; poster: string | null | undefined; title: string }) {
   const [errored, setErrored] = useState(false);
+  const [autoThumb, setAutoThumb] = useState<string | undefined>(undefined);
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  // Tự extract thumbnail client-side khi không có poster tĩnh
+  useEffect(() => {
+    if (poster || !url) return;
+    const vid = document.createElement('video');
+    vid.crossOrigin = 'anonymous';
+    vid.preload = 'metadata';
+    vid.muted = true;
+    vid.playsInline = true;
+
+    const onMeta = () => { vid.currentTime = Math.min(1, (vid.duration || 2) * 0.1); };
+    const onSeeked = () => {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = vid.videoWidth || 320;
+        canvas.height = vid.videoHeight || 568;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(vid, 0, 0, canvas.width, canvas.height);
+          setAutoThumb(canvas.toDataURL('image/jpeg', 0.85));
+        }
+      } catch {
+        // CORS block — bỏ qua, không ảnh hưởng playback
+      } finally {
+        vid.src = '';
+      }
+    };
+
+    vid.addEventListener('loadedmetadata', onMeta);
+    vid.addEventListener('seeked', onSeeked);
+    vid.addEventListener('error', () => {});
+    vid.src = url;
+    return () => { vid.src = ''; };
+  }, [url, poster]);
+
+  const effectivePoster = poster ?? autoThumb;
 
   if (errored) {
     return (
       <div className="vd-placeholder" style={{ gap: 14 }}>
-        {poster
-          ? <img src={poster} alt={title} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+        {effectivePoster
+          ? <img src={effectivePoster} alt={title} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
           : <i className="ti ti-video-off" style={{ fontSize: '2.5rem' }} />}
         <a
           href={url}
@@ -52,7 +89,7 @@ function VideoPlayer({ url, poster, title }: { url: string; poster: string | nul
       controls
       playsInline
       preload="metadata"
-      poster={poster ?? undefined}
+      poster={effectivePoster}
       onError={() => setErrored(true)}
       style={{ width: '100%', height: '100%', objectFit: 'contain', background: '#000', display: 'block' }}
     />
