@@ -29,7 +29,7 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  if ((request.nextUrl.pathname.startsWith('/cong-thuc') || request.nextUrl.pathname.startsWith('/admin')) && !user) {
+  if (request.nextUrl.pathname.startsWith('/admin') && !user) {
     const url = request.nextUrl.clone();
     url.pathname = '/login';
     url.searchParams.set('redirect', request.nextUrl.pathname);

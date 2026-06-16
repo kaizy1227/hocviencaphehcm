@@ -117,6 +117,14 @@ export default function AdminPage() {
     });
   }, []);
 
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') { cancelProductEdit(); cancelToolEdit(); cancelCourseEdit(); }
+    }
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, []);
+
   async function loadStudents() {
     const { data } = await createClient().from('students').select('*').order('enrolled_at', { ascending: false });
     setStudents(data ?? []);
@@ -504,9 +512,9 @@ export default function AdminPage() {
                 <i className={`ti ti-${showAddCourse ? 'x' : 'plus'}`}></i> {showAddCourse ? 'Đóng' : 'Thêm Khóa Học'}
               </button>
             </div>
-            {(showAddCourse || editingCourse) && (
+            {showAddCourse && (
               <div className="admin-add-card">
-                <h3 className="admin-section-title">{editingCourse ? `Sửa: ${editingCourse.name}` : 'Thêm Khóa Học Mới'}</h3>
+                <h3 className="admin-section-title">Thêm Khóa Học Mới</h3>
                 <form className="admin-form" onSubmit={saveCourse}>
                   <div className="admin-form-grid">
                     <div className="af-group af-full"><label>Tên khóa học *</label><input type="text" placeholder="Ví dụ: Trà Sữa Hiện Đại" value={courseForm.name} onChange={e => setCourseForm(f => ({ ...f, name: e.target.value }))} required /></div>
@@ -519,10 +527,37 @@ export default function AdminPage() {
                   </div>
                   {courseFormError && <div className="lf-error" style={{ marginBottom: '12px' }}><i className="ti ti-alert-circle"></i> {courseFormError}</div>}
                   <div style={{ display: 'flex', gap: '10px' }}>
-                    <button type="submit" className="btn btn-primary" disabled={savingCourse}>{savingCourse ? <><i className="ti ti-loader-2 spin"></i> Đang lưu...</> : <><i className="ti ti-check"></i> {editingCourse ? 'Cập Nhật' : 'Thêm Khóa Học'}</>}</button>
+                    <button type="submit" className="btn btn-primary" disabled={savingCourse}>{savingCourse ? <><i className="ti ti-loader-2 spin"></i> Đang lưu...</> : <><i className="ti ti-check"></i> Thêm Khóa Học</>}</button>
                     <button type="button" className="btn btn-outline" onClick={cancelCourseEdit}>Hủy</button>
                   </div>
                 </form>
+              </div>
+            )}
+
+            {editingCourse && (
+              <div className="admin-modal-backdrop" onClick={e => { if (e.target === e.currentTarget) cancelCourseEdit(); }}>
+                <div className="admin-modal-card">
+                  <div className="admin-modal-head">
+                    <h3>Sửa: {editingCourse.name}</h3>
+                    <button type="button" className="admin-modal-close" onClick={cancelCourseEdit}><i className="ti ti-x"></i></button>
+                  </div>
+                  <form className="admin-form" onSubmit={saveCourse}>
+                    <div className="admin-form-grid">
+                      <div className="af-group af-full"><label>Tên khóa học *</label><input type="text" placeholder="Ví dụ: Trà Sữa Hiện Đại" value={courseForm.name} onChange={e => setCourseForm(f => ({ ...f, name: e.target.value }))} required /></div>
+                      <div className="af-group"><label>Loại *</label><select value={courseForm.category} onChange={e => setCourseForm(f => ({ ...f, category: e.target.value as Course['category'] }))}><option value="tong-hop">Khóa Tổng Hợp</option><option value="chuyen-de">Chuyên Đề Lẻ</option><option value="kinh-doanh">Gói Kinh Doanh</option></select></div>
+                      <div className="af-group"><label>Giá *</label><input type="text" placeholder="2.500.000đ" value={courseForm.price} onChange={e => setCourseForm(f => ({ ...f, price: e.target.value }))} required /></div>
+                      <div className="af-group"><label>Thời lượng</label><input type="text" placeholder="1 ngày · 2 buổi" value={courseForm.duration ?? ''} onChange={e => setCourseForm(f => ({ ...f, duration: e.target.value }))} /></div>
+                      <div className="af-group"><label>Tên file ảnh</label><input type="text" placeholder="tra-sua-hien-dai.png" value={courseForm.image ?? ''} onChange={e => setCourseForm(f => ({ ...f, image: e.target.value }))} /></div>
+                      <div className="af-group af-full"><label>Mô tả</label><textarea rows={3} placeholder="Mô tả ngắn về khóa học..." value={courseForm.description ?? ''} onChange={e => setCourseForm(f => ({ ...f, description: e.target.value }))} /></div>
+                      <div className="af-group"><label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}><input type="checkbox" checked={courseForm.active} onChange={e => setCourseForm(f => ({ ...f, active: e.target.checked }))} />Hiển thị trên trang chủ</label></div>
+                    </div>
+                    {courseFormError && <div className="lf-error" style={{ marginBottom: '12px' }}><i className="ti ti-alert-circle"></i> {courseFormError}</div>}
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                      <button type="submit" className="btn btn-primary" disabled={savingCourse}>{savingCourse ? <><i className="ti ti-loader-2 spin"></i> Đang lưu...</> : <><i className="ti ti-check"></i> Cập Nhật</>}</button>
+                      <button type="button" className="btn btn-outline" onClick={cancelCourseEdit}>Hủy</button>
+                    </div>
+                  </form>
+                </div>
               </div>
             )}
             {(['tong-hop', 'chuyen-de', 'kinh-doanh'] as Course['category'][]).map(cat => {
@@ -573,9 +608,9 @@ export default function AdminPage() {
               </button>
             </div>
 
-            {(showAddTool || editingTool) && (
+            {showAddTool && (
               <div className="admin-add-card">
-                <h3 className="admin-section-title">{editingTool ? `Sửa: ${editingTool.name}` : 'Thêm Dụng Cụ Mới'}</h3>
+                <h3 className="admin-section-title">Thêm Dụng Cụ Mới</h3>
                 <form className="admin-form" onSubmit={saveTool}>
                   <div className="admin-form-grid">
                     <div className="af-group">
@@ -637,11 +672,88 @@ export default function AdminPage() {
                   {toolFormError && <div className="lf-error" style={{ marginBottom: '12px' }}><i className="ti ti-alert-circle"></i> {toolFormError}</div>}
                   <div style={{ display: 'flex', gap: '10px' }}>
                     <button type="submit" className="btn btn-primary" disabled={savingTool || uploadingToolImg}>
-                      {savingTool ? <><i className="ti ti-loader-2 spin"></i> Đang lưu...</> : <><i className="ti ti-check"></i> {editingTool ? 'Cập Nhật' : 'Thêm Dụng Cụ'}</>}
+                      {savingTool ? <><i className="ti ti-loader-2 spin"></i> Đang lưu...</> : <><i className="ti ti-check"></i> Thêm Dụng Cụ</>}
                     </button>
                     <button type="button" className="btn btn-outline" onClick={cancelToolEdit}>Hủy</button>
                   </div>
                 </form>
+              </div>
+            )}
+
+            {editingTool && (
+              <div className="admin-modal-backdrop" onClick={e => { if (e.target === e.currentTarget) cancelToolEdit(); }}>
+                <div className="admin-modal-card">
+                  <div className="admin-modal-head">
+                    <h3>Sửa: {editingTool.name}</h3>
+                    <button type="button" className="admin-modal-close" onClick={cancelToolEdit}><i className="ti ti-x"></i></button>
+                  </div>
+                  <form className="admin-form" onSubmit={saveTool}>
+                    <div className="admin-form-grid">
+                      <div className="af-group">
+                        <label>STT</label>
+                        <input type="number" min={0} value={toolForm.stt} onChange={e => setToolForm(f => ({ ...f, stt: +e.target.value }))} />
+                      </div>
+                      <div className="af-group af-full">
+                        <label>Tên sản phẩm *</label>
+                        <input type="text" placeholder="Ca đánh sữa inox 350ml" value={toolForm.name} onChange={e => setToolForm(f => ({ ...f, name: e.target.value }))} required />
+                      </div>
+                      <div className="af-group">
+                        <label>Quy cách</label>
+                        <input type="text" placeholder="cái / bộ / cây..." value={toolForm.unit} onChange={e => setToolForm(f => ({ ...f, unit: e.target.value }))} />
+                      </div>
+                      <div className="af-group">
+                        <label>Giá bán (VNĐ)</label>
+                        <input type="number" min={0} step={1000} placeholder="70000" value={toolForm.price || ''} onChange={e => setToolForm(f => ({ ...f, price: +e.target.value }))} />
+                      </div>
+                      <div className="af-group">
+                        <label>Danh mục</label>
+                        <select value={toolForm.category} onChange={e => setToolForm(f => ({ ...f, category: e.target.value }))}>
+                          <option>Dụng cụ pha chế</option>
+                          <option>Dụng cụ phục vụ</option>
+                          <option>Linh phụ kiện máy cà phê - sinh tố</option>
+                          <option>Máy móc pha chế</option>
+                          <option>Thiết bị thu ngân</option>
+                        </select>
+                      </div>
+                      <div className="af-group af-full">
+                        <label>Hình ảnh</label>
+                        <div className="prod-img-row">
+                          {toolForm.image_url && (
+                            <img src={toolForm.image_url} alt="preview" className="prod-img-preview" />
+                          )}
+                          <div style={{ flex: 1 }}>
+                            <input
+                              type="text"
+                              placeholder="URL ảnh hoặc /images/dung-cu/..."
+                              value={toolForm.image_url}
+                              onChange={e => setToolForm(f => ({ ...f, image_url: e.target.value }))}
+                              style={{ marginBottom: '8px' }}
+                            />
+                            <input ref={toolFileRef} type="file" accept="image/*" style={{ display: 'none' }}
+                              onChange={e => { const f = e.target.files?.[0]; if (f) handleToolImageUpload(f); }} />
+                            <button type="button" className="btn btn-outline" style={{ fontSize: '0.8rem', padding: '6px 14px' }}
+                              onClick={() => toolFileRef.current?.click()} disabled={uploadingToolImg}>
+                              {uploadingToolImg ? <><i className="ti ti-loader-2 spin"></i> Đang upload...</> : <><i className="ti ti-upload"></i> Chọn ảnh từ máy</>}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="af-group">
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                          <input type="checkbox" checked={toolForm.active} onChange={e => setToolForm(f => ({ ...f, active: e.target.checked }))} />
+                          Hiển thị bảng giá
+                        </label>
+                      </div>
+                    </div>
+                    {toolFormError && <div className="lf-error" style={{ marginBottom: '12px' }}><i className="ti ti-alert-circle"></i> {toolFormError}</div>}
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                      <button type="submit" className="btn btn-primary" disabled={savingTool || uploadingToolImg}>
+                        {savingTool ? <><i className="ti ti-loader-2 spin"></i> Đang lưu...</> : <><i className="ti ti-check"></i> Cập Nhật</>}
+                      </button>
+                      <button type="button" className="btn btn-outline" onClick={cancelToolEdit}>Hủy</button>
+                    </div>
+                  </form>
+                </div>
               </div>
             )}
 
@@ -700,10 +812,10 @@ export default function AdminPage() {
               </button>
             </div>
 
-            {/* PRODUCT FORM */}
-            {(showAddProduct || editingProduct) && (
+            {/* PRODUCT ADD FORM — inline */}
+            {showAddProduct && (
               <div className="admin-add-card">
-                <h3 className="admin-section-title">{editingProduct ? `Sửa: ${editingProduct.name}` : 'Thêm Sản Phẩm Mới'}</h3>
+                <h3 className="admin-section-title">Thêm Sản Phẩm Mới</h3>
                 <form className="admin-form" onSubmit={saveProduct}>
                   <div className="admin-form-grid">
                     <div className="af-group">
@@ -766,11 +878,90 @@ export default function AdminPage() {
                   {productFormError && <div className="lf-error" style={{ marginBottom: '12px' }}><i className="ti ti-alert-circle"></i> {productFormError}</div>}
                   <div style={{ display: 'flex', gap: '10px' }}>
                     <button type="submit" className="btn btn-primary" disabled={savingProduct || uploadingImg}>
-                      {savingProduct ? <><i className="ti ti-loader-2 spin"></i> Đang lưu...</> : <><i className="ti ti-check"></i> {editingProduct ? 'Cập Nhật' : 'Thêm Sản Phẩm'}</>}
+                      {savingProduct ? <><i className="ti ti-loader-2 spin"></i> Đang lưu...</> : <><i className="ti ti-check"></i> Thêm Sản Phẩm</>}
                     </button>
                     <button type="button" className="btn btn-outline" onClick={cancelProductEdit}>Hủy</button>
                   </div>
                 </form>
+              </div>
+            )}
+
+            {/* PRODUCT EDIT MODAL */}
+            {editingProduct && (
+              <div className="admin-modal-backdrop" onClick={e => { if (e.target === e.currentTarget) cancelProductEdit(); }}>
+                <div className="admin-modal-card">
+                  <div className="admin-modal-head">
+                    <h3>Sửa: {editingProduct.name}</h3>
+                    <button type="button" className="admin-modal-close" onClick={cancelProductEdit}><i className="ti ti-x"></i></button>
+                  </div>
+                  <form className="admin-form" onSubmit={saveProduct}>
+                    <div className="admin-form-grid">
+                      <div className="af-group">
+                        <label>STT</label>
+                        <input type="number" min={0} value={productForm.stt} onChange={e => setProductForm(f => ({ ...f, stt: +e.target.value }))} />
+                      </div>
+                      <div className="af-group af-full">
+                        <label>Tên sản phẩm *</label>
+                        <input type="text" placeholder="Bột cacao nguyên chất Bạch Dương 500g" value={productForm.name} onChange={e => setProductForm(f => ({ ...f, name: e.target.value }))} required />
+                      </div>
+                      <div className="af-group">
+                        <label>Quy cách</label>
+                        <input type="text" placeholder="Túi 500g" value={productForm.unit} onChange={e => setProductForm(f => ({ ...f, unit: e.target.value }))} />
+                      </div>
+                      <div className="af-group">
+                        <label>Giá bán (VNĐ)</label>
+                        <input type="number" min={0} step={1000} placeholder="165000" value={productForm.price || ''} onChange={e => setProductForm(f => ({ ...f, price: +e.target.value }))} />
+                      </div>
+                      <div className="af-group">
+                        <label>Danh mục</label>
+                        <input type="text" placeholder="Nguyên liệu, Bột, Siro..." value={productForm.category} onChange={e => setProductForm(f => ({ ...f, category: e.target.value }))} />
+                      </div>
+                      <div className="af-group">
+                        <label>Phân loại</label>
+                        <select value={productForm.phan_loai} onChange={e => setProductForm(f => ({ ...f, phan_loai: e.target.value as Product['phan_loai'] }))}>
+                          <option value="thuong-mai">Thương Mại — bán thoải mái</option>
+                          <option value="thuong-hieu">Thương Hiệu — chỉ học viên</option>
+                        </select>
+                      </div>
+                      <div className="af-group af-full">
+                        <label>Hình ảnh</label>
+                        <div className="prod-img-row">
+                          {productForm.image_url && (
+                            <img src={productForm.image_url} alt="preview" className="prod-img-preview" />
+                          )}
+                          <div style={{ flex: 1 }}>
+                            <input
+                              type="text"
+                              placeholder="URL ảnh (tự điền sau khi upload)"
+                              value={productForm.image_url}
+                              onChange={e => setProductForm(f => ({ ...f, image_url: e.target.value }))}
+                              style={{ marginBottom: '8px' }}
+                            />
+                            <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }}
+                              onChange={e => { const f = e.target.files?.[0]; if (f) handleProductImageUpload(f); }} />
+                            <button type="button" className="btn btn-outline" style={{ fontSize: '0.8rem', padding: '6px 14px' }}
+                              onClick={() => fileRef.current?.click()} disabled={uploadingImg}>
+                              {uploadingImg ? <><i className="ti ti-loader-2 spin"></i> Đang upload...</> : <><i className="ti ti-upload"></i> Chọn ảnh từ máy</>}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="af-group">
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                          <input type="checkbox" checked={productForm.active} onChange={e => setProductForm(f => ({ ...f, active: e.target.checked }))} />
+                          Hiển thị bảng giá
+                        </label>
+                      </div>
+                    </div>
+                    {productFormError && <div className="lf-error" style={{ marginBottom: '12px' }}><i className="ti ti-alert-circle"></i> {productFormError}</div>}
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                      <button type="submit" className="btn btn-primary" disabled={savingProduct || uploadingImg}>
+                        {savingProduct ? <><i className="ti ti-loader-2 spin"></i> Đang lưu...</> : <><i className="ti ti-check"></i> Cập Nhật</>}
+                      </button>
+                      <button type="button" className="btn btn-outline" onClick={cancelProductEdit}>Hủy</button>
+                    </div>
+                  </form>
+                </div>
               </div>
             )}
 

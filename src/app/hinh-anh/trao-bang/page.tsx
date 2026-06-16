@@ -5,6 +5,7 @@ import type { LarkStudent } from '@/lib/lark';
 export default function TraoBangPage() {
   const [students, setStudents] = useState<LarkStudent[]>([]);
   const [loading, setLoading] = useState(true);
+  const [lightbox, setLightbox] = useState<{ src: string; name: string } | null>(null);
 
   useEffect(() => {
     fetch('/api/lark-students')
@@ -14,7 +15,15 @@ export default function TraoBangPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  const sorted = [...students].sort((a, b) => b.date.localeCompare(a.date));
+  useEffect(() => {
+    if (!lightbox) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setLightbox(null); };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [lightbox]);
+
+  const parseDate = (d: string) => { const [day, mo, yr] = d.split('/'); return new Date(`${yr}-${mo}-${day}`).getTime(); };
+  const sorted = [...students].sort((a, b) => parseDate(b.date) - parseDate(a.date));
 
   return (
     <main style={{ paddingTop: 'var(--nav-h)' }}>
@@ -26,11 +35,6 @@ export default function TraoBangPage() {
           <p className="sub" style={{ maxWidth: 520, margin: '0 auto' }}>
             Mỗi học viên hoàn thành khóa học đều nhận chứng nhận từ Học Viện Cà Phê — bước đầu trên hành trình kinh doanh của riêng bạn.
           </p>
-          {!loading && (
-            <div className="tb-count">
-              <i className="ti ti-certificate"></i> {sorted.length} học viên đã nhận chứng nhận
-            </div>
-          )}
         </div>
       </section>
 
@@ -45,7 +49,11 @@ export default function TraoBangPage() {
             <div className="tb-grid">
               {sorted.map(s => (
                 <div key={s.id} className="tb-card">
-                  <div className="tb-card-img">
+                  <div
+                    className="tb-card-img"
+                    onClick={() => s.photoUrl && setLightbox({ src: s.photoUrl, name: s.name })}
+                    style={{ cursor: s.photoUrl ? 'zoom-in' : 'default' }}
+                  >
                     {s.photoUrl ? (
                       <img
                         src={s.photoUrl}
@@ -62,10 +70,14 @@ export default function TraoBangPage() {
                     <div className="tb-placeholder" style={{ display: s.photoUrl ? 'none' : 'flex' }}>
                       <i className="ti ti-certificate"></i>
                     </div>
+                    {s.photoUrl && (
+                      <div className="tb-zoom-hint"><i className="ti ti-zoom-in"></i></div>
+                    )}
                   </div>
                   <div className="tb-card-info">
                     <span className="tb-card-name">{s.name.trim()}</span>
                     {s.date && <span className="tb-card-date">{s.date}</span>}
+                    {s.course && <span className="tb-course">{s.course}</span>}
                     <span className="tb-badge"><i className="ti ti-certificate"></i> Chứng Nhận Hoàn Thành</span>
                   </div>
                 </div>
@@ -74,6 +86,22 @@ export default function TraoBangPage() {
           )}
         </div>
       </section>
+
+      {/* LIGHTBOX */}
+      {lightbox && (
+        <div className="tb-lightbox" onClick={() => setLightbox(null)}>
+          <button className="tb-lb-close" onClick={() => setLightbox(null)} aria-label="Đóng">
+            <i className="ti ti-x"></i>
+          </button>
+          <img
+            src={lightbox.src}
+            alt={lightbox.name}
+            className="tb-lb-img"
+            onClick={e => e.stopPropagation()}
+          />
+          <p className="tb-lb-name">{lightbox.name}</p>
+        </div>
+      )}
     </main>
   );
 }

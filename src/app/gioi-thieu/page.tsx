@@ -186,7 +186,7 @@ export default function GioiThieuPage() {
             {/* THẦY LIÊM — ảnh trái, nội dung phải */}
             <div className="gv-card2">
               <div className="gv-photo-side">
-                <img src="/images/giangvien_Liem.jpg" alt="Thầy Đoàn Hồng Liêm" />
+                <img src="/images/giangvienLiem.jpg" alt="Thầy Đoàn Hồng Liêm" />
               </div>
               <div className="gv-text-side">
                 <div className="gv-hero-badges">
@@ -197,7 +197,13 @@ export default function GioiThieuPage() {
                 <div className="gv-hero-name">Đoàn Hồng Liêm</div>
                 <div className="gv-hero-role">☕ Trưởng Phòng Đào Tạo · Chuyên Gia Cà Phê</div>
                 <p className="gv-hero-desc">
-                  Gắn bó với ngành F&amp;B như một lẽ tự nhiên - và kể từ đó, chưa một lần rời bước. Hành trình ấy bắt đầu từ vị trí barista rồi dần vươn lên quản lý tại nhiều chuỗi quán cà phê lớn, tích lũy qua từng ca làm, từng tách cà phê, từng đội nhóm được dẫn dắt. Những năm tháng ấy đã tôi luyện nên một người thầy không chỉ giỏi nghề, mà còn thấu hiểu nghề đến tận gốc rễ. Hiện là <strong>Trưởng Phòng Đào Tạo</strong> tại Học Viện Cà Phê Chi Nhánh Miền Nam, Giảng viên Liêm đã trực tiếp xây dựng menu và đào tạo nhân sự cho hàng chục quán mới mở trải dài khắp cả nước - mỗi nơi anh đặt chân đến, đều để lại một dấu ấn khó phai.
+                  Gắn bó với ngành F&amp;B như một lẽ tự nhiên — và kể từ đó, chưa một lần rời bước.
+                </p>
+                <p className="gv-hero-desc">
+                  Hành trình ấy bắt đầu từ vị trí barista rồi dần vươn lên quản lý tại nhiều chuỗi quán cà phê lớn, tích lũy qua từng ca làm, từng tách cà phê, từng đội nhóm được dẫn dắt. Những năm tháng ấy đã tôi luyện nên một người thầy không chỉ giỏi nghề, mà còn thấu hiểu nghề đến tận gốc rễ.
+                </p>
+                <p className="gv-hero-desc">
+                  Hiện là <strong>Trưởng Phòng Đào Tạo</strong> tại Học Viện Cà Phê Chi Nhánh Miền Nam, Giảng viên Liêm đã trực tiếp xây dựng menu và đào tạo nhân sự cho hàng chục quán mới mở trải dài khắp cả nước — mỗi nơi anh đặt chân đến, đều để lại một dấu ấn khó phai.
                 </p>
                 <blockquote className="gv-hero-quote">
                   "Một ly cà phê ngon không bao giờ là ngẫu nhiên — đó là tích lũy của kỹ thuật và tâm huyết. Tôi muốn truyền trọn điều đó cho các bạn."
@@ -222,7 +228,13 @@ export default function GioiThieuPage() {
                 <div className="gv-hero-name">Bùi Trần Thiên Ân</div>
                 <div className="gv-hero-role">🍵 Chuyên Gia Sáng Tạo Đồ Uống</div>
                 <p className="gv-hero-desc">
-                  Xuất thân từ mái trường <strong>Nghệ Thuật</strong>, Giảng viên Thiên Ân mang trong mình một gu thẩm mỹ riêng biệt — thứ ngôn ngữ không lời mà anh dùng để thổi linh hồn vào từng ly thức uống. Trải qua 6 năm gắn bó với ngành F&amp;B, từng đảm nhận vai trò trainer cho chuỗi trà sữa AiCha ở thời điểm thương hiệu vươn tới gần 20 cửa hàng, anh tích lũy cho mình một kho công thức phong phú về <strong>trà trái cây, trà sữa</strong> nơi hương vị tinh tế hòa quyện cùng nghệ thuật trang trí bắt mắt. Mỗi ly nước được chụp lại tại Học Viện đều do chính tay anh tạo ra và trình bày — một sự tỉ mỉ nho nhỏ, nhưng đủ để nói lên tất cả.
+                  Xuất thân từ mái trường <strong>Nghệ Thuật</strong>, Giảng viên Thiên Ân mang trong mình một gu thẩm mỹ riêng biệt — thứ ngôn ngữ không lời mà anh dùng để thổi linh hồn vào từng ly thức uống.
+                </p>
+                <p className="gv-hero-desc">
+                  Trải qua 6 năm gắn bó với ngành F&amp;B, từng đảm nhận vai trò trainer cho chuỗi trà sữa AiCha ở thời điểm thương hiệu vươn tới gần 20 cửa hàng, anh tích lũy cho mình một kho công thức phong phú về <strong>trà trái cây, trà sữa</strong> nơi hương vị tinh tế hòa quyện cùng nghệ thuật trang trí bắt mắt.
+                </p>
+                <p className="gv-hero-desc">
+                  Mỗi ly nước được chụp lại tại Học Viện đều do chính tay anh tạo ra và trình bày — một sự tỉ mỉ nho nhỏ, nhưng đủ để nói lên tất cả.
                 </p>
                 <blockquote className="gv-hero-quote">
                   "Người học nhanh nhất không phải người thông minh nhất — mà là người dám thử, dám sai và không bỏ cuộc."
@@ -235,7 +247,7 @@ export default function GioiThieuPage() {
                 </div>
               </div>
               <div className="gv-photo-side">
-                <img src="/images/giangvien_An.jpg" alt="Thầy Bùi Trần Thiên Ân" />
+                <img src="/images/giangvienAn.jpg" alt="Thầy Bùi Trần Thiên Ân" />
               </div>
             </div>
 
@@ -314,7 +326,7 @@ export default function GioiThieuPage() {
               <p>Điền form hoặc nhắn Zalo — đội ngũ sẽ phản hồi trong vòng 30 phút trong giờ hành chính.</p>
               <ul className="lh-contacts">
                 <li><i className="ti ti-phone"></i><div><strong>Hotline</strong><a href="tel:0834790555">0834.790.555</a></div></li>
-                <li><i className="ti ti-brand-zalo"></i><div><strong>Zalo</strong><a href="https://zalo.me/0834790555" target="_blank" rel="noopener">0834.790.555</a></div></li>
+                <li><i className="ti ti-message-circle"></i><div><strong>Zalo</strong><a href="https://zalo.me/0834790555" target="_blank" rel="noopener">0834.790.555</a></div></li>
                 <li><i className="ti ti-map-pin"></i><div><strong>Địa chỉ</strong><span>26/23 Nguyễn Minh Hoàng, P. Bảy Hiền, Tân Bình, TP.HCM</span></div></li>
                 <li><i className="ti ti-clock"></i><div><strong>Giờ làm việc</strong><span>Thứ 2 – Thứ 7: 8h30 – 17h30</span></div></li>
               </ul>

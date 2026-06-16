@@ -98,31 +98,63 @@ function LoginForm() {
   );
 }
 
+const LOGIN_PERKS = [
+  'Kho công thức pha chế độc quyền từ giảng viên',
+  'Cập nhật liên tục — hơn 60 công thức đồ uống',
+  'Hỗ trợ trực tiếp từ đội ngũ học viện',
+];
+
 export default function LoginPage() {
   return (
-    <main className="login-page">
-      <div className="login-card">
-        <div className="login-logo">
-          <img src="/images/logo.png" alt="Học Viện Cà Phê" />
+    <main className="reg-page">
+      {/* LEFT — brand panel */}
+      <div className="reg-brand-panel">
+        <div className="reg-brand-bg">
+          <img src="/images/gallery/Life-styles-with-person/~12816.webp" alt="" aria-hidden="true" />
         </div>
-        <h1 className="login-title">Đăng Nhập</h1>
-        <p className="login-sub">Dành cho học viên Học Viện Cà Phê</p>
-
-        <Suspense fallback={<div className="lf-loading">Đang tải...</div>}>
-          <LoginForm />
-        </Suspense>
-
-        <div className="login-register-cta">
-          <span>Chưa có tài khoản?</span>
-          <Link href="/dang-ky-hoc-vien" className="login-register-link">
-            <i className="ti ti-user-plus"></i> Đăng ký ngay
+        <div className="reg-brand-content">
+          <Link href="/">
+            <img src="/images/logo.png" alt="Học Viện Cà Phê" className="reg-brand-logo" />
           </Link>
+          <div className="reg-brand-eyebrow">Cổng Học Viên</div>
+          <h2 className="reg-brand-h">Chào Mừng<br />Trở Lại</h2>
+          <p className="reg-brand-desc">Đăng nhập để truy cập kho công thức pha chế độc quyền dành cho học viên Học Viện Cà Phê.</p>
+          <div className="reg-perks">
+            {LOGIN_PERKS.map(t => (
+              <div key={t} className="reg-perk">
+                <i className="ti ti-circle-check"></i>
+                <span>{t}</span>
+              </div>
+            ))}
+          </div>
         </div>
+      </div>
 
-        <div className="login-footer">
-          <Link href="/">← Về trang chủ</Link>
-          <span>·</span>
-          <a href="https://zalo.me/0834790555" target="_blank" rel="noopener">Liên hệ hỗ trợ</a>
+      {/* RIGHT — form panel */}
+      <div className="reg-form-panel">
+        <div className="reg-card">
+          <div className="login-logo">
+            <Link href="/"><img src="/images/logo.png" alt="Học Viện Cà Phê" /></Link>
+          </div>
+          <h1 className="login-title">Đăng Nhập</h1>
+          <p className="login-sub">Dành cho học viên Học Viện Cà Phê</p>
+
+          <Suspense fallback={<div className="lf-loading">Đang tải...</div>}>
+            <LoginForm />
+          </Suspense>
+
+          <div className="login-register-cta">
+            <span>Chưa có tài khoản?</span>
+            <Link href="/dang-ky-hoc-vien" className="login-register-link">
+              <i className="ti ti-user-plus"></i> Đăng ký ngay
+            </Link>
+          </div>
+
+          <div className="login-footer">
+            <Link href="/">← Về trang chủ</Link>
+            <span>·</span>
+            <a href="https://zalo.me/0834790555" target="_blank" rel="noopener">Liên hệ hỗ trợ</a>
+          </div>
         </div>
       </div>
     </main>

@@ -98,8 +98,6 @@ export default function HomePage() {
   const fanTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const marqueeRef1 = useRef<HTMLDivElement>(null);
   const marqueeRef2 = useRef<HTMLDivElement>(null);
-  const masonryRef = useRef<HTMLDivElement>(null);
-
   const n = STUDENTS.length;
 
   const openLb = (src: string, alt: string) => {
@@ -169,16 +167,6 @@ export default function HomePage() {
     initTrack(marqueeRef2.current, true);
   }, []);
 
-  useEffect(() => {
-    const els = masonryRef.current?.querySelectorAll<HTMLElement>('.ls-img');
-    if (!els) return;
-    els.forEach((el, i) => { el.style.transitionDelay = `${(i % 6) * 0.07}s`; });
-    const obs = new IntersectionObserver(entries => {
-      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
-    }, { threshold: 0.08 });
-    els.forEach(el => obs.observe(el));
-    return () => obs.disconnect();
-  }, []);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') closeLb(); };
@@ -257,7 +245,7 @@ export default function HomePage() {
       <section className="section courses" id="courses">
         <div className="container">
           <div className="courses-head">
-            <div><span className="tag">Khóa Pha Chế Tổng Hợp</span><h2 className="title">Các Khóa Học Pha Chế</h2></div>
+            <div><h2 className="title">Các Khóa Học Pha Chế</h2></div>
             <Link href="/dang-ky" className="btn btn-outline">Tư Vấn Thêm →</Link>
           </div>
           <div className="course-grid">
@@ -312,7 +300,6 @@ export default function HomePage() {
               </div>
             </div>
             <div>
-              <span className="tag">Về Chúng Tôi</span>
               <h2 className="title">Đồng Hành Cùng Bạn Mở Quán</h2>
               <p className="sub">Học Viện Cà Phê là nơi khởi nguồn kinh doanh của bạn — đào tạo pha chế bài bản và đồng hành từ công thức, set up menu đến vận hành quán cà phê, trà sữa hiệu quả.</p>
               <div className="checks">
@@ -352,7 +339,6 @@ export default function HomePage() {
       {/* MENU GALLERY */}
       <section className="section" id="menu" style={{background:'var(--white)'}}>
         <div className="container">
-          <div style={{textAlign:'center', marginBottom:'4px'}}><span className="tag">Menu Đồ Uống</span></div>
           <h2 className="title" style={{textAlign:'center'}}>Hơn 60 Công Thức Bạn Sẽ Học</h2>
           <p className="sub" style={{textAlign:'center', maxWidth:'540px', margin:'0 auto'}}>Từ cà phê, trà sữa, trà trái cây, matcha đến đá xay — toàn bộ công thức được hướng dẫn chi tiết tại khóa học.</p>
         </div>
@@ -405,21 +391,6 @@ export default function HomePage() {
       </section>
 
 
-      {/* MASONRY */}
-      <section className="section" style={{background:'var(--white)'}}>
-        <div className="container">
-          <div style={{textAlign:'center'}}>
-            <span className="tag">Trải Nghiệm Thực Tế</span>
-            <h2 className="title">Học Từ Công Thức Thật<br />Làm Từ Nguyên Liệu Thật</h2>
-            <p className="sub" style={{maxWidth:'560px', margin:'0 auto'}}>Mỗi buổi học là một trải nghiệm thực chiến — bạn tự tay pha từng ly, nắm vững công thức và mang về bí quyết kinh doanh của riêng mình.</p>
-          </div>
-          <div className="ls-grid" ref={masonryRef}>
-            {['~11447.webp','~11594_1.webp','~11783.webp','~11900.webp','~12219.webp','~12609.webp','~11675.webp'].map(f => (
-              <div className="ls-img" key={f}><img src={`/images/gallery/Life-styles/${f}`} alt="" loading="lazy" /></div>
-            ))}
-          </div>
-        </div>
-      </section>
 
     </>
   );

@@ -72,6 +72,7 @@ export default function CongThucPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [courseAccess, setCourseAccess] = useState<string[] | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [addedIds, setAddedIds] = useState<Set<string>>(new Set());
@@ -81,7 +82,8 @@ export default function CongThucPage() {
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getUser().then(async ({ data: { user } }) => {
-      if (!user) { setCourseAccess([]); return; }
+      if (!user) { setIsLoggedIn(false); setCourseAccess([]); return; }
+      setIsLoggedIn(true);
       if (user.app_metadata?.role === 'admin') { setIsAdmin(true); setCourseAccess(null); return; }
       const { data } = await supabase
         .from('students')
@@ -97,7 +99,8 @@ export default function CongThucPage() {
   }, []);
 
   const canView = (course: string) => isAdmin || (courseAccess?.includes(course) ?? false);
-  const noAccess = !isAdmin && courseAccess !== null && courseAccess.length === 0;
+  // noAccess banner chỉ hiện với người ĐÃ đăng nhập nhưng chưa được cấp quyền khóa học
+  const noAccess = isLoggedIn === true && !isAdmin && courseAccess !== null && courseAccess.length === 0;
 
   const filterKey = CAT_MAP[activeCat] ?? activeCat;
   const filtered = RECIPES.filter(r => {
@@ -237,7 +240,21 @@ export default function CongThucPage() {
             <div className="ct-modal-img">
               <img src={`/images/gallery/Concept-studio-with-products/${selectedRecipe.img}`} alt={selectedRecipe.name}
                 onError={e => { (e.currentTarget as HTMLImageElement).src='/images/logo.png'; }} />
-              {!canView(selectedRecipe.course) && (
+              {isLoggedIn === false ? (
+                <div className="ct-modal-lock-ov">
+                  <div className="ct-modal-lock-box">
+                    <div className="ct-lock-ico"><i className="ti ti-user-circle"></i></div>
+                    <h3>Đăng Nhập Để Xem</h3>
+                    <p>Chỉ học viên Học Viện Cà Phê mới xem được công thức chi tiết.</p>
+                    <Link href="/login" className="btn btn-primary" onClick={closeModal}>
+                      <i className="ti ti-login"></i> Đăng Nhập Ngay
+                    </Link>
+                    <Link href="/dang-ky-hoc-vien" className="ct-modal-gate-sub" onClick={closeModal}>
+                      Chưa có tài khoản? Đăng ký học viên
+                    </Link>
+                  </div>
+                </div>
+              ) : !canView(selectedRecipe.course) ? (
                 <div className="ct-modal-lock-ov">
                   <div className="ct-modal-lock-box">
                     <div className="ct-lock-ico"><i className="ti ti-lock"></i></div>
@@ -248,7 +265,7 @@ export default function CongThucPage() {
                     </Link>
                   </div>
                 </div>
-              )}
+              ) : null}
             </div>
             <div className="ct-modal-body">
               <span className="ct-card-cat">{selectedRecipe.cat}</span>
@@ -270,6 +287,29 @@ export default function CongThucPage() {
                     <ol className="ct-steps-list">
                       {selectedRecipe.steps.map((s,i) => <li key={i}>{s}</li>)}
                     </ol>
+                  </div>
+                </>
+              ) : isLoggedIn === false ? (
+                <>
+                  <div className="ct-modal-section">
+                    <h4><i className="ti ti-list"></i> Nguyên liệu</h4>
+                    <ul className="ct-ing-list">
+                      {selectedRecipe.ingredients.map((ing,i) => <li key={i} className="ct-locked-item"><i className="ti ti-lock" style={{fontSize:'0.7rem', opacity:0.5}}></i> {ing}</li>)}
+                    </ul>
+                  </div>
+                  <div className="ct-modal-section">
+                    <h4><i className="ti ti-steps"></i> Các bước thực hiện</h4>
+                    <ol className="ct-steps-list">
+                      {selectedRecipe.steps.map((s,i) => <li key={i} className="ct-locked-item"><i className="ti ti-lock" style={{fontSize:'0.7rem', opacity:0.5}}></i> {s}</li>)}
+                    </ol>
+                  </div>
+                  <div className="ct-modal-cta">
+                    <Link href="/login" className="btn btn-primary" onClick={closeModal}>
+                      <i className="ti ti-login"></i> Đăng Nhập Để Xem
+                    </Link>
+                    <Link href="/dang-ky-hoc-vien" className="btn btn-outline" onClick={closeModal}>
+                      <i className="ti ti-user-plus"></i> Đăng Ký Học Viên
+                    </Link>
                   </div>
                 </>
               ) : (
