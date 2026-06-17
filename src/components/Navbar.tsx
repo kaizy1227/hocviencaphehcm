@@ -89,6 +89,7 @@ export default function Navbar() {
               <Link href="/" className={`nav-link${isHome ? ' active' : ''}`}>Trang Chủ</Link>
               <Link href="/gioi-thieu" className={`nav-link${pathname === '/gioi-thieu' ? ' active' : ''}`}>Giới Thiệu</Link>
               <Link href="/cong-thuc" className={`nav-link${pathname === '/cong-thuc' ? ' active' : ''}`}>Công Thức</Link>
+              <Link href="/cong-thuc-2" className={`nav-link${pathname === '/cong-thuc-2' ? ' active' : ''}`}>Công Thức 2</Link>
             </div>
 
             <Link href="/" className="nav-logo">
@@ -199,6 +200,7 @@ export default function Navbar() {
 
         <Link href="/gioi-thieu" className={`mob-top-link${pathname === '/gioi-thieu' ? ' active' : ''}`} onClick={close}>Giới Thiệu</Link>
         <Link href="/cong-thuc" className={`mob-top-link${pathname === '/cong-thuc' ? ' active' : ''}`} onClick={close}>Công Thức Pha Chế</Link>
+        <Link href="/cong-thuc-2" className={`mob-top-link${pathname === '/cong-thuc-2' ? ' active' : ''}`} onClick={close}>Công Thức 2</Link>
         <Link href="/video" className={`mob-top-link${pathname === '/video' ? ' active' : ''}`} onClick={close}>Video</Link>
 
         {/* Sản Phẩm — accordion */}

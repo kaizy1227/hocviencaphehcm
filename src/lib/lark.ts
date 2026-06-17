@@ -214,6 +214,64 @@ export async function fetchLarkVideos(): Promise<LarkVideo[]> {
   return results;
 }
 
+// ─── Công Thức 2 (Lark Base) ─────────────────────────────────────────────────
+
+const RECIPE2_TABLE = 'tblGmHbYtQ1alxRM';
+const RECIPE2_VIEW  = 'vewJutYwRr';
+
+export interface LarkRecipe {
+  id: string;
+  name: string;
+  category: string;
+  photoUrl: string | null;
+  instructions: string;
+  totalCost: number | null;
+  recipe: string;
+  courses: string[];
+}
+
+export async function fetchLarkRecipes(): Promise<LarkRecipe[]> {
+  const token    = await getLarkToken();
+  const appToken = process.env.LARK_BASE_APP_TOKEN!;
+
+  let allItems: any[] = [];
+  let pageToken = '';
+
+  do {
+    const url = `${LARK_API}/bitable/v1/apps/${appToken}/tables/${RECIPE2_TABLE}/records?page_size=100&view_id=${RECIPE2_VIEW}` +
+      (pageToken ? `&page_token=${pageToken}` : '');
+    const res  = await fetch(url, { headers: { Authorization: `Bearer ${token}` }, cache: 'no-store' });
+    const json = await res.json();
+    if (json.code !== 0) throw new Error(`Lark recipes error: ${json.msg}`);
+    allItems  = [...allItems, ...(json.data?.items ?? [])];
+    pageToken = json.data?.has_more ? (json.data.page_token ?? '') : '';
+  } while (pageToken);
+
+  const allAttachments = allItems.flatMap(item => item.fields['Hình ảnh món'] ?? []);
+  const extraParam = extractExtraParam(allAttachments);
+
+  const results = await Promise.all(
+    allItems.map(async item => {
+      const f = item.fields;
+      const name        = String(f['Tên món'] ?? '');
+      const category    = String(f['Phân loại'] ?? '');
+      const instructions = String(f['Hướng dẫn pha chế'] ?? '');
+      const totalCost   = typeof f['Tổng cost'] === 'number' ? Math.round(f['Tổng cost']) : null;
+      const recipe      = String(f['Công thức'] ?? '');
+      const raw         = f['Khóa học'];
+      const courses: string[] = Array.isArray(raw) ? raw.map(String) : (raw ? [String(raw)] : []);
+
+      const attachments: any[] = (f['Hình ảnh món'] ?? []).filter(isDisplayable);
+      const img      = attachments[0] ?? null;
+      const photoUrl = img ? await resolveAttachmentUrl(token, img, extraParam) : null;
+
+      return { id: item.record_id, name, category, photoUrl, instructions, totalCost, recipe, courses };
+    })
+  );
+
+  return results.filter(r => !!r.name);
+}
+
 // ─── Lớp Học ─────────────────────────────────────────────────────────────────
 
 export interface LarkClassSession {
