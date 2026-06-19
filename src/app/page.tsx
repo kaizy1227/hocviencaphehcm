@@ -1,8 +1,6 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { createClient } from '@/lib/supabase/client';
 
 const HERO_IMGS = [
   'images/gallery/Life-styles-with-person/~12321.webp',
@@ -60,40 +58,11 @@ const MENU_ROW2: [string, string][] = [
   ['50. Trà vải bg.webp','Trà Vải'],
 ];
 
-// Display-only data cho 3 khóa tổng hợp (emoji, css class, img path không đổi)
-const TONG_HOP_DISPLAY = [
-  { emoji:'🧋', ciClass:'ci1', pill:'', imgPath:'/images/courses/Bang-gia-khoa-tong-hop/menu-truyen-thong.png', subtitle:'Trà sữa, cà phê phin…', name:'Tổng Hợp Truyền Thống', desc:'Trọn bộ công thức trà sữa truyền thống, trà trái cây & matcha, cà phê phin, đá xay & sữa chua — học trong 3 ngày.', price:'5.200.000đ', duration:'3 ngày' },
-  { emoji:'🍵', ciClass:'ci2', pill:'Phổ Biến', imgPath:'/images/courses/Bang-gia-khoa-tong-hop/menu-hien-dai.png', subtitle:'Cà phê máy, nitro…', name:'Tổng Hợp Hiện Đại', desc:'Cà phê máy cơ bản, trà sữa hiện đại, oolong nitro tea, trà trái cây & matcha, đá xay & sinh tố — học trong 4 ngày.', price:'7.500.000đ', duration:'4 ngày' },
-  { emoji:'☕', ciClass:'ci4', pill:'Chuyên Sâu', imgPath:'/images/courses/Bang-gia-khoa-le/ca-phe-may-nang-cao.png', subtitle:'Espresso chuyên sâu', name:'Cà Phê Máy Nâng Cao', desc:'Khóa chuyên sâu về cà phê máy: chiết xuất espresso, tạo bọt sữa, latte art và vận hành máy pha chuyên nghiệp.', price:'8.300.000đ', duration:'3 ngày' },
-];
-
-const LE_COURSES = [
-  { img:'ca-phe-may-co-ban.png', name:'Cà Phê Máy Cơ Bản', desc:'Pha espresso, cà phê sữa, bạc xỉu, americano, cappuccino, latte và hot chocolate. Phù hợp người mới muốn vận hành máy pha cà phê chuyên nghiệp.', price:'2.500.000đ', time:'1 ngày · 2 buổi' },
-  { img:'tra-sua-hien-dai.png', name:'Trà Sữa Hiện Đại', desc:'Shan tuyết phủ topping, olong nitro tea, olong trái cây và topping trân châu, phô mai, đường đen. Menu trà sữa hiện đại được ưa chuộng nhất hiện nay.', price:'2.500.000đ', time:'1 ngày · 2 buổi' },
-  { img:'tra-trai-cay-matcha.png', name:'Trà Trái Cây & Matcha', desc:'Hơn 15 công thức trà trái cây soda, trà tươi và 4 loại matcha latte. Dễ làm, chi phí thấp — phù hợp mọi loại hình quán.', price:'2.500.000đ', time:'1 ngày · 2 buổi' },
-  { img:'da-xay-sinh-to.png', name:'Đá Xay & Sinh Tố', desc:'Đá xay cocomilk, cookies chocolate, matcha freeze, việt quất iceblend, caramel freeze và 6 loại sinh tố. Thu hút khách mùa hè, áp dụng ngay vào menu.', price:'2.500.000đ', time:'1 ngày · 2 buổi' },
-  { img:'tra-sua-truyen-thong.png', name:'Trà Sữa Truyền Thống', desc:'Shan tuyết thăng hoa, olong, topping trân châu 3Q, đường đen, phô mai, kem bánh. Nền tảng cho menu trà sữa truyền thống hoàn chỉnh.', price:'2.200.000đ', time:'1 ngày · 2 buổi' },
-  { img:'ca-phe-phin.png', name:'Cà Phê Phin – Đá Xay & Sữa Chua', desc:'Cà phê phin, cacao & socola, sữa chua lắc kết hợp đá xay. Chi phí thấp, dễ triển khai — phù hợp quán nhỏ và xe đẩy.', price:'2.200.000đ', time:'1 ngày · 2 buổi' },
-  { img:'nitro-soda.png', name:'Nâng Cấp Menu Nitro Soda', desc:'Trà, cà phê, kombucha & soda nitro bằng hệ thống Nitro 4 vòi hiện đại. Tạo hương vị độc đáo — điểm nhận diện khác biệt cho quán.', price:'2.500.000đ', time:'1 ngày · 2 buổi' },
-  { img:'chon-mon-kem-1-1.png', name:'Khóa Chọn Món Kèm 1–1', desc:'Tự chọn 15 món, học kèm 1-1 cùng giảng viên. Phù hợp muốn nâng cấp hoặc thay đổi menu mà không cần học cả khóa tổng hợp.', price:'3.000.000đ', time:'Linh hoạt' },
-];
-
-const SERVICES = [
-  { img:'khoi-nghiep-v2.png', name:'Khóa Khởi Nghiệp', desc:'Nền tảng mở quán, quản lý chi phí, vận hành hiệu quả — 1 ngày (2 buổi). Hỗ trợ online 1 tháng sau khai trương.', price:'4.000.000đ' },
-  { img:'setup-menu-7tr.png', name:'Gói Set Up Menu', desc:'Menu nhỏ gọn dưới 10 món: xây dựng 2–3 signature, thiết kế menu, hướng dẫn cost, tư vấn thiết bị và test món 2 lần.', price:'7.000.000đ' },
-  { img:'setup-menu-15-20-mon.png', name:'Setup Menu 15–20 Món', desc:'Menu độc quyền 15–20 món: 3–5 signature, tính cost toàn bộ, tư vấn nguyên liệu & thiết bị, test món 2 buổi tại Học Viện.', price:'15.000.000đ' },
-  { img:'dao-tao-van-hanh-v2.png', name:'Đào Tạo Vận Hành', desc:'Vận hành chuẩn, quản trị chặt: xây dựng chính sách, quản lý nhân sự, kiểm soát chi phí & doanh thu. Hỗ trợ online 1 tháng sau khai trương.', price:'15.000.000đ' },
-  { img:'dao-tao-tai-quan.png', name:'Đào Tạo Tại Quán', desc:'Giảng viên đến trực tiếp quán đào tạo nhân viên pha chế, thiết lập quy trình bar & hỗ trợ sắp xếp thiết bị phù hợp với thực tế quán.', price:'Từ 2.300.000đ/ngày' },
-];
 
 export default function HomePage() {
-  const router = useRouter();
   const [heroIdx, setHeroIdx] = useState(0);
   const [lb, setLb] = useState<{ src: string; alt: string } | null>(null);
   const [fanIdx, setFanIdx] = useState(0);
-  const [tongHopCourses, setTongHopCourses] = useState(TONG_HOP_DISPLAY);
-  const [leCourses, setLeCourses] = useState(LE_COURSES);
-  const [services, setServices] = useState(SERVICES);
 
   const fanTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const marqueeRef1 = useRef<HTMLDivElement>(null);
@@ -114,29 +83,9 @@ export default function HomePage() {
     fanTimerRef.current = setInterval(() => setFanIdx(i => (i + 1) % n), 3800);
   };
 
-  const dangKy = (course: string) => {
-    router.push(`/dang-ky?course=${encodeURIComponent(course)}`);
-  };
-
   useEffect(() => {
     const interval = setInterval(() => setHeroIdx(i => (i + 1) % HERO_IMGS.length), 4500);
     return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    const supabase = createClient();
-    supabase.from('courses').select('*').eq('active', true).order('sort_order').then(({ data }) => {
-      if (!data || data.length === 0) return;
-      const th = data.filter((c: { category: string }) => c.category === 'tong-hop');
-      const le = data.filter((c: { category: string }) => c.category === 'chuyen-de');
-      const svc = data.filter((c: { category: string }) => c.category === 'kinh-doanh');
-      if (th.length > 0) setTongHopCourses(prev => prev.map(display => {
-        const db = th.find((c: { name: string }) => c.name === display.name);
-        return db ? { ...display, price: db.price, desc: db.description ?? display.desc, duration: db.duration ?? display.duration } : display;
-      }));
-      if (le.length > 0) setLeCourses(le.map((c: { image: string; name: string; description: string; price: string; duration: string }) => ({ img: c.image, name: c.name, desc: c.description, price: c.price, time: c.duration })));
-      if (svc.length > 0) setServices(svc.map((c: { image: string; name: string; description: string; price: string }) => ({ img: c.image, name: c.name, desc: c.description, price: c.price })));
-    });
   }, []);
 
   useEffect(() => {
@@ -199,7 +148,7 @@ export default function HomePage() {
             <h1>Học Pha Chế<br /><em>&amp; Kinh Doanh</em><br />Quán Cà Phê</h1>
             <p className="hero-sub">Đào tạo pha chế cà phê, trà sữa và tư vấn mở quán bài bản — từ công thức, set up menu đến vận hành kinh doanh.</p>
             <div className="hero-btns">
-              <Link href="#courses" className="btn btn-primary"><i className="ti ti-book-2"></i> Xem Khóa Học</Link>
+              <Link href="/khoa-hoc" className="btn btn-primary"><i className="ti ti-book-2"></i> Xem Khóa Học</Link>
               <Link href="/dang-ky" className="btn btn-outline">Đăng Ký Tư Vấn</Link>
             </div>
             <div className="hero-stats">
@@ -241,48 +190,31 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* COURSES */}
-      <section className="section courses" id="courses">
+      {/* COURSES + SERVICES CTA */}
+      <section className="section" style={{ background: 'var(--bg-alt)' }} id="courses">
         <div className="container">
-          <div className="courses-head">
-            <div><h2 className="title">Các Khóa Học Pha Chế</h2></div>
-            <Link href="/dang-ky" className="btn btn-outline">Tư Vấn Thêm →</Link>
+          <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+            <span className="tag">Dành Cho Bạn</span>
+            <h2 className="title" style={{ marginTop: '10px' }}>Học Pha Chế &amp; Kinh Doanh Quán</h2>
+            <p className="sub" style={{ maxWidth: '520px', margin: '0 auto' }}>Từ khóa học pha chế chuyên nghiệp đến tư vấn mở quán toàn diện — chúng tôi có gói phù hợp cho bạn.</p>
           </div>
-          <div className="course-grid">
-            {tongHopCourses.map(c => (
-              <div className="card" key={c.name}>
-                <div className={`card-img ${c.ciClass}`} onClick={() => openLb(c.imgPath, c.name)}>
-                  {c.emoji}{c.pill && <span className="card-pill">{c.pill}</span>}
-                  <img className="ph-img" src={c.imgPath} alt={c.name} onError={e => { e.currentTarget.style.display='none'; }} />
-                </div>
-                <div className="card-body">
-                  <div className="card-meta"><span><i className="ti ti-clock" style={{fontSize:'0.88rem'}}></i> {c.duration}</span><span><i className="ti ti-cup" style={{fontSize:'0.88rem'}}></i> {c.subtitle}</span></div>
-                  <div className="card-name">{c.name}</div>
-                  <div className="card-desc">{c.desc}</div>
-                  <div className="card-foot"><div className="card-price">{c.price}<small>Khóa {c.duration}</small></div><button className="btn-reg" onClick={() => dangKy(c.name)}>Đăng Ký</button></div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div style={{marginTop:'48px'}}>
-            <h3 className="card-name" style={{fontSize:'1.15rem', marginBottom:'6px'}}>Chuyên đề lẻ tự chọn</h3>
-            <p className="sub" style={{marginBottom:'20px'}}>Học đúng món bạn cần — mỗi chuyên đề 1 ngày, riêng Cà Phê Máy Nâng Cao 3 ngày.</p>
-            <div className="le-grid">
-              {leCourses.map(c => (
-                <div className="le-card" key={c.name}>
-                  <div className="le-img" onClick={() => openLb(`/images/courses/Bang-gia-khoa-le/${c.img}`, c.name)}>
-                    <img src={`/images/courses/Bang-gia-khoa-le/${c.img}`} alt={c.name} loading="lazy" onError={e => { const card = e.currentTarget.closest('.le-card') as HTMLElement; if (card) card.style.display='none'; }} />
-                  </div>
-                  <div className="le-body">
-                    <div className="le-meta"><span><i className="ti ti-clock"></i>{c.time}</span><span className="le-price">{c.price}</span></div>
-                    <div className="le-name">{c.name}</div>
-                    <div className="le-desc">{c.desc}</div>
-                    <div className="le-foot"><span className="le-price">{c.price}</span><button className="btn-reg" onClick={() => dangKy(c.name)}>Đăng Ký</button></div>
-                  </div>
-                </div>
-              ))}
-            </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px', maxWidth: '760px', margin: '0 auto' }}>
+            <Link href="/khoa-hoc" style={{ display: 'block', background: 'var(--white)', borderRadius: 'var(--r-lg)', padding: '32px 28px', textDecoration: 'none', boxShadow: 'var(--sh-sm)' }}>
+              <div style={{ fontSize: '2.4rem', marginBottom: '14px' }}>☕</div>
+              <div style={{ fontSize: '1.12rem', fontWeight: 700, color: 'var(--text)', marginBottom: '8px' }}>Khóa Học Pha Chế</div>
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-3)', lineHeight: 1.65, marginBottom: '20px' }}>
+                Cà phê, trà sữa, matcha, đá xay — khóa tổng hợp và chuyên đề lẻ. Thực hành trực tiếp, kèm 1–1.
+              </p>
+              <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--accent)' }}>Xem Khóa Học →</span>
+            </Link>
+            <Link href="/dich-vu" style={{ display: 'block', background: 'var(--white)', borderRadius: 'var(--r-lg)', padding: '32px 28px', textDecoration: 'none', boxShadow: 'var(--sh-sm)' }}>
+              <div style={{ fontSize: '2.4rem', marginBottom: '14px' }}>🏪</div>
+              <div style={{ fontSize: '1.12rem', fontWeight: 700, color: 'var(--text)', marginBottom: '8px' }}>Dịch Vụ Kinh Doanh</div>
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-3)', lineHeight: 1.65, marginBottom: '20px' }}>
+                Set up menu, khởi nghiệp, đào tạo vận hành — đồng hành từng bước để quán bạn phát triển bền vững.
+              </p>
+              <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--accent)' }}>Xem Dịch Vụ →</span>
+            </Link>
           </div>
         </div>
       </section>
@@ -309,29 +241,6 @@ export default function HomePage() {
               </div>
               <Link href="/dang-ky" className="btn btn-primary"><i className="ti ti-phone"></i> Liên Hệ Tư Vấn</Link>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* SERVICES */}
-      <section className="section" id="services" style={{background:'var(--bg-alt)'}}>
-        <div className="container">
-          <div style={{textAlign:'center', marginBottom:'4px'}}><span className="tag">Gói Kinh Doanh</span></div>
-          <h2 className="title" style={{textAlign:'center'}}>Đồng Hành Mở &amp; Vận Hành Quán</h2>
-          <p className="sub" style={{textAlign:'center', maxWidth:'560px', margin:'0 auto 44px'}}>Không chỉ pha chế — chúng tôi đồng hành cùng bạn từ khởi nghiệp, set up menu đến vận hành quán hiệu quả.</p>
-          <div className="poster-grid">
-            {services.map(s => (
-              <div className="poster-card" key={s.name}>
-                <div className="poster-img" onClick={() => openLb(`/images/services/${s.img}`, s.name)}>
-                  <img src={`/images/services/${s.img}`} alt={s.name} loading="lazy" />
-                </div>
-                <div className="poster-body">
-                  <div className="poster-name">{s.name}</div>
-                  <p className="poster-desc">{s.desc}</p>
-                  <div className="poster-foot"><div className="card-price">{s.price}</div><button className="btn-reg" onClick={() => dangKy(s.name)}>Đăng Ký</button></div>
-                </div>
-              </div>
-            ))}
           </div>
         </div>
       </section>

@@ -21,10 +21,10 @@ export default function Footer() {
           <div className="ft-col">
             <h5>Khóa Học</h5>
             <ul>
-              <li><Link href="/#courses">Tổng Hợp Truyền Thống</Link></li>
-              <li><Link href="/#courses">Tổng Hợp Hiện Đại</Link></li>
-              <li><Link href="/#courses">Chuyên Đề Lẻ</Link></li>
-              <li><Link href="/#services">Gói Kinh Doanh</Link></li>
+              <li><Link href="/khoa-hoc">Tổng Hợp Truyền Thống</Link></li>
+              <li><Link href="/khoa-hoc">Tổng Hợp Hiện Đại</Link></li>
+              <li><Link href="/khoa-hoc">Chuyên Đề Lẻ</Link></li>
+              <li><Link href="/dich-vu">Gói Kinh Doanh</Link></li>
             </ul>
           </div>
           <div className="ft-col">

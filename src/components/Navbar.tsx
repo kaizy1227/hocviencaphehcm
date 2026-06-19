@@ -88,8 +88,11 @@ export default function Navbar() {
             <div className="nav-left">
               <Link href="/" className={`nav-link${isHome ? ' active' : ''}`}>Trang Chủ</Link>
               <Link href="/gioi-thieu" className={`nav-link${pathname === '/gioi-thieu' ? ' active' : ''}`}>Giới Thiệu</Link>
+              <Link href="/khoa-hoc" className={`nav-link${pathname === '/khoa-hoc' ? ' active' : ''}`}>Khóa Học</Link>
+              <Link href="/dich-vu" className={`nav-link${pathname === '/dich-vu' ? ' active' : ''}`}>Dịch Vụ</Link>
               <Link href="/cong-thuc" className={`nav-link${pathname === '/cong-thuc' ? ' active' : ''}`}>Công Thức</Link>
               <Link href="/cong-thuc-2" className={`nav-link${pathname === '/cong-thuc-2' ? ' active' : ''}`}>Công Thức 2</Link>
+              <Link href="/kho-cong-thuc" className={`nav-link${pathname === '/kho-cong-thuc' ? ' active' : ''}`}>Kho CT</Link>
             </div>
 
             <Link href="/" className="nav-logo">
@@ -189,8 +192,8 @@ export default function Navbar() {
           </button>
           <div className={`mob-children${expanded === 'home' ? ' open' : ''}`}>
             <Link href="/" className="mob-child" onClick={close}><i className="ti ti-home"></i> Trang Chủ</Link>
-            <Link href="/#courses" className="mob-child" onClick={close}><i className="ti ti-school"></i> Khóa Học</Link>
-            <Link href="/#services" className="mob-child" onClick={close}><i className="ti ti-briefcase"></i> Gói Kinh Doanh</Link>
+            <Link href="/khoa-hoc" className="mob-child" onClick={close}><i className="ti ti-school"></i> Khóa Học</Link>
+            <Link href="/dich-vu" className="mob-child" onClick={close}><i className="ti ti-briefcase"></i> Dịch Vụ</Link>
             <Link href="/#menu" className="mob-child" onClick={close}><i className="ti ti-coffee"></i> Menu Đồ Uống</Link>
             <Link href="/#about" className="mob-child" onClick={close}><i className="ti ti-info-circle"></i> Về Chúng Tôi</Link>
             <Link href="/#hoc-vien" className="mob-child" onClick={close}><i className="ti ti-users"></i> Học Viên</Link>
@@ -201,6 +204,7 @@ export default function Navbar() {
         <Link href="/gioi-thieu" className={`mob-top-link${pathname === '/gioi-thieu' ? ' active' : ''}`} onClick={close}>Giới Thiệu</Link>
         <Link href="/cong-thuc" className={`mob-top-link${pathname === '/cong-thuc' ? ' active' : ''}`} onClick={close}>Công Thức Pha Chế</Link>
         <Link href="/cong-thuc-2" className={`mob-top-link${pathname === '/cong-thuc-2' ? ' active' : ''}`} onClick={close}>Công Thức 2</Link>
+        <Link href="/kho-cong-thuc" className={`mob-top-link${pathname === '/kho-cong-thuc' ? ' active' : ''}`} onClick={close}>Kho Công Thức</Link>
         <Link href="/video" className={`mob-top-link${pathname === '/video' ? ' active' : ''}`} onClick={close}>Video</Link>
 
         {/* Sản Phẩm — accordion */}
