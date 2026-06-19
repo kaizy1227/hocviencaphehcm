@@ -282,6 +282,13 @@ button { font-family: inherit; }
 .strip-img img { width: 100%; height: auto; display: block; }
 @media(max-width:768px){ .strip-grid { grid-template-columns: 1fr; gap: 32px; } .strip-img { max-width: 360px; margin: 0 auto; } }
 
+/* HOMEPAGE CTA IMAGE CARDS */
+.hp-cta-img { position: relative; cursor: zoom-in; overflow: hidden; background: var(--bg-alt); }
+.hp-cta-img img { width: 100%; display: block; transition: transform .35s ease; }
+.hp-cta-img:hover img { transform: scale(1.03); }
+.hp-cta-zoom { position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.45); color: #fff; border-radius: 50%; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; font-size: 0.95rem; opacity: 0; transition: opacity .2s; pointer-events: none; }
+.hp-cta-img:hover .hp-cta-zoom { opacity: 1; }
+
 /* COURSES */
 .courses { background: var(--bg-alt); }
 .courses-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px; margin-bottom: 44px; }

@@ -198,23 +198,52 @@ export default function HomePage() {
             <h2 className="title" style={{ marginTop: '10px' }}>Học Pha Chế &amp; Kinh Doanh Quán</h2>
             <p className="sub" style={{ maxWidth: '520px', margin: '0 auto' }}>Từ khóa học pha chế chuyên nghiệp đến tư vấn mở quán toàn diện — chúng tôi có gói phù hợp cho bạn.</p>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px', maxWidth: '760px', margin: '0 auto' }}>
-            <Link href="/khoa-hoc" style={{ display: 'block', background: 'var(--white)', borderRadius: 'var(--r-lg)', padding: '32px 28px', textDecoration: 'none', boxShadow: 'var(--sh-sm)' }}>
-              <div style={{ fontSize: '2.4rem', marginBottom: '14px' }}>☕</div>
-              <div style={{ fontSize: '1.12rem', fontWeight: 700, color: 'var(--text)', marginBottom: '8px' }}>Khóa Học Pha Chế</div>
-              <p style={{ fontSize: '0.85rem', color: 'var(--text-3)', lineHeight: 1.65, marginBottom: '20px' }}>
-                Cà phê, trà sữa, matcha, đá xay — khóa tổng hợp và chuyên đề lẻ. Thực hành trực tiếp, kèm 1–1.
-              </p>
-              <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--accent)' }}>Xem Khóa Học →</span>
-            </Link>
-            <Link href="/dich-vu" style={{ display: 'block', background: 'var(--white)', borderRadius: 'var(--r-lg)', padding: '32px 28px', textDecoration: 'none', boxShadow: 'var(--sh-sm)' }}>
-              <div style={{ fontSize: '2.4rem', marginBottom: '14px' }}>🏪</div>
-              <div style={{ fontSize: '1.12rem', fontWeight: 700, color: 'var(--text)', marginBottom: '8px' }}>Dịch Vụ Kinh Doanh</div>
-              <p style={{ fontSize: '0.85rem', color: 'var(--text-3)', lineHeight: 1.65, marginBottom: '20px' }}>
-                Set up menu, khởi nghiệp, đào tạo vận hành — đồng hành từng bước để quán bạn phát triển bền vững.
-              </p>
-              <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--accent)' }}>Xem Dịch Vụ →</span>
-            </Link>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px', maxWidth: '960px', margin: '0 auto' }}>
+            {/* Card Khóa Học */}
+            <div style={{ background: 'var(--white)', borderRadius: 'var(--r-lg)', overflow: 'hidden', boxShadow: 'var(--sh-sm)', display: 'flex', flexDirection: 'column' }}>
+              <div
+                className="hp-cta-img"
+                onClick={() => openLb('/images/danh-sach-khoa-hoc-pha-che.png', 'Bảng Giá Khóa Học Pha Chế')}
+              >
+                <img src="/images/danh-sach-khoa-hoc-pha-che.png" alt="Bảng giá khóa học pha chế" />
+                <span className="hp-cta-zoom"><i className="ti ti-zoom-in"></i></span>
+              </div>
+              <div style={{ padding: '22px 24px 24px', display: 'flex', flexDirection: 'column', flex: 1 }}>
+                <div style={{ fontSize: '1.08rem', fontWeight: 700, color: 'var(--text)', marginBottom: '8px' }}>Khóa Học Pha Chế</div>
+                <p style={{ fontSize: '0.84rem', color: 'var(--text-3)', lineHeight: 1.65, marginBottom: '20px', flex: 1 }}>
+                  Cà phê, trà sữa, matcha, đá xay — khóa tổng hợp và chuyên đề lẻ. Thực hành trực tiếp, kèm 1–1.
+                </p>
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+                  <button className="btn-reg" onClick={() => openLb('/images/danh-sach-khoa-hoc-pha-che.png', 'Bảng Giá Khóa Học Pha Chế')}>
+                    <i className="ti ti-zoom-in" style={{ marginRight: '4px' }}></i>Xem Bảng Giá
+                  </button>
+                  <Link href="/khoa-hoc" style={{ fontSize: '0.84rem', fontWeight: 600, color: 'var(--accent)', textDecoration: 'none' }}>Xem Chi Tiết →</Link>
+                </div>
+              </div>
+            </div>
+
+            {/* Card Dịch Vụ */}
+            <div style={{ background: 'var(--white)', borderRadius: 'var(--r-lg)', overflow: 'hidden', boxShadow: 'var(--sh-sm)', display: 'flex', flexDirection: 'column' }}>
+              <div
+                className="hp-cta-img"
+                onClick={() => openLb('/images/tron-bo-dich-vu.png', 'Trọn Bộ Dịch Vụ Kinh Doanh')}
+              >
+                <img src="/images/tron-bo-dich-vu.png" alt="Trọn bộ dịch vụ kinh doanh" />
+                <span className="hp-cta-zoom"><i className="ti ti-zoom-in"></i></span>
+              </div>
+              <div style={{ padding: '22px 24px 24px', display: 'flex', flexDirection: 'column', flex: 1 }}>
+                <div style={{ fontSize: '1.08rem', fontWeight: 700, color: 'var(--text)', marginBottom: '8px' }}>Dịch Vụ Kinh Doanh</div>
+                <p style={{ fontSize: '0.84rem', color: 'var(--text-3)', lineHeight: 1.65, marginBottom: '20px', flex: 1 }}>
+                  Set up menu, khởi nghiệp, đào tạo vận hành — đồng hành từng bước để quán bạn phát triển bền vững.
+                </p>
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+                  <button className="btn-reg" onClick={() => openLb('/images/tron-bo-dich-vu.png', 'Trọn Bộ Dịch Vụ Kinh Doanh')}>
+                    <i className="ti ti-zoom-in" style={{ marginRight: '4px' }}></i>Xem Bảng Giá
+                  </button>
+                  <Link href="/dich-vu" style={{ fontSize: '0.84rem', fontWeight: 600, color: 'var(--accent)', textDecoration: 'none' }}>Xem Chi Tiết →</Link>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
