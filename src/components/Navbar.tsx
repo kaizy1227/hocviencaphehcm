@@ -145,7 +145,7 @@ export default function Navbar() {
                 </div>
               </div>
 
-              <Link href="/video" className={`nav-link${pathname === '/video' ? ' active' : ''}`}>Video</Link>
+              <a href="https://maynitrosodahvcp.vercel.app/" target="_blank" rel="noopener noreferrer" className="nav-link">Máy Nitro Soda</a>
               <Link href="/gioi-thieu#lien-he" className="nav-link">Liên Hệ</Link>
 
               {phone ? (
@@ -205,7 +205,7 @@ export default function Navbar() {
         <Link href="/cong-thuc" className={`mob-top-link${pathname === '/cong-thuc' ? ' active' : ''}`} onClick={close}>Công Thức Pha Chế</Link>
         <Link href="/cong-thuc-2" className={`mob-top-link${pathname === '/cong-thuc-2' ? ' active' : ''}`} onClick={close}>Công Thức 2</Link>
         <Link href="/kho-cong-thuc" className={`mob-top-link${pathname === '/kho-cong-thuc' ? ' active' : ''}`} onClick={close}>Kho Công Thức</Link>
-        <Link href="/video" className={`mob-top-link${pathname === '/video' ? ' active' : ''}`} onClick={close}>Video</Link>
+        <a href="https://maynitrosodahvcp.vercel.app/" target="_blank" rel="noopener noreferrer" className="mob-top-link" onClick={close}>Máy Nitro Soda</a>
 
         {/* Sản Phẩm — accordion */}
         <div className="mob-parent">
