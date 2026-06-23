@@ -16,6 +16,7 @@ export default function NguyenLieuPage() {
   const [activeCategory, setActiveCategory] = useState('Tất cả');
   const [activePhanLoai, setActivePhanLoai] = useState<'all' | 'thuong-mai' | 'thuong-hieu'>('all');
   const [addedIds, setAddedIds] = useState<Set<string>>(new Set());
+  const [lightboxImg, setLightboxImg] = useState<string | null>(null);
   const { addItem } = useCart();
 
   useEffect(() => {
@@ -25,6 +26,12 @@ export default function NguyenLieuPage() {
       .eq('active', true)
       .order('stt')
       .then(({ data }) => { setProducts(data ?? []); setLoading(false); });
+  }, []);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setLightboxImg(null); };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
   }, []);
 
   const categories = ['Tất cả', ...Array.from(new Set(products.map(p => p.category)))];
@@ -107,12 +114,16 @@ export default function NguyenLieuPage() {
               <div className="nl-grid">
                 {filtered.map((p, i) => (
                   <div key={p.id} className="nl-card">
-                    <div className="nl-card-img">
+                    <div
+                      className={`nl-card-img${p.image_url ? ' kct-lb-trigger' : ''}`}
+                      onClick={() => p.image_url && setLightboxImg(p.image_url)}
+                    >
                       {p.image_url
                         ? <img src={p.image_url} alt={p.name} loading="lazy" />
                         : <div className="nl-card-img-placeholder"><i className="ti ti-package"></i></div>
                       }
                       <span className="nl-card-num">#{p.stt || i + 1}</span>
+                      {p.image_url && <span className="kct-lb-hint"><i className="ti ti-zoom-in"></i> Phóng to</span>}
                     </div>
                     <div className="nl-card-body">
                       <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '6px' }}>
@@ -157,6 +168,14 @@ export default function NguyenLieuPage() {
           </div>
         </div>
       </section>
+      {lightboxImg && (
+        <div className="kct-lightbox" onClick={() => setLightboxImg(null)}>
+          <img src={lightboxImg} alt="Phóng to" onClick={e => e.stopPropagation()} />
+          <button className="kct-lb-close" onClick={() => setLightboxImg(null)} aria-label="Đóng">
+            <i className="ti ti-x"></i>
+          </button>
+        </div>
+      )}
     </main>
   );
 }
