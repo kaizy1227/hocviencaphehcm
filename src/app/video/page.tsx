@@ -42,7 +42,9 @@ function TikTokCard({ video }: { video: TikTokVideo }) {
         )}
         <div className="vd-tt-play-btn">
           <div className="vd-tt-play-circle">
-            <i className="ti ti-player-play-filled" />
+            <svg viewBox="0 0 24 24" fill="currentColor" className="vd-tt-play-icon">
+              <path d="M8 5v14l11-7z"/>
+            </svg>
           </div>
         </div>
       </button>
