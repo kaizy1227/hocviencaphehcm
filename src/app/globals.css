@@ -1870,9 +1870,12 @@ footer { background: #1E0C05; }
 .vd-tt-thumb-img { width: 100%; height: 100%; object-fit: cover; transition: transform .3s; }
 .vd-tt-thumb-wrap:hover .vd-tt-thumb-img { transform: scale(1.04); }
 .vd-tt-thumb-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: var(--bg-dark); color: var(--muted); font-size: 3rem; }
-.vd-tt-play-btn { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,.28); transition: background .2s; }
-.vd-tt-thumb-wrap:hover .vd-tt-play-btn { background: rgba(0,0,0,.42); }
-.vd-tt-play-btn i { font-size: 2.8rem; color: #fff; filter: drop-shadow(0 2px 8px rgba(0,0,0,.5)); }
+.vd-tt-play-btn { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,.22); transition: background .2s; }
+.vd-tt-thumb-wrap:hover .vd-tt-play-btn { background: rgba(0,0,0,.38); }
+.vd-tt-play-btn::before { content: ''; display: none; }
+.vd-tt-play-circle { width: 64px; height: 64px; border-radius: 50%; background: rgba(255,255,255,.92); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 20px rgba(0,0,0,.35); transition: transform .2s, background .2s; }
+.vd-tt-thumb-wrap:hover .vd-tt-play-circle { transform: scale(1.12); background: #fff; }
+.vd-tt-play-circle i { font-size: 1.8rem; color: var(--accent); margin-left: 4px; }
 .vd-tt-card-info { padding: 12px 14px 14px; }
 .vd-tt-author { font-size: .75rem; font-weight: 700; color: var(--accent); }
 .vd-tt-title { font-size: .85rem; color: var(--text-2); margin-top: 4px; line-height: 1.45; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
