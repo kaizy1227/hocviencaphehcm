@@ -16,32 +16,17 @@ type TikTokVideo = {
 function TikTokCard({ video }: { video: TikTokVideo }) {
   const [playing, setPlaying] = useState(false);
 
-  useEffect(() => {
-    if (!playing) return;
-    // Nạp embed.js sau khi blockquote xuất hiện trong DOM
-    const existing = document.getElementById(`tt-script-${video.id}`);
-    if (existing) existing.remove();
-    const s = document.createElement('script');
-    s.id = `tt-script-${video.id}`;
-    s.src = 'https://www.tiktok.com/embed.js';
-    s.async = true;
-    document.body.appendChild(s);
-  }, [playing, video.id]);
-
   if (playing) {
     return (
-      <blockquote
-        className="tiktok-embed"
-        cite={video.url}
-        data-video-id={video.video_id}
-        style={{ maxWidth: 325, minWidth: 280, margin: 0 }}
-      >
-        <section>
-          <a target="_blank" rel="noopener noreferrer" href={video.url}>
-            {video.title || 'Xem video trên TikTok'}
-          </a>
-        </section>
-      </blockquote>
+      <div className="vd-tt-player-wrap">
+        <iframe
+          src={`https://www.tiktok.com/embed/v2/${video.video_id}?lang=vi&muted=1`}
+          className="vd-tt-player-iframe"
+          allowFullScreen
+          allow="encrypted-media; autoplay"
+          title={video.title ?? 'TikTok video'}
+        />
+      </div>
     );
   }
 
