@@ -30,20 +30,18 @@ function TikTokCard({ video }: { video: TikTokVideo }) {
 
   if (playing) {
     return (
-      <div className="vd-tt-card">
-        <blockquote
-          className="tiktok-embed"
-          cite={video.url}
-          data-video-id={video.video_id}
-          style={{ maxWidth: 325, minWidth: 280, margin: 0 }}
-        >
-          <section>
-            <a target="_blank" rel="noopener noreferrer" href={video.url}>
-              {video.title || 'Xem video trên TikTok'}
-            </a>
-          </section>
-        </blockquote>
-      </div>
+      <blockquote
+        className="tiktok-embed"
+        cite={video.url}
+        data-video-id={video.video_id}
+        style={{ maxWidth: 325, minWidth: 280, margin: 0 }}
+      >
+        <section>
+          <a target="_blank" rel="noopener noreferrer" href={video.url}>
+            {video.title || 'Xem video trên TikTok'}
+          </a>
+        </section>
+      </blockquote>
     );
   }
 
