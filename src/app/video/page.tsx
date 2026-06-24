@@ -20,7 +20,7 @@ function TikTokCard({ video }: { video: TikTokVideo }) {
     return (
       <div className="vd-tt-player-wrap">
         <iframe
-          src={`https://www.tiktok.com/embed/v2/${video.video_id}?lang=vi&muted=1&autoplay=1`}
+          src={`https://www.tiktok.com/embed/v2/${video.video_id}?lang=vi`}
           className="vd-tt-player-iframe"
           allowFullScreen
           allow="encrypted-media; autoplay"
