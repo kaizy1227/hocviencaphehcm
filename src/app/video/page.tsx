@@ -1,79 +1,89 @@
 'use client';
 import { useEffect, useState } from 'react';
-import type { LarkVideo } from '@/lib/lark';
+import { createClient } from '@/lib/supabase/client';
 
-function channelIcon(ch: string) {
-  const c = ch.toLowerCase();
-  if (c.includes('tiktok'))    return 'ti ti-brand-tiktok';
-  if (c.includes('youtube'))   return 'ti ti-brand-youtube';
-  if (c.includes('facebook'))  return 'ti ti-brand-facebook';
-  if (c.includes('instagram')) return 'ti ti-brand-instagram';
-  return 'ti ti-video';
-}
+const TIKTOK_CHANNEL = 'https://www.tiktok.com/@congthucphache.hvcp';
 
-function localThumb(videoName: string | null): string | undefined {
-  if (!videoName) return undefined;
-  const base = videoName.replace(/\.[^.]+$/, ''); // bỏ đuôi .mov/.mp4
-  return `/videos/thumbs/${encodeURIComponent(base)}.jpg`;
-}
+type TikTokVideo = {
+  id: string;
+  url: string;
+  video_id: string;
+  title: string | null;
+  thumbnail: string | null;
+  author: string | null;
+};
 
-function VideoPlayer({ url, poster, title }: { url: string; poster: string | null | undefined; title: string }) {
-  const [errored, setErrored] = useState(false);
+function TikTokCard({ video }: { video: TikTokVideo }) {
+  const [playing, setPlaying] = useState(false);
 
-  // Nếu không có poster tĩnh → dùng API server-side để extract thumbnail
-  const effectivePoster = poster ?? `/api/video-thumb?url=${encodeURIComponent(url)}`;
+  useEffect(() => {
+    if (!playing) return;
+    // Nạp embed.js sau khi blockquote xuất hiện trong DOM
+    const existing = document.getElementById(`tt-script-${video.id}`);
+    if (existing) existing.remove();
+    const s = document.createElement('script');
+    s.id = `tt-script-${video.id}`;
+    s.src = 'https://www.tiktok.com/embed.js';
+    s.async = true;
+    document.body.appendChild(s);
+  }, [playing, video.id]);
 
-  if (errored) {
+  if (playing) {
     return (
-      <div className="vd-placeholder" style={{ gap: 14 }}>
-        {effectivePoster
-          ? <img src={effectivePoster} alt={title} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
-          : <i className="ti ti-video-off" style={{ fontSize: '2.5rem' }} />}
-        <a
-          href={url}
-          download
-          target="_blank"
-          rel="noopener"
-          style={{
-            position: 'relative', zIndex: 1,
-            background: 'rgba(0,0,0,.6)', color: '#fff',
-            fontSize: '.78rem', padding: '7px 14px', borderRadius: 8,
-            display: 'flex', alignItems: 'center', gap: 6,
-          }}
+      <div className="vd-tt-card">
+        <blockquote
+          className="tiktok-embed"
+          cite={video.url}
+          data-video-id={video.video_id}
+          style={{ maxWidth: 325, minWidth: 280, margin: 0 }}
         >
-          <i className="ti ti-download" /> Tải về để xem
-        </a>
+          <section>
+            <a target="_blank" rel="noopener noreferrer" href={video.url}>
+              {video.title || 'Xem video trên TikTok'}
+            </a>
+          </section>
+        </blockquote>
       </div>
     );
   }
 
   return (
-    <video
-      src={url}
-      controls
-      playsInline
-      preload="metadata"
-      poster={effectivePoster}
-      onError={() => setErrored(true)}
-      style={{ width: '100%', height: '100%', objectFit: 'contain', background: '#000', display: 'block' }}
-    />
+    <div className="vd-tt-card">
+      <button className="vd-tt-thumb-wrap" onClick={() => setPlaying(true)} aria-label="Phát video">
+        {video.thumbnail ? (
+          <img src={video.thumbnail} alt={video.title ?? 'TikTok video'} className="vd-tt-thumb-img" />
+        ) : (
+          <div className="vd-tt-thumb-placeholder">
+            <i className="ti ti-brand-tiktok" />
+          </div>
+        )}
+        <div className="vd-tt-play-btn">
+          <i className="ti ti-player-play-filled" />
+        </div>
+      </button>
+      <div className="vd-tt-card-info">
+        <span className="vd-tt-author">{video.author ?? '@congthucphache.hvcp'}</span>
+        <p className="vd-tt-title">{video.title ?? ''}</p>
+      </div>
+    </div>
   );
 }
 
 export default function VideoPage() {
-  const [videos, setVideos]   = useState<LarkVideo[]>([]);
+  const [videos, setVideos] = useState<TikTokVideo[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError]     = useState('');
 
   useEffect(() => {
-    fetch('/api/videos')
-      .then(r => r.json())
-      .then(d => {
-        if (!d.ok) throw new Error(d.error);
-        setVideos(d.videos ?? []);
-      })
-      .catch(e => setError(e.message))
-      .finally(() => setLoading(false));
+    createClient()
+      .from('tiktok_videos')
+      .select('*')
+      .eq('active', true)
+      .order('sort_order', { ascending: true })
+      .order('created_at', { ascending: false })
+      .then(({ data }) => {
+        setVideos(data ?? []);
+        setLoading(false);
+      });
   }, []);
 
   return (
@@ -86,6 +96,9 @@ export default function VideoPage() {
           <p className="sub" style={{ maxWidth: 520, margin: '0 auto' }}>
             Khám phá các clip pha chế, hoạt động đào tạo và câu chuyện từ Học Viện Cà Phê HCM.
           </p>
+          <a href={TIKTOK_CHANNEL} target="_blank" rel="noopener noreferrer" className="vd-tt-follow">
+            <i className="ti ti-brand-tiktok"></i> Theo dõi TikTok của chúng tôi
+          </a>
         </div>
       </section>
 
@@ -93,85 +106,33 @@ export default function VideoPage() {
       <section className="vd-section">
         <div className="container">
           {loading && (
-            <div className="vd-grid">
-              {[1, 2, 3, 4, 5, 6].map(i => (
+            <div className="vd-tt-grid">
+              {[1, 2, 3].map(i => (
                 <div key={i} className="vd-skeleton">
                   <div className="vd-sk-media" />
                   <div className="vd-sk-info">
                     <div className="vd-sk-line short" />
                     <div className="vd-sk-line" />
-                    <div className="vd-sk-line short" />
                   </div>
                 </div>
               ))}
             </div>
           )}
 
-          {!loading && error && (
-            <div className="vd-empty">
-              <i className="ti ti-alert-circle" />
-              <p>Không tải được video. Vui lòng thử lại sau.</p>
-              <small style={{ opacity: 0.5 }}>{error}</small>
-            </div>
-          )}
-
-          {!loading && !error && videos.length === 0 && (
+          {!loading && videos.length === 0 && (
             <div className="vd-empty">
               <i className="ti ti-video-off" />
-              <p>Chưa có video nào.</p>
+              <p>Video đang được cập nhật. Vui lòng quay lại sau nhé!</p>
+              <a href={TIKTOK_CHANNEL} target="_blank" rel="noopener noreferrer" className="btn btn-outline" style={{ marginTop: 14 }}>
+                <i className="ti ti-brand-tiktok"></i> Xem trên TikTok
+              </a>
             </div>
           )}
 
-          {!loading && !error && videos.length > 0 && (
-            <div className="vd-grid">
+          {!loading && videos.length > 0 && (
+            <div className="vd-tt-grid">
               {videos.map(v => (
-                <div key={v.id} className="vd-card">
-                  <div className="vd-media">
-                    {v.videoUrl ? (
-                      <VideoPlayer url={v.videoUrl} poster={v.thumbnailUrl ?? localThumb(v.videoName)} title={v.title} />
-                    ) : v.downloadUrl ? (
-                      <div className="vd-placeholder">
-                        {v.thumbnailUrl && (
-                          <img src={v.thumbnailUrl} alt={v.title} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
-                        )}
-                        <a
-                          href={v.downloadUrl}
-                          download
-                          target="_blank"
-                          rel="noopener"
-                          style={{
-                            position: 'relative', zIndex: 1,
-                            background: 'rgba(0,0,0,.6)', color: '#fff',
-                            fontSize: '.78rem', padding: '8px 16px', borderRadius: 8,
-                            display: 'flex', alignItems: 'center', gap: 6,
-                          }}
-                        >
-                          <i className="ti ti-download" /> Tải về để xem (.mov)
-                        </a>
-                      </div>
-                    ) : v.thumbnailUrl ? (
-                      <img src={v.thumbnailUrl} alt={v.title} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                    ) : (
-                      <div className="vd-placeholder">
-                        <i className="ti ti-video" style={{ fontSize: '2.5rem' }} />
-                        <span>Không có tệp</span>
-                      </div>
-                    )}
-                  </div>
-                  <div className="vd-info">
-                    {v.channel && (
-                      <span className="vd-channel">
-                        <i className={channelIcon(v.channel)} /> {v.channel}
-                      </span>
-                    )}
-                    <div className="vd-title">{v.title || 'Video'}</div>
-                    {v.date && (
-                      <div className="vd-date">
-                        <i className="ti ti-calendar" style={{ fontSize: '0.8rem' }} /> {v.date}
-                      </div>
-                    )}
-                  </div>
-                </div>
+                <TikTokCard key={v.id} video={v} />
               ))}
             </div>
           )}
