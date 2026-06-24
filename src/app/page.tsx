@@ -59,14 +59,27 @@ const MENU_ROW2: [string, string][] = [
 ];
 
 
+// Transparent 1x1 placeholder — keeps the marquee layout intact before real images load
+const IMG_PLACEHOLDER = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
+
+const FAQS = [
+  { q: 'Tôi chưa biết gì về pha chế — có học được không?', a: 'Dạ anh yên tâm nha, bên em có các khóa học từ cơ bản đến chuyên sâu, rất nhiều học viên bắt đầu từ con số 0 như anh vẫn học tốt ạ. Lớp học bên em chỉ từ 3–4 học viên để giảng viên theo sát từng người, thời gian học từ 9h đến 16h (nghỉ trưa 1 tiếng) nên mình rất dễ tiếp thu.' },
+  { q: 'Một khóa học kéo dài bao lâu?', a: 'Khóa tổng hợp: 3–4 ngày. Các chuyên đề lẻ: 1 ngày.' },
+  { q: 'Học phí dao động bao nhiêu?', a: 'Dạ bên em có khóa pha chế tổng hợp 3–4 ngày (5.200.000 – 7.500.000đ) và các chuyên đề lẻ 1 ngày từ 2.200.000 – 3.000.000đ.' },
+  { q: 'Học xong có được hỗ trợ mở quán không?', a: 'Dạ bên em hỗ trợ rất kỹ cho học viên muốn mở quán ạ. Bên em có dịch vụ Đào tạo tại quán — giảng viên sẽ đến tận nơi hỗ trợ setup, hướng dẫn thực tế và vận hành. Ngoài ra, bên em còn tư vấn trọn gói từ thiết kế, thi công, setup quầy bar, cung cấp máy móc, nguyên liệu đến marketing để quán mình đông khách hơn.' },
+];
+
 export default function HomePage() {
   const [heroIdx, setHeroIdx] = useState(0);
   const [lb, setLb] = useState<{ src: string; alt: string } | null>(null);
   const [fanIdx, setFanIdx] = useState(0);
+  const [menuReady, setMenuReady] = useState(false);
+  const [faqOpen, setFaqOpen] = useState<number | null>(null);
 
   const fanTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const marqueeRef1 = useRef<HTMLDivElement>(null);
   const marqueeRef2 = useRef<HTMLDivElement>(null);
+  const menuSecRef = useRef<HTMLElement>(null);
   const n = STUDENTS.length;
 
   const openLb = (src: string, alt: string) => {
@@ -118,6 +131,16 @@ export default function HomePage() {
 
 
   useEffect(() => {
+    const el = menuSecRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) { setMenuReady(true); io.disconnect(); }
+    }, { rootMargin: '400px' });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') closeLb(); };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
@@ -145,6 +168,7 @@ export default function HomePage() {
         <div className="container">
           <div className="hero-body">
             <div className="hero-badge"><span className="hero-dot"></span>Nơi Khởi Nguồn Kinh Doanh Của Bạn</div>
+            <div className="hero-trust">⭐ 4.9/5 &nbsp;·&nbsp; 500+ học viên &nbsp;·&nbsp; ~10 năm kinh nghiệm</div>
             <h1>Học Pha Chế<br /><em>&amp; Kinh Doanh</em><br />Quán Cà Phê</h1>
             <p className="hero-sub">Đào tạo pha chế cà phê, trà sữa và tư vấn mở quán bài bản — từ công thức, set up menu đến vận hành kinh doanh.</p>
             <div className="hero-btns">
@@ -153,9 +177,9 @@ export default function HomePage() {
             </div>
             <div className="hero-stats">
               <div className="h-stat"><div className="h-stat-n">11</div><div className="h-stat-l">Khóa &amp; chuyên đề</div></div>
-              <div className="h-stat"><div className="h-stat-n">60<sup>+</sup></div><div className="h-stat-l">Công thức đồ uống</div></div>
-              <div className="h-stat"><div className="h-stat-n">1–1</div><div className="h-stat-l">Kèm cặp tận tay</div></div>
-              <div className="h-stat"><div className="h-stat-n">A–Z</div><div className="h-stat-l">Tư vấn mở quán</div></div>
+              <div className="h-stat"><div className="h-stat-n">200<sup>+</sup></div><div className="h-stat-l">Công thức đồ uống</div></div>
+              <div className="h-stat"><div className="h-stat-n">~10</div><div className="h-stat-l">Năm kinh nghiệm</div></div>
+              <div className="h-stat"><div className="h-stat-n">1000<sup>+</sup></div><div className="h-stat-l">Quán được hỗ trợ</div></div>
             </div>
           </div>
         </div>
@@ -275,20 +299,20 @@ export default function HomePage() {
       </section>
 
       {/* MENU GALLERY */}
-      <section className="section" id="menu" style={{background:'var(--white)'}}>
+      <section className="section" id="menu" ref={menuSecRef} style={{background:'var(--white)'}}>
         <div className="container">
-          <h2 className="title" style={{textAlign:'center'}}>Hơn 60 Công Thức Bạn Sẽ Học</h2>
+          <h2 className="title" style={{textAlign:'center'}}>Kho 200+ Công Thức Thực Chiến</h2>
           <p className="sub" style={{textAlign:'center', maxWidth:'540px', margin:'0 auto'}}>Từ cà phê, trà sữa, trà trái cây, matcha đến đá xay — toàn bộ công thức được hướng dẫn chi tiết tại khóa học.</p>
         </div>
         <div className="marquee-outer">
           <div className="marquee-track go-left" ref={marqueeRef1}>
             {[...MENU_ROW1, ...MENU_ROW1].map(([file, cap], i) => (
-              <div className="mi" key={`r1-${i}`}><div className="mi-thumb"><img src={`/images/gallery/Concept-studio-with-products/${file}`} alt={cap} loading="eager" /></div><div className="mi-cap">{cap}</div></div>
+              <div className="mi" key={`r1-${i}`}><div className="mi-thumb"><img src={menuReady ? `/images/gallery/Concept-studio-with-products/${file}` : IMG_PLACEHOLDER} alt={cap} loading="eager" /></div><div className="mi-cap">{cap}</div></div>
             ))}
           </div>
           <div className="marquee-track go-right" ref={marqueeRef2}>
             {[...MENU_ROW2, ...MENU_ROW2].map(([file, cap], i) => (
-              <div className="mi" key={`r2-${i}`}><div className="mi-thumb"><img src={`/images/gallery/Concept-studio-with-products/${file}`} alt={cap} loading="eager" /></div><div className="mi-cap">{cap}</div></div>
+              <div className="mi" key={`r2-${i}`}><div className="mi-thumb"><img src={menuReady ? `/images/gallery/Concept-studio-with-products/${file}` : IMG_PLACEHOLDER} alt={cap} loading="eager" /></div><div className="mi-cap">{cap}</div></div>
             ))}
           </div>
         </div>
@@ -329,6 +353,33 @@ export default function HomePage() {
       </section>
 
 
+
+      {/* FAQ */}
+      <section className="section faq-section" id="faq">
+        <div className="container">
+          <div style={{ textAlign: 'center' }}>
+            <span className="tag">Câu Hỏi Thường Gặp</span>
+            <h2 className="title" style={{ marginTop: '10px' }}>Giải Đáp Thắc Mắc</h2>
+            <p className="sub" style={{ maxWidth: '540px', margin: '0 auto' }}>Khách hàng hay hỏi — chúng tôi trả lời thẳng, không vòng vo.</p>
+          </div>
+          <div className="faq-list">
+            {FAQS.map((item, i) => (
+              <div key={i} className={`faq-item${faqOpen === i ? ' open' : ''}`}>
+                <button className="faq-q" onClick={() => setFaqOpen(faqOpen === i ? null : i)}>
+                  <span>{item.q}</span>
+                  <i className="ti ti-chevron-down faq-chevron"></i>
+                </button>
+                {faqOpen === i && <div className="faq-a">{item.a}</div>}
+              </div>
+            ))}
+          </div>
+          <div style={{ textAlign: 'center', marginTop: '36px' }}>
+            <a href="https://zalo.me/0834790555" target="_blank" rel="noopener noreferrer" className="btn btn-outline">
+              <i className="ti ti-message-circle"></i> Hỏi Thêm Qua Zalo
+            </a>
+          </div>
+        </div>
+      </section>
 
     </>
   );

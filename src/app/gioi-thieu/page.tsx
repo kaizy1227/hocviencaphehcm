@@ -94,10 +94,10 @@ export default function GioiThieuPage() {
             <h1>Nơi Khởi Nguồn<br /><em>Kinh Doanh</em><br />Của Bạn</h1>
             <p className="gt-hero-sub">Từ một tách cà phê đến hàng trăm giấc mơ mở quán — Học Viện Cà Phê HCM đồng hành cùng bạn trên từng bước hành trình.</p>
             <div className="gt-hero-stats">
-              <div className="gh-stat"><div className="gh-stat-n">500<sup>+</sup></div><div className="gh-stat-l">Học viên<br />đã đào tạo</div></div>
-              <div className="gh-stat"><div className="gh-stat-n">11</div><div className="gh-stat-l">Khóa học<br />&amp; chuyên đề</div></div>
-              <div className="gh-stat"><div className="gh-stat-n">60<sup>+</sup></div><div className="gh-stat-l">Công thức<br />đồ uống</div></div>
-              <div className="gh-stat"><div className="gh-stat-n">A–Z</div><div className="gh-stat-l">Hỗ trợ từ<br />pha chế đến mở quán</div></div>
+              <div className="gh-stat"><div className="gh-stat-n">11</div><div className="gh-stat-l">Khóa<br />&amp; chuyên đề</div></div>
+              <div className="gh-stat"><div className="gh-stat-n">200<sup>+</sup></div><div className="gh-stat-l">Công thức<br />đồ uống</div></div>
+              <div className="gh-stat"><div className="gh-stat-n">~10</div><div className="gh-stat-l">Năm<br />kinh nghiệm</div></div>
+              <div className="gh-stat"><div className="gh-stat-n">1000<sup>+</sup></div><div className="gh-stat-l">Quán<br />được hỗ trợ</div></div>
             </div>
           </div>
         </div>
@@ -130,7 +130,7 @@ export default function GioiThieuPage() {
               <span className="tag">Phương Pháp Đào Tạo</span>
               <div className="story-num">02</div>
               <h2 className="title">Học Thực Chiến<br />Không Lý Thuyết Suông</h2>
-              <p>Mỗi buổi học tại Học Viện Cà Phê là một ca làm việc thực sự. Học viên tự tay pha hơn 60 công thức đồ uống — từ cà phê máy, trà sữa, matcha đến đá xay và các xu hướng mới nhất.</p>
+              <p>Mỗi buổi học tại Học Viện Cà Phê là một ca làm việc thực sự. Học viên tự tay pha hơn 200 công thức đồ uống — từ cà phê máy, trà sữa, matcha đến đá xay và các xu hướng mới nhất.</p>
               <p>Chúng tôi không chỉ dạy bạn cách pha. Chúng tôi giải thích <em>tại sao</em>: tại sao tỉ lệ này, tại sao nhiệt độ đó, tại sao nguyên liệu này kết hợp lại tạo ra hương vị đặc biệt. Khi hiểu bản chất, bạn tự tạo ra công thức của riêng mình.</p>
               <p>Lớp học nhỏ, kèm cặp 1–1, phản hồi trực tiếp từ giảng viên có kinh nghiệm vận hành quán thực tế — đó là điểm khác biệt của chúng tôi.</p>
             </div>
@@ -165,7 +165,7 @@ export default function GioiThieuPage() {
         <div className="container">
           <div className="gt-stats-grid">
             <div className="gt-stat"><div className="gt-stat-n">500<sup>+</sup></div><div className="gt-stat-l">Học viên<br />đã hoàn thành</div></div>
-            <div className="gt-stat"><div className="gt-stat-n">60<sup>+</sup></div><div className="gt-stat-l">Công thức<br />đồ uống</div></div>
+            <div className="gt-stat"><div className="gt-stat-n">200<sup>+</sup></div><div className="gt-stat-l">Công thức<br />đồ uống</div></div>
             <div className="gt-stat"><div className="gt-stat-n">11</div><div className="gt-stat-l">Khóa học<br />&amp; chuyên đề</div></div>
             <div className="gt-stat"><div className="gt-stat-n">98<sup>%</sup></div><div className="gt-stat-l">Học viên hài lòng<br />sau khóa học</div></div>
           </div>
@@ -276,7 +276,7 @@ export default function GioiThieuPage() {
         <div className="container">
           <div style={{textAlign:'center'}}>
             <span className="tag">Menu Đồ Uống</span>
-            <h2 className="title">Hơn 60 Công Thức<br />Bạn Sẽ Học</h2>
+            <h2 className="title">Kho 200+ Công Thức<br />Thực Chiến</h2>
             <p className="sub" style={{maxWidth:'520px', margin:'0 auto'}}>Từ cà phê, trà sữa, matcha đến đá xay — mỗi công thức được tinh chỉnh từ kinh nghiệm vận hành quán thực tế.</p>
           </div>
           <div className="drink-grid" ref={drinkRef}>
