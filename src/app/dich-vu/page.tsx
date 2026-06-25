@@ -40,7 +40,7 @@ export default function DichVuPage() {
   }, []);
 
   return (
-    <main>
+    <main style={{ paddingTop: 'var(--nav-h)' }}>
       {lb && (
         <div className="lightbox active" onClick={e => { if (e.target === e.currentTarget) closeLb(); }}>
           <button className="lb-close" onClick={closeLb}>&#x2715;</button>
@@ -48,17 +48,15 @@ export default function DichVuPage() {
         </div>
       )}
 
-      <section className="nl-hero">
+      <section className="lh-hero">
         <div className="container">
           <div className="nl-hero-crumb">
             <Link href="/">Trang Chủ</Link>
             <i className="ti ti-chevron-right" style={{ fontSize: '.75rem' }}></i>
             <span>Dịch Vụ</span>
           </div>
-          <h1>Dịch Vụ<br /><em>Kinh Doanh</em></h1>
-          <p style={{ color: 'rgba(255,255,255,0.72)', maxWidth: '520px', lineHeight: 1.7, marginBottom: '28px' }}>
-            Từ khởi nghiệp, set up menu đến đào tạo vận hành — chúng tôi đồng hành cùng bạn từng bước mở quán.
-          </p>
+          <h1>Dịch Vụ <em>Kinh Doanh</em></h1>
+          <p>Từ khởi nghiệp, set up menu đến đào tạo vận hành — chúng tôi đồng hành cùng bạn từng bước mở quán.</p>
           <Link href="/dang-ky" className="btn btn-primary"><i className="ti ti-phone"></i> Tư Vấn Ngay</Link>
         </div>
       </section>

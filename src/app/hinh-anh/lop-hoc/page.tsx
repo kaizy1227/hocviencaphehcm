@@ -1,6 +1,8 @@
 'use client';
 import { useEffect, useState } from 'react';
-import type { LarkClassSession } from '@/lib/lark';
+import { createClient } from '@/lib/supabase/client';
+
+type LopHoc = { id: string; date: string; course: string; class_name: string; student_names: string; photos: string[]; };
 
 interface LightboxState {
   photos: string[];
@@ -9,16 +11,17 @@ interface LightboxState {
 }
 
 export default function LopHocPage() {
-  const [sessions, setSessions] = useState<LarkClassSession[]>([]);
+  const [sessions, setSessions] = useState<LopHoc[]>([]);
   const [loading, setLoading] = useState(true);
   const [lb, setLb] = useState<LightboxState | null>(null);
 
   useEffect(() => {
-    fetch('/api/lark-classes')
-      .then(r => r.json())
-      .then(d => setSessions(d.sessions ?? []))
-      .catch(() => {})
-      .finally(() => setLoading(false));
+    void createClient()
+      .from('lop_hoc')
+      .select('id,date,course,class_name,student_names,photos')
+      .order('created_at', { ascending: false })
+      .then(({ data }) => setSessions((data ?? []).filter(s => s.photos?.length > 0)))
+      .then(() => setLoading(false), () => setLoading(false));
   }, []);
 
   useEffect(() => {
@@ -32,10 +35,10 @@ export default function LopHocPage() {
     return () => document.removeEventListener('keydown', onKey);
   }, [lb]);
 
-  const parseDate = (d: string) => { const [day, mo, yr] = d.split('/'); return new Date(`${yr}-${mo}-${day}`).getTime(); };
+  const parseDate = (d: string) => { try { const [day, mo, yr] = d.split('/'); return new Date(`${yr}-${mo}-${day}`).getTime(); } catch { return 0; } };
   const sorted = [...sessions].sort((a, b) => parseDate(b.date) - parseDate(a.date));
 
-  function openLb(session: LarkClassSession, index: number) {
+  function openLb(session: LopHoc, index: number) {
     const label = [session.date, session.course].filter(Boolean).join(' · ');
     setLb({ photos: session.photos, index, label });
   }
@@ -66,7 +69,7 @@ export default function LopHocPage() {
                 <div
                   key={session.id}
                   className="lh-card"
-                  onClick={() => openLb(session, 0)}
+                  onClick={() => session.photos.length > 0 && openLb(session, 0)}
                   role="button"
                   tabIndex={0}
                   onKeyDown={e => e.key === 'Enter' && openLb(session, 0)}
@@ -96,8 +99,8 @@ export default function LopHocPage() {
                   <div className="lh-card-body">
                     <p className="lh-card-date-label">
                       {session.date}
-                      {session.studentNames && (
-                        <span className="lh-student-names"> · {session.studentNames}</span>
+                      {session.student_names && (
+                        <span className="lh-student-names"> · {session.student_names}</span>
                       )}
                     </p>
                     {session.course && (

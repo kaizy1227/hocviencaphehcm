@@ -1,67 +1,105 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
-import type { LarkRecipe } from '@/lib/lark';
+import { useCart } from '@/context/CartContext';
+
+type CongThuc = {
+  id: string; name: string; category: string; photo_url: string;
+  instructions: string; total_cost: number | null; recipe_text: string;
+  linked_product_ids: string[]; courses: string[];
+};
+type Product = {
+  id: string; name: string; unit: string; price: number; image_url: string;
+};
 
 export default function CongThuc2Page() {
-  const [recipes, setRecipes]           = useState<LarkRecipe[]>([]);
+  const [recipes, setRecipes]           = useState<CongThuc[]>([]);
   const [loading, setLoading]           = useState(true);
   const [activeCat, setActiveCat]       = useState('Tất cả');
+  const [activeCourse, setActiveCourse] = useState('');
   const [searchQ, setSearchQ]           = useState('');
   const [modalOpen, setModalOpen]       = useState(false);
-  const [selected, setSelected]         = useState<LarkRecipe | null>(null);
+  const [selected, setSelected]         = useState<CongThuc | null>(null);
   const [isLoggedIn, setIsLoggedIn]     = useState<boolean | null>(null);
   const [isAdmin, setIsAdmin]           = useState(false);
   const [courseAccess, setCourseAccess] = useState<string[] | null>(null);
+  const [allProducts, setAllProducts]   = useState<Product[]>([]);
+  const [addedIds, setAddedIds]         = useState<Set<string>>(new Set());
 
-  // Auth check
+  const { addItem, openCart } = useCart();
+
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then(async ({ data: { user } }) => {
-      if (!user) { setIsLoggedIn(false); setCourseAccess([]); return; }
-      setIsLoggedIn(true);
-      if (user.app_metadata?.role === 'admin') { setIsAdmin(true); setCourseAccess(null); return; }
-      const { data } = await supabase
-        .from('students')
-        .select('course_access')
-        .eq('auth_user_id', user.id)
-        .maybeSingle();
-      setCourseAccess((data?.course_access as string[]) ?? []);
+    const timer = setTimeout(() => setLoading(false), 8000);
+
+    const initAuth = async () => {
+      try {
+        const { data: { session } } = await Promise.race([
+          supabase.auth.getSession(),
+          new Promise<never>((_, rej) => setTimeout(() => rej(new Error('timeout')), 5000)),
+        ]);
+        if (!session) { setIsLoggedIn(false); setCourseAccess([]); return; }
+        const user = session.user;
+        setIsLoggedIn(true);
+        if (user.app_metadata?.role === 'admin') { setIsAdmin(true); setCourseAccess(null); return; }
+        const { data } = await supabase.from('students').select('course_access').eq('auth_user_id', user.id).maybeSingle();
+        setCourseAccess((data?.course_access as string[]) ?? []);
+      } catch { setIsLoggedIn(false); setCourseAccess([]); }
+    };
+    void initAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_OUT') { setIsLoggedIn(false); setCourseAccess([]); setIsAdmin(false); }
     });
+
+    void supabase.from('products').select('id,name,unit,price,image_url').eq('active', true)
+      .then(({ data }) => { if (data) setAllProducts(data); });
+    void (async () => {
+      try {
+        const { data } = await supabase.from('cong_thuc').select('*').order('sort_order').order('created_at');
+        setRecipes(data ?? []);
+      } finally {
+        clearTimeout(timer);
+        setLoading(false);
+      }
+    })();
+
+    return () => { clearTimeout(timer); subscription.unsubscribe(); };
   }, []);
 
-  // Fetch recipes from Lark API
-  useEffect(() => {
-    fetch('/api/lark-recipes')
-      .then(r => r.json())
-      .then(d => setRecipes(d.recipes ?? []))
-      .catch(() => setRecipes([]))
-      .finally(() => setLoading(false));
-  }, []);
-
-  // Derived categories
   const cats = ['Tất cả', ...Array.from(new Set(recipes.map(r => r.category).filter(Boolean))).sort()];
+  const allCourses = Array.from(new Set(recipes.flatMap(r => r.courses ?? []).filter(Boolean))).sort();
 
   const filtered = recipes.filter(r => {
     const matchCat = activeCat === 'Tất cả' || r.category === activeCat;
+    const matchCourse = !activeCourse || (r.courses ?? []).includes(activeCourse);
     const q = searchQ.toLowerCase();
-    const matchQ = !q || r.name.toLowerCase().includes(q) || r.category.toLowerCase().includes(q);
-    return matchCat && matchQ;
+    return matchCat && matchCourse && (!q || r.name.toLowerCase().includes(q) || r.category.toLowerCase().includes(q));
   });
 
-  const canView = isAdmin || isLoggedIn === true;
+  const canView = (recipe: CongThuc) =>
+    isAdmin ||
+    !(recipe.courses ?? []).length ||
+    (recipe.courses ?? []).some(c => courseAccess?.includes(c) ?? false);
   const noAccess = isLoggedIn === true && !isAdmin && courseAccess !== null && courseAccess.length === 0;
 
-  const openModal  = (r: LarkRecipe) => { setSelected(r); setModalOpen(true); };
+  const openModal  = (r: CongThuc) => { setSelected(r); setModalOpen(true); setAddedIds(new Set()); };
   const closeModal = () => { setModalOpen(false); setSelected(null); };
 
-  const fmtCost = (n: number) =>
-    new Intl.NumberFormat('vi-VN').format(n) + ' VNĐ';
+  const fmtCost = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + ' VNĐ';
+  const splitLines = (text: string) => text.split(/\n/).map(l => l.trim()).filter(Boolean);
 
-  // Split text by newlines for display
-  const splitLines = (text: string) =>
-    text.split(/\n/).map(l => l.trim()).filter(Boolean);
+  // Exact match by ID — no fuzzy matching needed
+  const linkedProducts = selected && canView(selected)
+    ? allProducts.filter(p => selected.linked_product_ids?.includes(p.id))
+    : [];
+
+  const handleAddToCart = useCallback((p: Product) => {
+    addItem({ id: p.id, name: p.name, price: p.price, image_url: p.image_url, unit: p.unit });
+    setAddedIds(prev => new Set([...prev, p.id]));
+    setTimeout(() => setAddedIds(prev => { const n = new Set(prev); n.delete(p.id); return n; }), 1500);
+  }, [addItem]);
 
   return (
     <>
@@ -84,7 +122,7 @@ export default function CongThuc2Page() {
             </p>
             <div className="ct-hero-badges">
               <span className="ct-badge"><i className="ti ti-lock"></i> Nội dung độc quyền</span>
-              <span className="ct-badge"><i className="ti ti-database"></i> Lark Base</span>
+              <span className="ct-badge"><i className="ti ti-database"></i> Cập nhật bởi Admin</span>
               <span className="ct-badge"><i className="ti ti-refresh"></i> Cập nhật thường xuyên</span>
             </div>
           </div>
@@ -116,20 +154,18 @@ export default function CongThuc2Page() {
             </div>
             <div className="ct-search-wrap">
               <i className="ti ti-search"></i>
-              <input
-                className="ct-search"
-                type="text"
-                placeholder="Tìm công thức..."
-                value={searchQ}
-                onChange={e => setSearchQ(e.target.value)}
-              />
-              {searchQ && (
-                <button className="ct-search-clear" onClick={() => setSearchQ('')} aria-label="Xóa">
-                  <i className="ti ti-x"></i>
-                </button>
-              )}
+              <input className="ct-search" type="text" placeholder="Tìm công thức..." value={searchQ} onChange={e => setSearchQ(e.target.value)} />
+              {searchQ && <button className="ct-search-clear" onClick={() => setSearchQ('')}><i className="ti ti-x"></i></button>}
             </div>
           </div>
+          {allCourses.length > 0 && (
+            <div className="ct-course-filter">
+              <button className={`ct-course-btn${!activeCourse ? ' active' : ''}`} onClick={() => setActiveCourse('')}>Tất cả khóa</button>
+              {allCourses.map(c => (
+                <button key={c} className={`ct-course-btn${activeCourse === c ? ' active' : ''}`} onClick={() => setActiveCourse(activeCourse === c ? '' : c)}>{c}</button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
@@ -160,8 +196,8 @@ export default function CongThuc2Page() {
               {filtered.map(r => (
                 <div key={r.id} className="ct-card" onClick={() => openModal(r)}>
                   <div className="ct-card-img">
-                    {r.photoUrl
-                      ? <img src={r.photoUrl} alt={r.name} loading="lazy" onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
+                    {r.photo_url
+                      ? <img src={r.photo_url} alt={r.name} loading="lazy" onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
                       : <div className="ct2-no-img"><i className="ti ti-coffee"></i></div>
                     }
                     <div className="ct-card-lock"><i className="ti ti-lock"></i></div>
@@ -169,9 +205,9 @@ export default function CongThuc2Page() {
                   <div className="ct-card-body">
                     <span className="ct-card-cat">{r.category}</span>
                     <h3 className="ct-card-name">{r.name}</h3>
-                    {r.totalCost && (
+                    {r.total_cost != null && (
                       <div className="ct-card-foot">
-                        <span className="ct-cost"><i className="ti ti-coin"></i> {fmtCost(r.totalCost)}</span>
+                        <span className="ct-cost"><i className="ti ti-coin"></i> {fmtCost(r.total_cost)}</span>
                         <span className="ct-view-btn">Xem công thức <i className="ti ti-arrow-right"></i></span>
                       </div>
                     )}
@@ -190,13 +226,11 @@ export default function CongThuc2Page() {
             <button className="ct-modal-close" onClick={closeModal} aria-label="Đóng"><i className="ti ti-x"></i></button>
 
             <div className="ct-modal-img">
-              {selected.photoUrl
-                ? <img src={selected.photoUrl} alt={selected.name} />
+              {selected.photo_url
+                ? <img src={selected.photo_url} alt={selected.name} />
                 : <div className="ct2-modal-no-img"><i className="ti ti-coffee"></i></div>
               }
-
-              {/* Gate: chưa đăng nhập */}
-              {isLoggedIn === false && (
+              {isLoggedIn === false ? (
                 <div className="ct-modal-lock-ov">
                   <div className="ct-modal-lock-box">
                     <div className="ct-lock-ico"><i className="ti ti-user-circle"></i></div>
@@ -210,20 +244,31 @@ export default function CongThuc2Page() {
                     </Link>
                   </div>
                 </div>
-              )}
+              ) : !canView(selected) ? (
+                <div className="ct-modal-lock-ov">
+                  <div className="ct-modal-lock-box">
+                    <div className="ct-lock-ico"><i className="ti ti-lock"></i></div>
+                    <h3>Nội Dung Độc Quyền</h3>
+                    <p>Công thức này dành cho học viên đã được cấp quyền truy cập.</p>
+                    <Link href="/dang-ky" className="btn btn-primary" onClick={closeModal}>
+                      <i className="ti ti-calendar-check"></i> Đăng Ký Khóa Học
+                    </Link>
+                  </div>
+                </div>
+              ) : null}
             </div>
 
             <div className="ct-modal-body">
               <span className="ct-card-cat">{selected.category}</span>
               <h2>{selected.name}</h2>
 
-              {selected.totalCost && (
+              {selected.total_cost != null && (
                 <div className="ct-modal-meta">
-                  <span><i className="ti ti-coin"></i> Tổng cost: <strong>{fmtCost(selected.totalCost)}</strong></span>
+                  <span><i className="ti ti-coin"></i> Tổng cost: <strong>{fmtCost(selected.total_cost)}</strong></span>
                 </div>
               )}
 
-              {canView ? (
+              {canView(selected) ? (
                 <>
                   {selected.instructions && (
                     <div className="ct-modal-section">
@@ -235,24 +280,53 @@ export default function CongThuc2Page() {
                       </ol>
                     </div>
                   )}
-                  {selected.recipe && (
+
+                  {selected.recipe_text && (
                     <div className="ct-modal-section">
                       <h4><i className="ti ti-list"></i> Công thức</h4>
                       <ul className="ct-ing-list">
-                        {splitLines(selected.recipe).map((line, i) => (
+                        {splitLines(selected.recipe_text).map((line, i) => (
                           <li key={i}>{line}</li>
                         ))}
                       </ul>
                     </div>
                   )}
+
+                  {linkedProducts.length > 0 && (
+                    <div className="ct-modal-section ct-linked-products">
+                      <h4><i className="ti ti-package"></i> Nguyên liệu sử dụng</h4>
+                      <div className="ct-prod-list">
+                        {linkedProducts.map(p => (
+                          <div key={p.id} className="ct-prod-item">
+                            <div className="ct-prod-img">
+                              {p.image_url
+                                ? <img src={p.image_url} alt={p.name} loading="lazy" />
+                                : <div className="ct-prod-img-ph"><i className="ti ti-package"></i></div>}
+                            </div>
+                            <div className="ct-prod-info">
+                              <p className="ct-prod-name">{p.name}</p>
+                              <p className="ct-prod-meta">{p.unit} · <strong>{p.price.toLocaleString('vi-VN')}đ</strong></p>
+                            </div>
+                            <div className="ct-prod-btns">
+                              <Link href="/nguyen-lieu" className="ct-prod-view" onClick={closeModal}>Xem</Link>
+                              <button
+                                className={`ct-prod-add${addedIds.has(p.id) ? ' added' : ''}`}
+                                onClick={() => handleAddToCart(p)}
+                              >
+                                {addedIds.has(p.id)
+                                  ? <><i className="ti ti-check"></i> Đã thêm</>
+                                  : <><i className="ti ti-shopping-cart-plus"></i> Thêm</>}
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <button className="ct-view-cart-btn" onClick={() => { closeModal(); openCart(); }}>
+                        <i className="ti ti-shopping-cart"></i> Xem giỏ hàng
+                      </button>
+                    </div>
+                  )}
                 </>
-              ) : isLoggedIn !== false ? (
-                /* Đã đăng nhập nhưng không có quyền */
-                <div className="ct-modal-cta">
-                  <Link href="/dang-ky" className="btn btn-primary" onClick={closeModal}>
-                    <i className="ti ti-calendar-check"></i> Đăng Ký Để Xem Đầy Đủ
-                  </Link>
-                </div>
               ) : null}
             </div>
           </div>
@@ -260,47 +334,15 @@ export default function CongThuc2Page() {
       )}
 
       <style>{`
-        .ct2-skeleton-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-          gap: 20px;
-        }
-        .ct2-skeleton-card {
-          background: var(--white);
-          border-radius: var(--r-lg);
-          overflow: hidden;
-          box-shadow: var(--sh-sm);
-        }
-        .ct2-sk-img {
-          height: 180px;
-          background: linear-gradient(90deg, #f0e8df 25%, #e8ddd4 50%, #f0e8df 75%);
-          background-size: 200% 100%;
-          animation: ct2shimmer 1.4s infinite;
-        }
-        .ct2-sk-body { padding: 16px; }
-        .ct2-sk-line {
-          height: 12px; border-radius: 6px; margin-bottom: 8px;
-          background: linear-gradient(90deg, #f0e8df 25%, #e8ddd4 50%, #f0e8df 75%);
-          background-size: 200% 100%;
-          animation: ct2shimmer 1.4s infinite;
-        }
-        .ct2-sk-line.short { width: 55%; }
-        @keyframes ct2shimmer {
-          0%  { background-position: 200% 0; }
-          100%{ background-position: -200% 0; }
-        }
-        .ct2-no-img {
-          width: 100%; height: 100%;
-          display: flex; align-items: center; justify-content: center;
-          font-size: 3rem; color: var(--muted);
-          background: var(--bg-alt);
-        }
-        .ct2-modal-no-img {
-          width: 100%; height: 220px;
-          display: flex; align-items: center; justify-content: center;
-          font-size: 4rem; color: var(--muted);
-          background: var(--bg-alt);
-        }
+        .ct2-skeleton-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:20px; }
+        .ct2-skeleton-card { background:var(--white); border-radius:var(--r-lg); overflow:hidden; box-shadow:var(--sh-sm); }
+        .ct2-sk-img { height:180px; background:linear-gradient(90deg,#f0e8df 25%,#e8ddd4 50%,#f0e8df 75%); background-size:200% 100%; animation:ct2shimmer 1.4s infinite; }
+        .ct2-sk-body { padding:16px; }
+        .ct2-sk-line { height:12px; border-radius:6px; margin-bottom:8px; background:linear-gradient(90deg,#f0e8df 25%,#e8ddd4 50%,#f0e8df 75%); background-size:200% 100%; animation:ct2shimmer 1.4s infinite; }
+        .ct2-sk-line.short { width:55%; }
+        @keyframes ct2shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+        .ct2-no-img { width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:3rem; color:var(--muted); background:var(--bg-alt); }
+        .ct2-modal-no-img { width:100%; height:220px; display:flex; align-items:center; justify-content:center; font-size:4rem; color:var(--muted); background:var(--bg-alt); }
       `}</style>
     </>
   );

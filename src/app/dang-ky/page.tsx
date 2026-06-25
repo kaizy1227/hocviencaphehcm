@@ -52,6 +52,7 @@ function DangKyForm() {
   const phoneRef = useRef<HTMLInputElement>(null);
   const courseRef = useRef<HTMLSelectElement>(null);
   const locationRef = useRef<HTMLSelectElement>(null);
+  const ghichuRef = useRef<HTMLTextAreaElement>(null);
 
   async function submitForm(e: FormEvent) {
     e.preventDefault();
@@ -59,6 +60,7 @@ function DangKyForm() {
     const phone = phoneRef.current?.value.trim();
     const course = courseRef.current?.value;
     const location = locationRef.current?.value;
+    const ghi_chu = ghichuRef.current?.value.trim() || null;
     if (!name || !phone || !course || !location) {
       setFormError('Vui lòng điền đầy đủ thông tin.');
       return;
@@ -66,7 +68,7 @@ function DangKyForm() {
     setFormSubmitting(true);
     setFormError('');
     const supabase = createClient();
-    const { error } = await supabase.from('leads').insert({ name, phone, course, location });
+    const { error } = await supabase.from('leads').insert({ name, phone, course, location, ghi_chu });
     setFormSubmitting(false);
     if (error) { setFormError('Có lỗi xảy ra, vui lòng thử lại hoặc liên hệ Zalo.'); return; }
     setFormDone(true);
@@ -125,6 +127,10 @@ function DangKyForm() {
                 </optgroup>
                 <option value="Khác / Tư vấn thêm">💬 Khác / Tư vấn thêm</option>
               </select>
+            </div>
+            <div className="fg">
+              <label className="fl-lbl" htmlFor="f-ghichu">Ghi chú (nếu có)</label>
+              <textarea className="fi" id="f-ghichu" placeholder="Ví dụ: Muốn học cuối tuần, có thể học online không?..." rows={3} ref={ghichuRef} style={{ resize: 'vertical' }} />
             </div>
             {formError && <p className="f-error"><i className="ti ti-alert-circle"></i> {formError}</p>}
             <button type="submit" className="f-submit" disabled={formSubmitting}>

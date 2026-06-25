@@ -1,18 +1,21 @@
 'use client';
 import { useEffect, useState } from 'react';
-import type { LarkStudent } from '@/lib/lark';
+import { createClient } from '@/lib/supabase/client';
+
+type TraoBang = { id: string; name: string; date: string; course: string; photo_url: string; };
 
 export default function TraoBangPage() {
-  const [students, setStudents] = useState<LarkStudent[]>([]);
+  const [students, setStudents] = useState<TraoBang[]>([]);
   const [loading, setLoading] = useState(true);
   const [lightbox, setLightbox] = useState<{ src: string; name: string } | null>(null);
 
   useEffect(() => {
-    fetch('/api/lark-students')
-      .then(r => r.json())
-      .then(d => setStudents(d.students ?? []))
-      .catch(() => {})
-      .finally(() => setLoading(false));
+    void createClient()
+      .from('trao_bang')
+      .select('id,name,date,course,photo_url')
+      .order('created_at', { ascending: false })
+      .then(({ data }) => setStudents(data ?? []))
+      .then(() => setLoading(false), () => setLoading(false));
   }, []);
 
   useEffect(() => {
@@ -22,7 +25,7 @@ export default function TraoBangPage() {
     return () => document.removeEventListener('keydown', onKey);
   }, [lightbox]);
 
-  const parseDate = (d: string) => { const [day, mo, yr] = d.split('/'); return new Date(`${yr}-${mo}-${day}`).getTime(); };
+  const parseDate = (d: string) => { try { const [day, mo, yr] = d.split('/'); return new Date(`${yr}-${mo}-${day}`).getTime(); } catch { return 0; } };
   const sorted = [...students].sort((a, b) => parseDate(b.date) - parseDate(a.date));
 
   return (
@@ -51,12 +54,12 @@ export default function TraoBangPage() {
                 <div key={s.id} className="tb-card">
                   <div
                     className="tb-card-img"
-                    onClick={() => s.photoUrl && setLightbox({ src: s.photoUrl, name: s.name })}
-                    style={{ cursor: s.photoUrl ? 'zoom-in' : 'default' }}
+                    onClick={() => s.photo_url && setLightbox({ src: s.photo_url, name: s.name })}
+                    style={{ cursor: s.photo_url ? 'zoom-in' : 'default' }}
                   >
-                    {s.photoUrl ? (
+                    {s.photo_url ? (
                       <img
-                        src={s.photoUrl}
+                        src={s.photo_url}
                         alt={s.name}
                         loading="lazy"
                         onError={e => {
@@ -67,10 +70,10 @@ export default function TraoBangPage() {
                         }}
                       />
                     ) : null}
-                    <div className="tb-placeholder" style={{ display: s.photoUrl ? 'none' : 'flex' }}>
+                    <div className="tb-placeholder" style={{ display: s.photo_url ? 'none' : 'flex' }}>
                       <i className="ti ti-certificate"></i>
                     </div>
-                    {s.photoUrl && (
+                    {s.photo_url && (
                       <div className="tb-zoom-hint"><i className="ti ti-zoom-in"></i></div>
                     )}
                   </div>

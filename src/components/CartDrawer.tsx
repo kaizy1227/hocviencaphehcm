@@ -2,10 +2,12 @@
 import { useState } from 'react';
 import { useCart } from '@/context/CartContext';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export default function CartDrawer() {
   const { items, totalItems, totalPrice, removeItem, updateQty, clearCart, isOpen, closeCart } = useCart();
   const [showOrderModal, setShowOrderModal] = useState(false);
+  const router = useRouter();
   const [copied, setCopied] = useState(false);
 
   const orderText = items.length > 0
@@ -97,10 +99,14 @@ export default function CartDrawer() {
                 </div>
               </div>
 
-              <button className="cart-checkout-btn" onClick={() => setShowOrderModal(true)}>
-                <i className="ti ti-brand-zalo"></i>
-                <span>Đặt hàng qua Zalo</span>
+              <button className="cart-checkout-btn" onClick={() => { closeCart(); router.push('/gio-hang'); }}>
+                <i className="ti ti-check"></i>
+                <span>Xác nhận đặt hàng</span>
                 <i className="ti ti-arrow-right cart-checkout-arrow"></i>
+              </button>
+
+              <button className="cart-zalo-alt" onClick={() => setShowOrderModal(true)}>
+                <i className="ti ti-brand-zalo"></i> Đặt nhanh qua Zalo
               </button>
 
               <button className="cart-clear" onClick={clearCart}>

@@ -1,9 +1,19 @@
 const LARK_API = 'https://open.larksuite.com/open-apis';
-const TRAO_BANG_VIEW = 'vewMHUtKed';
+const TRAO_BANG_VIEW = 'vewf25S1Jg';
 const LOP_HOC_TABLE  = 'tblZo3DU3xfBX8Wy';
 const LOP_HOC_VIEW   = 'vewi5T4FsC';
 
+// ─── In-memory cache (server RAM) ────────────────────────────────────────────
+// Mục đích: tiết kiệm quota Lark API (giới hạn 10.000 lượt/tháng).
+// TTL = 10 phút — đủ fresh cho dữ liệu ít thay đổi (ảnh, công thức, lớp học).
+// KHÔNG xóa hoặc bypass cache này trừ khi có lý do rõ ràng.
+const CACHE_TTL = 10 * 60 * 1000; // 10 phút
+
 let _tokenCache: { value: string; expiresAt: number } | null = null;
+let _recipesCache: { data: LarkRecipe[]; expiresAt: number } | null = null;
+let _studentsCache: { data: LarkStudent[]; expiresAt: number } | null = null;
+let _videosCache: { data: LarkVideo[]; expiresAt: number } | null = null;
+let _classesCache: { data: LarkClassSession[]; expiresAt: number } | null = null;
 
 export async function getLarkToken(): Promise<string> {
   if (_tokenCache && Date.now() < _tokenCache.expiresAt) return _tokenCache.value;
@@ -87,8 +97,10 @@ export interface LarkStudent {
 }
 
 export async function fetchLarkStudents(): Promise<LarkStudent[]> {
+  if (_studentsCache && Date.now() < _studentsCache.expiresAt) return _studentsCache.data;
+
   const token = await getLarkToken();
-  const appToken = process.env.LARK_BASE_APP_TOKEN!;
+  const appToken = process.env.LARK_TRAO_BANG_APP_TOKEN ?? process.env.LARK_BASE_APP_TOKEN!;
   const tableId  = process.env.LARK_TABLE_ID!;
 
   const recordRes = await fetch(
@@ -116,7 +128,7 @@ export async function fetchLarkStudents(): Promise<LarkStudent[]> {
         ? new Date(rawDate).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })
         : '';
 
-      const courseRaw = f['Khóa học copy'];
+      const courseRaw = f['Khóa học'];
       const course = typeof courseRaw === 'string'
         ? courseRaw
         : (Array.isArray(courseRaw) ? courseRaw[0]?.text ?? courseRaw[0] ?? '' : '');
@@ -129,7 +141,9 @@ export async function fetchLarkStudents(): Promise<LarkStudent[]> {
     }),
   );
 
-  return results.filter(s => !!s.name);
+  const filtered = results.filter(s => !!s.name);
+  _studentsCache = { data: filtered, expiresAt: Date.now() + CACHE_TTL };
+  return filtered;
 }
 
 // ─── Video Truyền Thông ───────────────────────────────────────────────────────
@@ -164,6 +178,8 @@ export interface LarkVideo {
 }
 
 export async function fetchLarkVideos(): Promise<LarkVideo[]> {
+  if (_videosCache && Date.now() < _videosCache.expiresAt) return _videosCache.data;
+
   const token    = await getLarkToken();
   const appToken = process.env.LARK_BASE_APP_TOKEN!;
 
@@ -211,6 +227,7 @@ export async function fetchLarkVideos(): Promise<LarkVideo[]> {
     }),
   );
 
+  _videosCache = { data: results, expiresAt: Date.now() + CACHE_TTL };
   return results;
 }
 
@@ -227,10 +244,13 @@ export interface LarkRecipe {
   instructions: string;
   totalCost: number | null;
   recipe: string;
+  ingredients: string; // raw "Nguyên liệu tổng hợp" text — pipe-separated, each entry "Name/ unit/ price: qty"
   courses: string[];
 }
 
 export async function fetchLarkRecipes(): Promise<LarkRecipe[]> {
+  if (_recipesCache && Date.now() < _recipesCache.expiresAt) return _recipesCache.data;
+
   const token    = await getLarkToken();
   const appToken = process.env.LARK_BASE_APP_TOKEN!;
 
@@ -261,15 +281,19 @@ export async function fetchLarkRecipes(): Promise<LarkRecipe[]> {
       const raw         = f['Khóa học'];
       const courses: string[] = Array.isArray(raw) ? raw.map(String) : (raw ? [String(raw)] : []);
 
+      const ingredients = f['Nguyên liệu tổng hợp']?.[0]?.text ?? '';
+
       const attachments: any[] = (f['Hình ảnh món'] ?? []).filter(isDisplayable);
       const img      = attachments[0] ?? null;
       const photoUrl = img ? await resolveAttachmentUrl(token, img, extraParam) : null;
 
-      return { id: item.record_id, name, category, photoUrl, instructions, totalCost, recipe, courses };
+      return { id: item.record_id, name, category, photoUrl, instructions, totalCost, recipe, ingredients, courses };
     })
   );
 
-  return results.filter(r => !!r.name);
+  const filtered = results.filter(r => !!r.name);
+  _recipesCache = { data: filtered, expiresAt: Date.now() + CACHE_TTL };
+  return filtered;
 }
 
 // ─── Lớp Học ─────────────────────────────────────────────────────────────────
@@ -284,6 +308,8 @@ export interface LarkClassSession {
 }
 
 export async function fetchLarkClassSessions(): Promise<LarkClassSession[]> {
+  if (_classesCache && Date.now() < _classesCache.expiresAt) return _classesCache.data;
+
   const token    = await getLarkToken();
   const appToken = process.env.LARK_BASE_APP_TOKEN!;
 
@@ -342,5 +368,7 @@ export async function fetchLarkClassSessions(): Promise<LarkClassSession[]> {
     }),
   );
 
-  return results.filter(s => s.photos.length > 0);
+  const filtered = results.filter(s => s.photos.length > 0);
+  _classesCache = { data: filtered, expiresAt: Date.now() + CACHE_TTL };
+  return filtered;
 }

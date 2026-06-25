@@ -57,7 +57,7 @@ export default function KhoaHocPage() {
   }, []);
 
   return (
-    <main>
+    <main style={{ paddingTop: 'var(--nav-h)' }}>
       {lb && (
         <div className="lightbox active" onClick={e => { if (e.target === e.currentTarget) closeLb(); }}>
           <button className="lb-close" onClick={closeLb}>&#x2715;</button>
@@ -65,17 +65,15 @@ export default function KhoaHocPage() {
         </div>
       )}
 
-      <section className="nl-hero">
+      <section className="lh-hero">
         <div className="container">
           <div className="nl-hero-crumb">
             <Link href="/">Trang Chủ</Link>
             <i className="ti ti-chevron-right" style={{ fontSize: '.75rem' }}></i>
             <span>Khóa Học</span>
           </div>
-          <h1>Các Khóa Học<br /><em>Pha Chế</em></h1>
-          <p style={{ color: 'rgba(255,255,255,0.72)', maxWidth: '520px', lineHeight: 1.7, marginBottom: '28px' }}>
-            Khóa tổng hợp và chuyên đề lẻ — học đúng thứ bạn cần, thực hành trực tiếp, có giảng viên kèm cặp 1–1.
-          </p>
+          <h1>Các Khóa Học <em>Pha Chế</em></h1>
+          <p>Khóa tổng hợp và chuyên đề lẻ — học đúng thứ bạn cần, thực hành trực tiếp, có giảng viên kèm cặp 1–1.</p>
           <Link href="/dang-ky" className="btn btn-primary"><i className="ti ti-phone"></i> Đăng Ký Tư Vấn</Link>
         </div>
       </section>
@@ -121,8 +119,8 @@ export default function KhoaHocPage() {
           <div className="le-grid">
             {leCourses.map(c => (
               <div className="le-card" key={c.name}>
-                <div className="le-img" onClick={() => openLb(`/images/courses/Bang-gia-khoa-le/${c.img}`, c.name)}>
-                  <img src={`/images/courses/Bang-gia-khoa-le/${c.img}`} alt={c.name} loading="lazy"
+                <div className="le-img" onClick={() => openLb(c.img?.startsWith('http') ? c.img : `/images/courses/Bang-gia-khoa-le/${c.img}`, c.name)}>
+                  <img src={c.img?.startsWith('http') ? c.img : `/images/courses/Bang-gia-khoa-le/${c.img}`} alt={c.name} loading="lazy"
                     onError={e => { const card = e.currentTarget.closest('.le-card') as HTMLElement; if (card) card.style.display = 'none'; }} />
                 </div>
                 <div className="le-body">

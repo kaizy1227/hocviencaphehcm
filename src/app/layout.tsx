@@ -6,6 +6,7 @@ import Footer from '@/components/Footer';
 import FloatingButtons from '@/components/FloatingButtons';
 import CartDrawer from '@/components/CartDrawer';
 import { CartProvider } from '@/context/CartContext';
+import { WishlistProvider } from '@/context/WishlistContext';
 
 const beVietnam = Be_Vietnam_Pro({
   variable: '--font-be-vietnam',
@@ -45,18 +46,20 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="vi" className={beVietnam.variable}>
+    <html lang="vi" className={beVietnam.variable} data-scroll-behavior="smooth">
       <head>
         <link rel="icon" type="image/png" href="/images/logo.png" />
         <link rel="apple-touch-icon" href="/images/logo.png" />
       </head>
       <body>
         <CartProvider>
-          <Navbar />
-          <FloatingButtons />
-          <CartDrawer />
-          {children}
-          <Footer />
+          <WishlistProvider>
+            <Navbar />
+            <FloatingButtons />
+            <CartDrawer />
+            {children}
+            <Footer />
+          </WishlistProvider>
         </CartProvider>
       </body>
     </html>

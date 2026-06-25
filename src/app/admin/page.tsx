@@ -27,8 +27,31 @@ type Tool = {
   id: string; stt: number; name: string; unit: string;
   price: number; image_url: string; category: string; active: boolean;
 };
+type OrderItem = { id: string; name: string; price: number; unit: string; quantity: number; image_url: string; };
+type Order = {
+  id: string; customer_name: string; phone: string; address: string | null;
+  notes: string | null; items: OrderItem[]; total: number;
+  status: 'pending' | 'confirmed' | 'shipping' | 'done' | 'cancelled';
+  created_at: string; user_id: string | null;
+};
 
-const RECIPE_COURSES = ['Tổng hợp hiện đại', 'Tổng hợp truyền thống'];
+type CongThuc = {
+  id: string; name: string; category: string; photo_url: string;
+  instructions: string; total_cost: number | null; recipe_text: string;
+  linked_product_ids: string[]; courses: string[]; sort_order: number;
+};
+
+type TikTokVideoRow = {
+  id: string; url: string; video_id: string; title: string;
+  thumbnail: string; author: string; sort_order: number; active: boolean;
+};
+type ChiaSeIngredient = { name: string; shopLink: string; };
+type ChiaSeRecipe = {
+  id: string; name: string; short_name: string; category: string;
+  source: string; image_url: string; steps: string;
+  ingredients: ChiaSeIngredient[]; sort_order: number; active: boolean;
+};
+const RECIPE_COURSES = ['Khóa hiện đại', 'Khóa truyền thống', 'Trà sữa hiện đại', 'Trà sữa truyền thống', 'Trà trái cây & Matcha', 'Đá xay & Sinh tố', 'Cà phê phin - Đá xay & Sữa chua', 'Cà phê máy cơ bản'];
 const STUDENT_COURSES = [
   'Tổng Hợp Truyền Thống', 'Tổng Hợp Hiện Đại', 'Cà Phê Máy Nâng Cao',
   'Cà Phê Phin Truyền Thống', 'Trà Sữa Hiện Đại', 'Trà Trái Cây & Matcha',
@@ -49,12 +72,31 @@ const BLANK_PRODUCT: Omit<Product, 'id'> = {
 const BLANK_TOOL: Omit<Tool, 'id'> = {
   stt: 0, name: '', unit: '', price: 0, image_url: '', category: 'Dụng cụ pha chế', active: true,
 };
+const BLANK_RECIPE: Omit<CongThuc, 'id'> = {
+  name: '', category: '', photo_url: '', instructions: '',
+  total_cost: null, recipe_text: '', linked_product_ids: [], courses: [], sort_order: 0,
+};
+const BLANK_CHIA_SE: Omit<ChiaSeRecipe, 'id'> = {
+  name: '', short_name: '', category: '', source: '', image_url: '',
+  steps: '', ingredients: [], sort_order: 0, active: true,
+};
+type CongThucHVCP = {
+  id: string; name: string; category: string; photo_url: string;
+  instructions: string; recipe_text: string;
+  linked_product_ids: string[]; sort_order: number; active: boolean;
+};
+const BLANK_HVCP: Omit<CongThucHVCP, 'id'> = {
+  name: '', category: '', photo_url: '', instructions: '',
+  recipe_text: '', linked_product_ids: [], sort_order: 0, active: true,
+};
+const CT_COURSES = ['Khóa hiện đại', 'Khóa truyền thống', 'Trà sữa hiện đại', 'Trà sữa truyền thống', 'Trà trái cây & Matcha', 'Đá xay & Sinh tố', 'Cà phê phin - Đá xay & Sữa chua', 'Cà phê máy cơ bản'];
 
 export default function AdminPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [activeTab, setActiveTab] = useState<'leads' | 'students' | 'content' | 'products' | 'tools'>('leads');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'leads' | 'students' | 'content' | 'products' | 'tools' | 'recipes' | 'ct-hvcp' | 'kho-cong-thuc' | 'hinh-anh' | 'videos' | 'orders'>('dashboard');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Students
   const [students, setStudents] = useState<Student[]>([]);
@@ -93,6 +135,11 @@ export default function AdminPage() {
   const [showAddProduct, setShowAddProduct] = useState(false);
   const [uploadingImg, setUploadingImg] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const courseImgRef = useRef<HTMLInputElement>(null);
+  const [uploadingCourseImg, setUploadingCourseImg] = useState(false);
+  const [productSearch, setProductSearch] = useState('');
+  const [productCatFilter, setProductCatFilter] = useState('');
+  const [productPhanLoaiFilter, setProductPhanLoaiFilter] = useState('');
 
   // Tools (Dụng Cụ)
   const [tools, setTools] = useState<Tool[]>([]);
@@ -104,46 +151,211 @@ export default function AdminPage() {
   const [showAddTool, setShowAddTool] = useState(false);
   const [uploadingToolImg, setUploadingToolImg] = useState(false);
   const toolFileRef = useRef<HTMLInputElement>(null);
+  const [toolSearch, setToolSearch] = useState('');
+  const [toolCatFilter, setToolCatFilter] = useState('');
+
+  // Recipes (Công Thức 2)
+  const [recipes, setRecipes] = useState<CongThuc[]>([]);
+  const [recipeForm, setRecipeForm] = useState<Omit<CongThuc, 'id'>>(BLANK_RECIPE);
+  const [recipeFormError, setRecipeFormError] = useState('');
+  const [savingRecipe, setSavingRecipe] = useState(false);
+  const [deletingRecipe, setDeletingRecipe] = useState<string | null>(null);
+  const [editingRecipe, setEditingRecipe] = useState<CongThuc | null>(null);
+  const [showAddRecipe, setShowAddRecipe] = useState(false);
+  const [recipeSearch, setRecipeSearch] = useState('');
+  const [recipeKhoaFilter, setRecipeKhoaFilter] = useState('');
+  const [prodFilterQ, setProdFilterQ] = useState('');
+  const [uploadingRecipeImg, setUploadingRecipeImg] = useState(false);
+  const recipeImgRef = useRef<HTMLInputElement>(null);
+
+  // Kho CT Chia Sẻ
+  const [chiaSeList, setChiaSeList] = useState<ChiaSeRecipe[]>([]);
+  const [chiaSeForm, setChiaSeForm] = useState<Omit<ChiaSeRecipe, 'id'>>(BLANK_CHIA_SE);
+  const [chiaSeFormError, setChiaSeFormError] = useState('');
+  const [savingChiaSe, setSavingChiaSe] = useState(false);
+  const [deletingChiaSe, setDeletingChiaSe] = useState<string | null>(null);
+  const [editingChiaSe, setEditingChiaSe] = useState<ChiaSeRecipe | null>(null);
+  const [showAddChiaSe, setShowAddChiaSe] = useState(false);
+  const [chiaSeSearch, setChiaSeSearch] = useState('');
+  const [uploadingChiaSeImg, setUploadingChiaSeImg] = useState(false);
+  const chiaSeImgRef = useRef<HTMLInputElement>(null);
+
+  // CT HVCP
+  const [hvcp, setHvcp] = useState<CongThucHVCP[]>([]);
+  const [hvcpForm, setHvcpForm] = useState<Omit<CongThucHVCP, 'id'>>(BLANK_HVCP);
+  const [hvcpFormError, setHvcpFormError] = useState('');
+  const [savingHvcp, setSavingHvcp] = useState(false);
+  const [deletingHvcp, setDeletingHvcp] = useState<string | null>(null);
+  const [editingHvcp, setEditingHvcp] = useState<CongThucHVCP | null>(null);
+  const [showAddHvcp, setShowAddHvcp] = useState(false);
+  const [hvcpSearch, setHvcpSearch] = useState('');
+  const [hvcpProdQ, setHvcpProdQ] = useState('');
+  const [uploadingHvcpImg, setUploadingHvcpImg] = useState(false);
+  const hvcpImgRef = useRef<HTMLInputElement>(null);
+
+  // Orders
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [orderSearch, setOrderSearch] = useState('');
+  const [updatingOrder, setUpdatingOrder] = useState<string | null>(null);
+  const [deletingOrder, setDeletingOrder] = useState<string | null>(null);
+  const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
+
+  // Hình ảnh sync
+  const [syncingTraoBang, setSyncingTraoBang] = useState(false);
+  const [syncingLopHoc, setSyncingLopHoc] = useState(false);
+  const [syncMsg, setSyncMsg] = useState('');
+
+  // TikTok Videos
+  const [ttVideos, setTtVideos] = useState<TikTokVideoRow[]>([]);
+  const [ttForm, setTtForm] = useState({ url: '', title: '' });
+  const [addingTt, setAddingTt] = useState(false);
+  const [ttError, setTtError] = useState('');
+  const [deletingTt, setDeletingTt] = useState<string | null>(null);
 
   useEffect(() => {
+    let mounted = true;
     const supabase = createClient();
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (!session) { router.replace('/login?redirect=/admin'); return; }
-      const admin = session.user.app_metadata?.role === 'admin';
-      setIsAdmin(admin);
-      if (!admin) { setLoading(false); return; }
-      await Promise.all([loadStudents(), loadLeads(), loadCourses(), loadProducts(), loadTools()]);
-      setLoading(false);
-    });
+
+    void (async () => {
+      try {
+        const { data: { session } } = await Promise.race([
+          supabase.auth.getSession(),
+          new Promise<never>((_, reject) => setTimeout(() => reject(new Error('auth-timeout')), 5000)),
+        ]);
+        if (!mounted) return;
+        if (!session) { router.replace('/login?redirect=/admin'); return; }
+        const admin = session.user.app_metadata?.role === 'admin';
+        setIsAdmin(admin);
+        setLoading(false);
+        if (!admin) return;
+        void loadStudents();
+        void loadLeads();
+        void loadCourses();
+        void loadProducts();
+        void loadTools();
+        void loadRecipes();
+        void loadChiaSeRecipes();
+        void loadHVCPRecipes();
+        void loadOrders();
+        void loadTtVideos();
+      } catch {
+        if (!mounted) return;
+        router.replace('/login?redirect=/admin');
+      }
+    })();
+
+    return () => { mounted = false; };
   }, []);
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') { cancelProductEdit(); cancelToolEdit(); cancelCourseEdit(); }
+      if (e.key === 'Escape') { cancelProductEdit(); cancelToolEdit(); cancelCourseEdit(); cancelRecipeEdit(); cancelChiaSeEdit(); cancelHvcpEdit(); }
     }
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
   }, []);
 
   async function loadStudents() {
-    const { data } = await createClient().from('students').select('*').order('enrolled_at', { ascending: false });
+    const { data, error } = await createClient().from('students').select('*').order('enrolled_at', { ascending: false });
+    if (error) throw error;
     setStudents(data ?? []);
   }
   async function loadLeads() {
-    const { data } = await createClient().from('leads').select('*').order('created_at', { ascending: false });
+    const { data, error } = await createClient().from('leads').select('*').order('created_at', { ascending: false });
+    if (error) throw error;
     setLeads(data ?? []);
   }
   async function loadCourses() {
-    const { data } = await createClient().from('courses').select('*').order('sort_order');
+    const { data, error } = await createClient().from('courses').select('*').order('sort_order');
+    if (error) throw error;
     setCourses(data ?? []);
   }
   async function loadProducts() {
-    const { data } = await createClient().from('products').select('*').order('stt');
+    const { data, error } = await createClient().from('products').select('*').order('stt');
+    if (error) throw error;
     setProducts(data ?? []);
   }
   async function loadTools() {
-    const { data } = await createClient().from('dung_cu').select('*').order('stt');
+    const { data, error } = await createClient().from('dung_cu').select('*').order('stt');
+    if (error) throw error;
     setTools(data ?? []);
+  }
+  async function loadRecipes() {
+    const { data, error } = await createClient().from('cong_thuc').select('*').order('sort_order').order('created_at');
+    if (error) throw error;
+    setRecipes(data ?? []);
+  }
+  async function loadChiaSeRecipes() {
+    const { data, error } = await createClient().from('cong_thuc_chia_se').select('*').order('sort_order').order('created_at');
+    if (error) throw error;
+    setChiaSeList(data ?? []);
+  }
+  async function loadHVCPRecipes() {
+    const { data, error } = await createClient().from('cong_thuc_hvcp').select('*').order('sort_order').order('created_at');
+    if (error) throw error;
+    setHvcp(data ?? []);
+  }
+  async function loadOrders() {
+    const { data, error } = await createClient().from('orders').select('*').order('created_at', { ascending: false });
+    if (error) throw error;
+    setOrders(data ?? []);
+  }
+  async function loadTtVideos() {
+    const { data, error } = await createClient().from('tiktok_videos').select('*').order('sort_order').order('created_at', { ascending: false });
+    if (error) throw error;
+    setTtVideos(data ?? []);
+  }
+  async function addTtVideo(e: FormEvent) {
+    e.preventDefault();
+    setTtError('');
+    const url = ttForm.url.trim();
+    if (!/tiktok\.com/i.test(url)) { setTtError('Vui lòng dán link TikTok hợp lệ.'); return; }
+    setAddingTt(true);
+    // Resolve qua oEmbed để lấy video_id + thumbnail + tên kênh (hỗ trợ cả link rút gọn)
+    let meta = { url, videoId: '', thumbnail: '', author: '', title: '' };
+    try {
+      const r = await fetch(`/api/tiktok-resolve?url=${encodeURIComponent(url)}`);
+      const d = await r.json();
+      if (d.ok) meta = { url: d.url || url, videoId: d.videoId || '', thumbnail: d.thumbnail || '', author: d.author || '', title: d.title || '' };
+    } catch { /* fallback bên dưới */ }
+    if (!meta.videoId) {
+      setAddingTt(false);
+      setTtError('Không lấy được mã video. Hãy dùng link đầy đủ dạng .../video/123... hoặc thử lại.');
+      return;
+    }
+    const { error } = await createClient().from('tiktok_videos').insert({
+      url: meta.url, video_id: meta.videoId,
+      title: ttForm.title.trim() || meta.title, thumbnail: meta.thumbnail, author: meta.author,
+      sort_order: ttVideos.length, active: true,
+    });
+    setAddingTt(false);
+    if (error) { setTtError('Lỗi lưu: ' + error.message); return; }
+    setTtForm({ url: '', title: '' });
+    loadTtVideos();
+  }
+  async function deleteTtVideo(id: string) {
+    if (!confirm('Xóa video này khỏi trang /video?')) return;
+    setDeletingTt(id);
+    await createClient().from('tiktok_videos').delete().eq('id', id);
+    setTtVideos(prev => prev.filter(v => v.id !== id));
+    setDeletingTt(null);
+  }
+  async function toggleTtActive(v: TikTokVideoRow) {
+    await createClient().from('tiktok_videos').update({ active: !v.active }).eq('id', v.id);
+    setTtVideos(prev => prev.map(x => x.id === v.id ? { ...x, active: !x.active } : x));
+  }
+  async function updateOrderStatus(id: string, status: Order['status']) {
+    setUpdatingOrder(id);
+    await createClient().from('orders').update({ status }).eq('id', id);
+    setOrders(prev => prev.map(o => o.id === id ? { ...o, status } : o));
+    setUpdatingOrder(null);
+  }
+  async function deleteOrder(id: string) {
+    if (!confirm('Xóa đơn hàng này?')) return;
+    setDeletingOrder(id);
+    await createClient().from('orders').delete().eq('id', id);
+    setOrders(prev => prev.filter(o => o.id !== id));
+    setDeletingOrder(null);
   }
 
   // --- STUDENTS ---
@@ -162,11 +374,17 @@ export default function AdminPage() {
     setShowAddStudent(false);
     await loadStudents();
   }
-  function openGrantModal(s: Student) { setGrantModal(s); setGrantAccess(s.course_access ?? []); }
+  function openGrantModal(s: Student) {
+    setGrantModal(s);
+    // Chỉ pre-select những giá trị nằm trong RECIPE_COURSES
+    setGrantAccess((s.course_access ?? []).filter(c => RECIPE_COURSES.includes(c)));
+  }
   async function saveGrant() {
     if (!grantModal) return;
     setSavingGrant(true);
-    await createClient().from('students').update({ course_access: grantAccess }).eq('id', grantModal.id);
+    // Giữ nguyên các giá trị không thuộc RECIPE_COURSES (ví dụ: khóa cũ), ghép với lựa chọn mới
+    const otherAccess = (grantModal.course_access ?? []).filter(c => !RECIPE_COURSES.includes(c));
+    await createClient().from('students').update({ course_access: [...otherAccess, ...grantAccess] }).eq('id', grantModal.id);
     setSavingGrant(false); setGrantModal(null); await loadStudents();
   }
   async function deleteStudent(id: string) {
@@ -196,6 +414,17 @@ export default function AdminPage() {
     setShowAddCourse(false); setCourseFormError('');
   }
   function cancelCourseEdit() { setEditingCourse(null); setShowAddCourse(false); setCourseForm(BLANK_COURSE); setCourseFormError(''); }
+  async function handleCourseImageUpload(file: File) {
+    setUploadingCourseImg(true);
+    const supabase = createClient();
+    const ext = file.name.split('.').pop() ?? 'jpg';
+    const path = `courses/${Date.now()}.${ext}`;
+    const { data, error } = await supabase.storage.from('products').upload(path, file, { upsert: true });
+    setUploadingCourseImg(false);
+    if (error) { setCourseFormError('Upload ảnh thất bại: ' + error.message); return; }
+    const { data: { publicUrl } } = supabase.storage.from('products').getPublicUrl(data.path);
+    setCourseForm(f => ({ ...f, image: publicUrl }));
+  }
   async function saveCourse(e: FormEvent) {
     e.preventDefault();
     if (!courseForm.name.trim() || !courseForm.price.trim()) { setCourseFormError('Vui lòng điền tên và giá.'); return; }
@@ -307,6 +536,239 @@ export default function AdminPage() {
     await loadTools();
   }
 
+  // --- CÔNG THỨC 2 ---
+  function startEditRecipe(r: CongThuc) {
+    setEditingRecipe(r);
+    setRecipeForm({ name: r.name, category: r.category, photo_url: r.photo_url, instructions: r.instructions, total_cost: r.total_cost, recipe_text: r.recipe_text, linked_product_ids: r.linked_product_ids ?? [], courses: r.courses ?? [], sort_order: r.sort_order });
+    setShowAddRecipe(false); setRecipeFormError(''); setProdFilterQ('');
+  }
+  function cancelRecipeEdit() { setEditingRecipe(null); setShowAddRecipe(false); setRecipeForm(BLANK_RECIPE); setRecipeFormError(''); setProdFilterQ(''); }
+
+  async function compressImage(file: File): Promise<File> {
+    return new Promise(resolve => {
+      const img = new Image();
+      img.onload = () => {
+        const maxW = 1200;
+        const ratio = Math.min(1, maxW / img.width);
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(img.width * ratio);
+        canvas.height = Math.round(img.height * ratio);
+        canvas.getContext('2d')!.drawImage(img, 0, 0, canvas.width, canvas.height);
+        canvas.toBlob(blob => {
+          resolve(blob ? new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' }) : file);
+        }, 'image/jpeg', 0.85);
+      };
+      img.onerror = () => resolve(file);
+      img.src = URL.createObjectURL(file);
+    });
+  }
+
+  async function handleRecipeImageUpload(file: File) {
+    setUploadingRecipeImg(true);
+    try {
+      const uploadFile = file.size > 2 * 1024 * 1024 ? await compressImage(file) : file;
+      const form = new FormData();
+      form.append('file', uploadFile);
+      const res = await fetch('/api/admin/cong-thuc/upload', { method: 'POST', body: form });
+      const text = await res.text();
+      let json: any;
+      try { json = JSON.parse(text); } catch { throw new Error(text.slice(0, 200)); }
+      if (!res.ok || json.error) throw new Error(json.error ?? 'Upload thất bại');
+      setRecipeForm(f => ({ ...f, photo_url: json.url }));
+    } catch (err: any) {
+      setRecipeFormError('Upload ảnh thất bại: ' + (err as Error).message);
+    } finally {
+      setUploadingRecipeImg(false);
+    }
+  }
+
+  async function saveRecipe(e: FormEvent) {
+    e.preventDefault();
+    if (!recipeForm.name.trim()) { setRecipeFormError('Vui lòng điền tên món.'); return; }
+    setSavingRecipe(true); setRecipeFormError('');
+    const payload = {
+      name: recipeForm.name.trim(), category: recipeForm.category.trim(),
+      photo_url: recipeForm.photo_url.trim(), instructions: recipeForm.instructions.trim(),
+      total_cost: recipeForm.total_cost ? Number(recipeForm.total_cost) : null,
+      recipe_text: recipeForm.recipe_text.trim(),
+      linked_product_ids: recipeForm.linked_product_ids,
+      courses: recipeForm.courses,
+      sort_order: recipeForm.sort_order,
+    };
+    const { error } = editingRecipe
+      ? await createClient().from('cong_thuc').update({ ...payload, updated_at: new Date().toISOString() }).eq('id', editingRecipe.id)
+      : await createClient().from('cong_thuc').insert(payload);
+    setSavingRecipe(false);
+    if (error) { setRecipeFormError('Lỗi: ' + error.message); return; }
+    cancelRecipeEdit(); await loadRecipes();
+  }
+
+  async function deleteRecipe(id: string) {
+    if (!confirm('Xóa công thức này?')) return;
+    setDeletingRecipe(id);
+    await createClient().from('cong_thuc').delete().eq('id', id);
+    setDeletingRecipe(null); await loadRecipes();
+  }
+
+  function toggleLinkedProduct(productId: string) {
+    setRecipeForm(f => ({
+      ...f,
+      linked_product_ids: f.linked_product_ids.includes(productId)
+        ? f.linked_product_ids.filter(id => id !== productId)
+        : [...f.linked_product_ids, productId],
+    }));
+  }
+
+  // --- CT HVCP ---
+  function startEditHvcp(r: CongThucHVCP) {
+    setEditingHvcp(r);
+    setHvcpForm({ name: r.name, category: r.category, photo_url: r.photo_url, instructions: r.instructions, recipe_text: r.recipe_text, linked_product_ids: r.linked_product_ids ?? [], sort_order: r.sort_order, active: r.active });
+    setShowAddHvcp(false); setHvcpFormError(''); setHvcpProdQ('');
+  }
+  function cancelHvcpEdit() { setEditingHvcp(null); setShowAddHvcp(false); setHvcpForm(BLANK_HVCP); setHvcpFormError(''); setHvcpProdQ(''); }
+
+  async function handleHvcpImageUpload(file: File) {
+    setUploadingHvcpImg(true);
+    try {
+      const uploadFile = file.size > 2 * 1024 * 1024 ? await compressImage(file) : file;
+      const form = new FormData();
+      form.append('file', uploadFile);
+      const res = await fetch('/api/admin/cong-thuc/upload', { method: 'POST', body: form });
+      const json = await res.json();
+      if (!res.ok || json.error) throw new Error(json.error ?? 'Upload thất bại');
+      setHvcpForm(f => ({ ...f, photo_url: json.url }));
+    } catch (err: any) {
+      setHvcpFormError('Upload ảnh thất bại: ' + (err as Error).message);
+    } finally {
+      setUploadingHvcpImg(false);
+    }
+  }
+
+  async function saveHvcp(e: FormEvent) {
+    e.preventDefault();
+    if (!hvcpForm.name.trim()) { setHvcpFormError('Vui lòng điền tên món.'); return; }
+    setSavingHvcp(true); setHvcpFormError('');
+    const payload = {
+      name: hvcpForm.name.trim(), category: hvcpForm.category.trim(),
+      photo_url: hvcpForm.photo_url.trim(), instructions: hvcpForm.instructions.trim(),
+      recipe_text: hvcpForm.recipe_text.trim(),
+      linked_product_ids: hvcpForm.linked_product_ids,
+      sort_order: hvcpForm.sort_order, active: hvcpForm.active,
+    };
+    const { error } = editingHvcp
+      ? await createClient().from('cong_thuc_hvcp').update(payload).eq('id', editingHvcp.id)
+      : await createClient().from('cong_thuc_hvcp').insert(payload);
+    setSavingHvcp(false);
+    if (error) { setHvcpFormError('Lỗi: ' + error.message); return; }
+    cancelHvcpEdit(); await loadHVCPRecipes();
+  }
+
+  async function deleteHvcp(id: string) {
+    if (!confirm('Xóa công thức HVCP này?')) return;
+    setDeletingHvcp(id);
+    await createClient().from('cong_thuc_hvcp').delete().eq('id', id);
+    setDeletingHvcp(null); await loadHVCPRecipes();
+  }
+
+  async function toggleHvcpActive(r: CongThucHVCP) {
+    await createClient().from('cong_thuc_hvcp').update({ active: !r.active }).eq('id', r.id);
+    await loadHVCPRecipes();
+  }
+
+  function toggleHvcpProduct(productId: string) {
+    setHvcpForm(f => ({
+      ...f,
+      linked_product_ids: f.linked_product_ids.includes(productId)
+        ? f.linked_product_ids.filter(id => id !== productId)
+        : [...f.linked_product_ids, productId],
+    }));
+  }
+
+  // --- KHO CT CHIA SẺ ---
+  function startEditChiaSe(r: ChiaSeRecipe) {
+    setEditingChiaSe(r);
+    setChiaSeForm({ name: r.name, short_name: r.short_name ?? r.name, category: r.category ?? '', source: r.source ?? '', image_url: r.image_url ?? '', steps: r.steps ?? '', ingredients: r.ingredients ?? [], sort_order: r.sort_order ?? 0, active: r.active });
+    setShowAddChiaSe(false); setChiaSeFormError('');
+  }
+  function cancelChiaSeEdit() { setEditingChiaSe(null); setShowAddChiaSe(false); setChiaSeForm(BLANK_CHIA_SE); setChiaSeFormError(''); }
+
+  async function handleChiaSeImageUpload(file: File) {
+    setUploadingChiaSeImg(true);
+    try {
+      const uploadFile = file.size > 2 * 1024 * 1024 ? await compressImage(file) : file;
+      const form = new FormData();
+      form.append('file', uploadFile);
+      const res = await fetch('/api/admin/cong-thuc/upload', { method: 'POST', body: form });
+      const json = await res.json();
+      if (!res.ok || json.error) throw new Error(json.error ?? 'Upload thất bại');
+      setChiaSeForm(f => ({ ...f, image_url: json.url }));
+    } catch (err: any) {
+      setChiaSeFormError('Upload ảnh thất bại: ' + (err as Error).message);
+    } finally {
+      setUploadingChiaSeImg(false);
+    }
+  }
+
+  async function saveChiaSe(e: FormEvent) {
+    e.preventDefault();
+    if (!chiaSeForm.name.trim()) { setChiaSeFormError('Vui lòng điền tên món.'); return; }
+    setSavingChiaSe(true); setChiaSeFormError('');
+    try {
+      const payload = {
+        name: chiaSeForm.name.trim(),
+        short_name: (chiaSeForm.short_name ?? '').trim() || chiaSeForm.name.trim(),
+        category: (chiaSeForm.category ?? '').trim(),
+        source: (chiaSeForm.source ?? '').trim(),
+        image_url: (chiaSeForm.image_url ?? '').trim(),
+        steps: (chiaSeForm.steps ?? '').trim(),
+        ingredients: chiaSeForm.ingredients ?? [],
+        sort_order: chiaSeForm.sort_order ?? 0,
+        active: chiaSeForm.active,
+      };
+      const { error } = editingChiaSe
+        ? await createClient().from('cong_thuc_chia_se').update(payload).eq('id', editingChiaSe.id)
+        : await createClient().from('cong_thuc_chia_se').insert(payload);
+      if (error) { setChiaSeFormError('Lỗi: ' + error.message); return; }
+      cancelChiaSeEdit(); await loadChiaSeRecipes();
+    } catch (err: unknown) {
+      setChiaSeFormError('Lỗi: ' + (err instanceof Error ? err.message : String(err)));
+    } finally {
+      setSavingChiaSe(false);
+    }
+  }
+
+  async function deleteChiaSe(id: string) {
+    if (!confirm('Xóa công thức chia sẻ này?')) return;
+    setDeletingChiaSe(id);
+    await createClient().from('cong_thuc_chia_se').delete().eq('id', id);
+    setDeletingChiaSe(null); await loadChiaSeRecipes();
+  }
+
+  async function toggleChiaSeActive(r: ChiaSeRecipe) {
+    await createClient().from('cong_thuc_chia_se').update({ active: !r.active }).eq('id', r.id);
+    await loadChiaSeRecipes();
+  }
+
+  // --- SYNC HÌNH ẢNH ---
+  async function syncTraoBang() {
+    setSyncingTraoBang(true); setSyncMsg('');
+    try {
+      const res = await fetch('/api/admin/sync-trao-bang', { method: 'POST' });
+      const json = await res.json();
+      setSyncMsg(json.error ? '❌ ' + json.error : `✅ Trao Bằng: đã sync ${json.count} học viên`);
+    } catch (e: any) { setSyncMsg('❌ ' + e.message); }
+    setSyncingTraoBang(false);
+  }
+  async function syncLopHoc() {
+    setSyncingLopHoc(true); setSyncMsg('');
+    try {
+      const res = await fetch('/api/admin/sync-lop-hoc', { method: 'POST' });
+      const json = await res.json();
+      setSyncMsg(json.error ? '❌ ' + json.error : `✅ Lớp Học: đã sync ${json.count} buổi`);
+    } catch (e: any) { setSyncMsg('❌ ' + e.message); }
+    setSyncingLopHoc(false);
+  }
+
   // --- FILTER ---
   const filteredStudents = students.filter(s =>
     s.name.toLowerCase().includes(studentSearch.toLowerCase()) ||
@@ -319,6 +781,43 @@ export default function AdminPage() {
     l.course.toLowerCase().includes(leadSearch.toLowerCase())
   );
   const newLeadsCount = leads.filter(l => l.status === 'new').length;
+  const filteredRecipes = recipes.filter(r => {
+    const q = recipeSearch.toLowerCase();
+    const matchSearch = !q || r.name.toLowerCase().includes(q) || r.category.toLowerCase().includes(q);
+    const matchKhoa = !recipeKhoaFilter || (r.courses ?? []).includes(recipeKhoaFilter);
+    return matchSearch && matchKhoa;
+  });
+  const filteredChiaSe = chiaSeList.filter(r =>
+    r.name.toLowerCase().includes(chiaSeSearch.toLowerCase()) ||
+    r.category.toLowerCase().includes(chiaSeSearch.toLowerCase())
+  );
+  const filteredHvcp = hvcp.filter(r =>
+    r.name.toLowerCase().includes(hvcpSearch.toLowerCase()) ||
+    r.category.toLowerCase().includes(hvcpSearch.toLowerCase())
+  );
+  const filteredProductsForHvcp = products.filter(p =>
+    p.name.toLowerCase().includes(hvcpProdQ.toLowerCase())
+  );
+  const filteredProductsForRecipe = products.filter(p =>
+    p.name.toLowerCase().includes(prodFilterQ.toLowerCase())
+  );
+
+  const productCategories = Array.from(new Set(products.map(p => p.category).filter(Boolean))).sort();
+  const filteredAdminProducts = products.filter(p => {
+    const q = productSearch.toLowerCase();
+    const matchName = !q || p.name.toLowerCase().includes(q);
+    const matchCat = !productCatFilter || p.category === productCatFilter;
+    const matchPl = !productPhanLoaiFilter || p.phan_loai === productPhanLoaiFilter;
+    return matchName && matchCat && matchPl;
+  });
+
+  const toolCategories = Array.from(new Set(tools.map(t => t.category).filter(Boolean))).sort();
+  const filteredAdminTools = tools.filter(t => {
+    const q = toolSearch.toLowerCase();
+    const matchName = !q || t.name.toLowerCase().includes(q);
+    const matchCat = !toolCatFilter || t.category === toolCatFilter;
+    return matchName && matchCat;
+  });
 
   if (loading) return (
     <main style={{ minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', paddingTop: 'var(--nav-h)' }}>
@@ -336,41 +835,169 @@ export default function AdminPage() {
     </main>
   );
 
+  const pendingOrders = orders.filter(o => o.status === 'pending').length;
+  function navTo(tab: typeof activeTab) { setActiveTab(tab); setSidebarOpen(false); }
+  const TAB_LABELS: Record<string, string> = {
+    dashboard: 'Dashboard', leads: 'Yêu Cầu Tư Vấn', students: 'Học Viên',
+    content: 'Khóa Học', products: 'Nguyên Liệu', tools: 'Dụng Cụ',
+    recipes: 'Công Thức 2', 'ct-hvcp': 'CT HVCP', 'kho-cong-thuc': 'CT Miễn Phí',
+    'hinh-anh': 'Hình Ảnh', videos: 'Video', orders: 'Đơn Hàng',
+  };
+
   return (
     <main className="admin-page">
-      <div className="container">
-        <div className="admin-header">
-          <div>
-            <h1 className="admin-title"><i className="ti ti-layout-dashboard"></i> Quản Lý</h1>
-            <p className="admin-sub">
-              <strong>{newLeadsCount}</strong> yêu cầu mới ·{' '}
-              <strong>{students.length}</strong> học viên ·{' '}
-              <strong>{courses.length}</strong> khóa học ·{' '}
-              <strong>{products.length}</strong> nguyên liệu ·{' '}
-              <strong>{tools.length}</strong> dụng cụ
-            </p>
+      {/* ── SIDEBAR OVERLAY (mobile) ── */}
+      {sidebarOpen && <div className="admin-sb-overlay" onClick={() => setSidebarOpen(false)} />}
+
+      {/* ── SIDEBAR ── */}
+      <aside className={`admin-sidebar${sidebarOpen ? ' open' : ''}`}>
+        <div className="admin-sb-brand">
+          <i className="ti ti-coffee"></i>
+          <span>Học Viện Cà Phê</span>
+          <button className="admin-sb-close" onClick={() => setSidebarOpen(false)} aria-label="Đóng menu">
+            <i className="ti ti-x"></i>
+          </button>
+        </div>
+        <nav className="admin-sb-nav">
+          <div className="admin-sb-group">Tổng quan</div>
+          <button className={`admin-sb-item${activeTab === 'dashboard' ? ' active' : ''}`} onClick={() => navTo('dashboard')}>
+            <i className="ti ti-layout-dashboard"></i> Dashboard
+          </button>
+          <div className="admin-sb-sep"></div>
+          <div className="admin-sb-group">Quản lý</div>
+          <button className={`admin-sb-item${activeTab === 'leads' ? ' active' : ''}`} onClick={() => navTo('leads')}>
+            <i className="ti ti-speakerphone"></i> Yêu Cầu Tư Vấn
+            {newLeadsCount > 0 && <span className="admin-sb-badge">{newLeadsCount}</span>}
+          </button>
+          <button className={`admin-sb-item${activeTab === 'students' ? ' active' : ''}`} onClick={() => navTo('students')}>
+            <i className="ti ti-users"></i> Học Viên
+          </button>
+          <button className={`admin-sb-item${activeTab === 'orders' ? ' active' : ''}`} onClick={() => navTo('orders')}>
+            <i className="ti ti-shopping-bag"></i> Đơn Hàng
+            {pendingOrders > 0 && <span className="admin-sb-badge">{pendingOrders}</span>}
+          </button>
+          <div className="admin-sb-sep"></div>
+          <div className="admin-sb-group">Nội dung</div>
+          <button className={`admin-sb-item${activeTab === 'content' ? ' active' : ''}`} onClick={() => navTo('content')}>
+            <i className="ti ti-book-2"></i> Khóa Học
+          </button>
+          <button className={`admin-sb-item${activeTab === 'recipes' ? ' active' : ''}`} onClick={() => navTo('recipes')}>
+            <i className="ti ti-coffee"></i> Công Thức 2
+          </button>
+          <button className={`admin-sb-item${activeTab === 'ct-hvcp' ? ' active' : ''}`} onClick={() => navTo('ct-hvcp')}>
+            <i className="ti ti-building-store"></i> CT HVCP
+            {hvcp.length > 0 && <span className="admin-sb-badge">{hvcp.length}</span>}
+          </button>
+          <button className={`admin-sb-item${activeTab === 'kho-cong-thuc' ? ' active' : ''}`} onClick={() => navTo('kho-cong-thuc')}>
+            <i className="ti ti-gift"></i> CT Miễn Phí
+            {chiaSeList.length > 0 && <span className="admin-sb-badge">{chiaSeList.length}</span>}
+          </button>
+          <div className="admin-sb-sep"></div>
+          <div className="admin-sb-group">Kho hàng</div>
+          <button className={`admin-sb-item${activeTab === 'products' ? ' active' : ''}`} onClick={() => navTo('products')}>
+            <i className="ti ti-package"></i> Nguyên Liệu
+          </button>
+          <button className={`admin-sb-item${activeTab === 'tools' ? ' active' : ''}`} onClick={() => navTo('tools')}>
+            <i className="ti ti-tool"></i> Dụng Cụ
+          </button>
+          <div className="admin-sb-sep"></div>
+          <div className="admin-sb-group">Media</div>
+          <button className={`admin-sb-item${activeTab === 'hinh-anh' ? ' active' : ''}`} onClick={() => navTo('hinh-anh')}>
+            <i className="ti ti-photo"></i> Hình Ảnh
+          </button>
+          <button className={`admin-sb-item${activeTab === 'videos' ? ' active' : ''}`} onClick={() => navTo('videos')}>
+            <i className="ti ti-brand-tiktok"></i> Video
+            {ttVideos.length > 0 && <span className="admin-sb-badge">{ttVideos.length}</span>}
+          </button>
+        </nav>
+      </aside>
+
+      {/* ── MAIN ── */}
+      <div className="admin-main">
+        {/* TOPBAR */}
+        <div className="admin-topbar">
+          <button className="admin-topbar-hamburger" onClick={() => setSidebarOpen(true)} aria-label="Mở menu">
+            <i className="ti ti-menu-2"></i>
+          </button>
+          <span className="admin-topbar-title">{TAB_LABELS[activeTab] ?? ''}</span>
+          <div className="admin-topbar-right">
+            <Link href="/" className="admin-topbar-link" target="_blank">
+              <i className="ti ti-external-link"></i> Xem trang
+            </Link>
           </div>
         </div>
 
-        {/* TABS */}
-        <div className="admin-tabs">
-          <button className={`admin-tab${activeTab === 'leads' ? ' active' : ''}`} onClick={() => setActiveTab('leads')}>
-            <i className="ti ti-mail"></i> Yêu Cầu Tư Vấn
-            {newLeadsCount > 0 && <span className="admin-tab-badge">{newLeadsCount}</span>}
-          </button>
-          <button className={`admin-tab${activeTab === 'students' ? ' active' : ''}`} onClick={() => setActiveTab('students')}>
-            <i className="ti ti-users"></i> Học Viên
-          </button>
-          <button className={`admin-tab${activeTab === 'content' ? ' active' : ''}`} onClick={() => setActiveTab('content')}>
-            <i className="ti ti-book-2"></i> Nội Dung
-          </button>
-          <button className={`admin-tab${activeTab === 'products' ? ' active' : ''}`} onClick={() => setActiveTab('products')}>
-            <i className="ti ti-package"></i> Nguyên Liệu
-          </button>
-          <button className={`admin-tab${activeTab === 'tools' ? ' active' : ''}`} onClick={() => setActiveTab('tools')}>
-            <i className="ti ti-tool"></i> Dụng Cụ
-          </button>
-        </div>
+        {/* CONTENT */}
+        <div className="admin-content">
+          <div className="container">
+
+            {/* ======= DASHBOARD ======= */}
+            {activeTab === 'dashboard' && (
+              <>
+                <div className="admin-stats-grid">
+                  <div className="admin-stat-card">
+                    <i className="ti ti-speakerphone"></i>
+                    <div className="admin-stat-num">{newLeadsCount}</div>
+                    <div className="admin-stat-label">Leads mới chưa liên hệ</div>
+                  </div>
+                  <div className="admin-stat-card">
+                    <i className="ti ti-users"></i>
+                    <div className="admin-stat-num">{students.length}</div>
+                    <div className="admin-stat-label">Tổng học viên</div>
+                  </div>
+                  <div className="admin-stat-card">
+                    <i className="ti ti-coffee"></i>
+                    <div className="admin-stat-num">{recipes.length}</div>
+                    <div className="admin-stat-label">Công thức</div>
+                  </div>
+                  <div className="admin-stat-card">
+                    <i className="ti ti-shopping-bag"></i>
+                    <div className="admin-stat-num">{pendingOrders}</div>
+                    <div className="admin-stat-label">Đơn hàng chờ xử lý</div>
+                  </div>
+                </div>
+
+                {newLeadsCount > 0 && (
+                  <div className="admin-notice">
+                    <i className="ti ti-info-circle"></i>
+                    Có <strong>{newLeadsCount}</strong> yêu cầu tư vấn mới chưa liên hệ.{' '}
+                    <button className="admin-notice-btn" onClick={() => setActiveTab('leads')}>Xem ngay →</button>
+                  </div>
+                )}
+
+                <div className="admin-dash-section">
+                  <div className="admin-dash-sec-hd">
+                    <h3>Leads gần đây</h3>
+                    <button className="admin-dash-more" onClick={() => setActiveTab('leads')}>Xem tất cả →</button>
+                  </div>
+                  <div className="admin-table-wrap">
+                    <table className="admin-table">
+                      <thead>
+                        <tr><th>Họ Tên</th><th>SĐT</th><th>Khu Vực</th><th>Khóa Quan Tâm</th><th>Ngày</th><th>Trạng Thái</th></tr>
+                      </thead>
+                      <tbody>
+                        {leads.slice(0, 8).map(l => (
+                          <tr key={l.id} className={l.status === 'new' ? 'lead-row-new' : ''}>
+                            <td className="admin-name">{l.name}</td>
+                            <td><a href={`tel:${l.phone}`} className="admin-phone">{l.phone}</a></td>
+                            <td className="admin-date">{l.location ?? '—'}</td>
+                            <td><span className="admin-course-tag">{l.course}</span></td>
+                            <td className="admin-date">{new Date(l.created_at).toLocaleDateString('vi-VN')}</td>
+                            <td>
+                              <select className={`lead-status-select ${STATUS_CLASS[l.status]}`} value={l.status} disabled={updatingLead === l.id} onChange={e => updateLeadStatus(l.id, e.target.value as Lead['status'])}>
+                                <option value="new">Mới</option>
+                                <option value="contacted">Đã liên hệ</option>
+                                <option value="enrolled">Đã đăng ký</option>
+                              </select>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </>
+            )}
 
         {/* ======= LEADS TAB ======= */}
         {activeTab === 'leads' && (
@@ -521,13 +1148,28 @@ export default function AdminPage() {
                     <div className="af-group"><label>Loại *</label><select value={courseForm.category} onChange={e => setCourseForm(f => ({ ...f, category: e.target.value as Course['category'] }))}><option value="tong-hop">Khóa Tổng Hợp</option><option value="chuyen-de">Chuyên Đề Lẻ</option><option value="kinh-doanh">Gói Kinh Doanh</option></select></div>
                     <div className="af-group"><label>Giá *</label><input type="text" placeholder="2.500.000đ" value={courseForm.price} onChange={e => setCourseForm(f => ({ ...f, price: e.target.value }))} required /></div>
                     <div className="af-group"><label>Thời lượng</label><input type="text" placeholder="1 ngày · 2 buổi" value={courseForm.duration ?? ''} onChange={e => setCourseForm(f => ({ ...f, duration: e.target.value }))} /></div>
-                    <div className="af-group"><label>Tên file ảnh</label><input type="text" placeholder="tra-sua-hien-dai.png" value={courseForm.image ?? ''} onChange={e => setCourseForm(f => ({ ...f, image: e.target.value }))} /></div>
+                    <div className="af-group af-full">
+                      <label>Hình ảnh</label>
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                        <input type="text" placeholder="URL ảnh..." value={courseForm.image ?? ''} onChange={e => setCourseForm(f => ({ ...f, image: e.target.value }))} style={{ flex: 1, minWidth: '160px' }} />
+                        <input ref={courseImgRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f) handleCourseImageUpload(f); e.target.value = ''; }} />
+                        <button type="button" className="btn btn-outline" style={{ whiteSpace: 'nowrap' }} disabled={uploadingCourseImg} onClick={() => courseImgRef.current?.click()}>
+                          {uploadingCourseImg ? <><i className="ti ti-loader-2 spin"></i> Upload...</> : <><i className="ti ti-upload"></i> Upload</>}
+                        </button>
+                      </div>
+                      {courseForm.image && (
+                        <div style={{ position: 'relative', display: 'inline-block', marginTop: '8px' }}>
+                          <img src={courseForm.image.startsWith('http') ? courseForm.image : `/images/courses/Bang-gia-khoa-le/${courseForm.image}`} alt="" style={{ height: '80px', borderRadius: '6px', objectFit: 'cover' }} />
+                          <button type="button" onClick={() => setCourseForm(f => ({ ...f, image: '' }))} style={{ position: 'absolute', top: '-6px', right: '-6px', background: '#c0392b', color: '#fff', border: 'none', borderRadius: '50%', width: '20px', height: '20px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px' }} title="Xóa ảnh"><i className="ti ti-x"></i></button>
+                        </div>
+                      )}
+                    </div>
                     <div className="af-group af-full"><label>Mô tả</label><textarea rows={3} placeholder="Mô tả ngắn về khóa học..." value={courseForm.description ?? ''} onChange={e => setCourseForm(f => ({ ...f, description: e.target.value }))} /></div>
                     <div className="af-group"><label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}><input type="checkbox" checked={courseForm.active} onChange={e => setCourseForm(f => ({ ...f, active: e.target.checked }))} />Hiển thị trên trang chủ</label></div>
                   </div>
                   {courseFormError && <div className="lf-error" style={{ marginBottom: '12px' }}><i className="ti ti-alert-circle"></i> {courseFormError}</div>}
                   <div style={{ display: 'flex', gap: '10px' }}>
-                    <button type="submit" className="btn btn-primary" disabled={savingCourse}>{savingCourse ? <><i className="ti ti-loader-2 spin"></i> Đang lưu...</> : <><i className="ti ti-check"></i> Thêm Khóa Học</>}</button>
+                    <button type="submit" className="btn btn-primary" disabled={savingCourse || uploadingCourseImg}>{savingCourse ? <><i className="ti ti-loader-2 spin"></i> Đang lưu...</> : <><i className="ti ti-check"></i> Thêm Khóa Học</>}</button>
                     <button type="button" className="btn btn-outline" onClick={cancelCourseEdit}>Hủy</button>
                   </div>
                 </form>
@@ -547,13 +1189,28 @@ export default function AdminPage() {
                       <div className="af-group"><label>Loại *</label><select value={courseForm.category} onChange={e => setCourseForm(f => ({ ...f, category: e.target.value as Course['category'] }))}><option value="tong-hop">Khóa Tổng Hợp</option><option value="chuyen-de">Chuyên Đề Lẻ</option><option value="kinh-doanh">Gói Kinh Doanh</option></select></div>
                       <div className="af-group"><label>Giá *</label><input type="text" placeholder="2.500.000đ" value={courseForm.price} onChange={e => setCourseForm(f => ({ ...f, price: e.target.value }))} required /></div>
                       <div className="af-group"><label>Thời lượng</label><input type="text" placeholder="1 ngày · 2 buổi" value={courseForm.duration ?? ''} onChange={e => setCourseForm(f => ({ ...f, duration: e.target.value }))} /></div>
-                      <div className="af-group"><label>Tên file ảnh</label><input type="text" placeholder="tra-sua-hien-dai.png" value={courseForm.image ?? ''} onChange={e => setCourseForm(f => ({ ...f, image: e.target.value }))} /></div>
+                      <div className="af-group af-full">
+                        <label>Hình ảnh</label>
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                          <input type="text" placeholder="URL ảnh..." value={courseForm.image ?? ''} onChange={e => setCourseForm(f => ({ ...f, image: e.target.value }))} style={{ flex: 1, minWidth: '160px' }} />
+                          <input ref={courseImgRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f) handleCourseImageUpload(f); e.target.value = ''; }} />
+                          <button type="button" className="btn btn-outline" style={{ whiteSpace: 'nowrap' }} disabled={uploadingCourseImg} onClick={() => courseImgRef.current?.click()}>
+                            {uploadingCourseImg ? <><i className="ti ti-loader-2 spin"></i> Upload...</> : <><i className="ti ti-upload"></i> Upload</>}
+                          </button>
+                        </div>
+                        {courseForm.image && (
+                          <div style={{ position: 'relative', display: 'inline-block', marginTop: '8px' }}>
+                            <img src={courseForm.image.startsWith('http') ? courseForm.image : `/images/courses/Bang-gia-khoa-le/${courseForm.image}`} alt="" style={{ height: '80px', borderRadius: '6px', objectFit: 'cover' }} />
+                            <button type="button" onClick={() => setCourseForm(f => ({ ...f, image: '' }))} style={{ position: 'absolute', top: '-6px', right: '-6px', background: '#c0392b', color: '#fff', border: 'none', borderRadius: '50%', width: '20px', height: '20px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px' }} title="Xóa ảnh"><i className="ti ti-x"></i></button>
+                          </div>
+                        )}
+                      </div>
                       <div className="af-group af-full"><label>Mô tả</label><textarea rows={3} placeholder="Mô tả ngắn về khóa học..." value={courseForm.description ?? ''} onChange={e => setCourseForm(f => ({ ...f, description: e.target.value }))} /></div>
                       <div className="af-group"><label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}><input type="checkbox" checked={courseForm.active} onChange={e => setCourseForm(f => ({ ...f, active: e.target.checked }))} />Hiển thị trên trang chủ</label></div>
                     </div>
                     {courseFormError && <div className="lf-error" style={{ marginBottom: '12px' }}><i className="ti ti-alert-circle"></i> {courseFormError}</div>}
                     <div style={{ display: 'flex', gap: '10px' }}>
-                      <button type="submit" className="btn btn-primary" disabled={savingCourse}>{savingCourse ? <><i className="ti ti-loader-2 spin"></i> Đang lưu...</> : <><i className="ti ti-check"></i> Cập Nhật</>}</button>
+                      <button type="submit" className="btn btn-primary" disabled={savingCourse || uploadingCourseImg}>{savingCourse ? <><i className="ti ti-loader-2 spin"></i> Đang lưu...</> : <><i className="ti ti-check"></i> Cập Nhật</>}</button>
                       <button type="button" className="btn btn-outline" onClick={cancelCourseEdit}>Hủy</button>
                     </div>
                   </form>
@@ -643,7 +1300,10 @@ export default function AdminPage() {
                       <label>Hình ảnh</label>
                       <div className="prod-img-row">
                         {toolForm.image_url && (
-                          <img src={toolForm.image_url} alt="preview" className="prod-img-preview" />
+                          <div style={{ position: 'relative', display: 'inline-block' }}>
+                            <img src={toolForm.image_url} alt="preview" className="prod-img-preview" />
+                            <button type="button" onClick={() => setToolForm(f => ({ ...f, image_url: '' }))} style={{ position: 'absolute', top: '-6px', right: '-6px', background: '#c0392b', color: '#fff', border: 'none', borderRadius: '50%', width: '20px', height: '20px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px' }} title="Xóa ảnh"><i className="ti ti-x"></i></button>
+                          </div>
                         )}
                         <div style={{ flex: 1 }}>
                           <input
@@ -719,7 +1379,10 @@ export default function AdminPage() {
                         <label>Hình ảnh</label>
                         <div className="prod-img-row">
                           {toolForm.image_url && (
-                            <img src={toolForm.image_url} alt="preview" className="prod-img-preview" />
+                            <div style={{ position: 'relative', display: 'inline-block' }}>
+                              <img src={toolForm.image_url} alt="preview" className="prod-img-preview" />
+                              <button type="button" onClick={() => setToolForm(f => ({ ...f, image_url: '' }))} style={{ position: 'absolute', top: '-6px', right: '-6px', background: '#c0392b', color: '#fff', border: 'none', borderRadius: '50%', width: '20px', height: '20px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px' }} title="Xóa ảnh"><i className="ti ti-x"></i></button>
+                            </div>
                           )}
                           <div style={{ flex: 1 }}>
                             <input
@@ -757,15 +1420,35 @@ export default function AdminPage() {
               </div>
             )}
 
+            {/* TOOLS SEARCH + FILTER */}
+            <div className="admin-filter-bar">
+              <div className="admin-search-wrap" style={{ flex: 1, minWidth: '180px' }}>
+                <i className="ti ti-search"></i>
+                <input className="admin-search" type="text" placeholder="Tìm theo tên sản phẩm..." value={toolSearch} onChange={e => setToolSearch(e.target.value)} />
+                {toolSearch && <button onClick={() => setToolSearch('')} className="ct-search-clear"><i className="ti ti-x"></i></button>}
+              </div>
+              <select className="admin-filter-select" value={toolCatFilter} onChange={e => setToolCatFilter(e.target.value)}>
+                <option value="">Tất cả danh mục</option>
+                {toolCategories.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+              {(toolSearch || toolCatFilter) && (
+                <button className="btn btn-outline" style={{ fontSize: '0.8rem', padding: '6px 12px', whiteSpace: 'nowrap' }}
+                  onClick={() => { setToolSearch(''); setToolCatFilter(''); }}>
+                  <i className="ti ti-x"></i> Xóa lọc
+                </button>
+              )}
+              <span className="admin-filter-count">{filteredAdminTools.length}/{tools.length}</span>
+            </div>
+
             <div className="admin-table-wrap">
               <table className="admin-table">
                 <thead>
                   <tr><th>STT</th><th>Ảnh</th><th>Tên Sản Phẩm</th><th>Quy Cách</th><th>Giá Bán</th><th>Danh Mục</th><th>Hiện</th><th></th></tr>
                 </thead>
                 <tbody>
-                  {tools.length === 0 ? (
-                    <tr><td colSpan={8} className="admin-empty">Chưa có dụng cụ nào — nhấn "Thêm Dụng Cụ" để bắt đầu</td></tr>
-                  ) : tools.map(t => (
+                  {filteredAdminTools.length === 0 ? (
+                    <tr><td colSpan={8} className="admin-empty">{tools.length === 0 ? 'Chưa có dụng cụ nào — nhấn "Thêm Dụng Cụ" để bắt đầu' : 'Không tìm thấy dụng cụ nào phù hợp'}</td></tr>
+                  ) : filteredAdminTools.map(t => (
                     <tr key={t.id} style={{ opacity: t.active ? 1 : 0.45 }}>
                       <td className="admin-num">{t.stt || '—'}</td>
                       <td>
@@ -849,7 +1532,10 @@ export default function AdminPage() {
                       <label>Hình ảnh</label>
                       <div className="prod-img-row">
                         {productForm.image_url && (
-                          <img src={productForm.image_url} alt="preview" className="prod-img-preview" />
+                          <div style={{ position: 'relative', display: 'inline-block' }}>
+                            <img src={productForm.image_url} alt="preview" className="prod-img-preview" />
+                            <button type="button" onClick={() => setProductForm(f => ({ ...f, image_url: '' }))} style={{ position: 'absolute', top: '-6px', right: '-6px', background: '#c0392b', color: '#fff', border: 'none', borderRadius: '50%', width: '20px', height: '20px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px' }} title="Xóa ảnh"><i className="ti ti-x"></i></button>
+                          </div>
                         )}
                         <div style={{ flex: 1 }}>
                           <input
@@ -927,7 +1613,10 @@ export default function AdminPage() {
                         <label>Hình ảnh</label>
                         <div className="prod-img-row">
                           {productForm.image_url && (
-                            <img src={productForm.image_url} alt="preview" className="prod-img-preview" />
+                            <div style={{ position: 'relative', display: 'inline-block' }}>
+                              <img src={productForm.image_url} alt="preview" className="prod-img-preview" />
+                              <button type="button" onClick={() => setProductForm(f => ({ ...f, image_url: '' }))} style={{ position: 'absolute', top: '-6px', right: '-6px', background: '#c0392b', color: '#fff', border: 'none', borderRadius: '50%', width: '20px', height: '20px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px' }} title="Xóa ảnh"><i className="ti ti-x"></i></button>
+                            </div>
                           )}
                           <div style={{ flex: 1 }}>
                             <input
@@ -965,6 +1654,31 @@ export default function AdminPage() {
               </div>
             )}
 
+            {/* PRODUCTS SEARCH + FILTER */}
+            <div className="admin-filter-bar">
+              <div className="admin-search-wrap" style={{ flex: 1, minWidth: '180px' }}>
+                <i className="ti ti-search"></i>
+                <input className="admin-search" type="text" placeholder="Tìm theo tên sản phẩm..." value={productSearch} onChange={e => setProductSearch(e.target.value)} />
+                {productSearch && <button onClick={() => setProductSearch('')} className="ct-search-clear"><i className="ti ti-x"></i></button>}
+              </div>
+              <select className="admin-filter-select" value={productCatFilter} onChange={e => setProductCatFilter(e.target.value)}>
+                <option value="">Tất cả danh mục</option>
+                {productCategories.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+              <select className="admin-filter-select" value={productPhanLoaiFilter} onChange={e => setProductPhanLoaiFilter(e.target.value)}>
+                <option value="">Tất cả phân loại</option>
+                <option value="thuong-mai">Thương Mại</option>
+                <option value="thuong-hieu">Thương Hiệu</option>
+              </select>
+              {(productSearch || productCatFilter || productPhanLoaiFilter) && (
+                <button className="btn btn-outline" style={{ fontSize: '0.8rem', padding: '6px 12px', whiteSpace: 'nowrap' }}
+                  onClick={() => { setProductSearch(''); setProductCatFilter(''); setProductPhanLoaiFilter(''); }}>
+                  <i className="ti ti-x"></i> Xóa lọc
+                </button>
+              )}
+              <span className="admin-filter-count">{filteredAdminProducts.length}/{products.length}</span>
+            </div>
+
             {/* PRODUCTS TABLE */}
             <div className="admin-table-wrap">
               <table className="admin-table">
@@ -972,9 +1686,9 @@ export default function AdminPage() {
                   <tr><th>STT</th><th>Ảnh</th><th>Tên Sản Phẩm</th><th>Quy Cách</th><th>Giá Bán</th><th>Danh Mục</th><th>Phân Loại</th><th>Hiện</th><th></th></tr>
                 </thead>
                 <tbody>
-                  {products.length === 0 ? (
-                    <tr><td colSpan={9} className="admin-empty">Chưa có sản phẩm nào — nhấn "Thêm Sản Phẩm" để bắt đầu</td></tr>
-                  ) : products.map(p => (
+                  {filteredAdminProducts.length === 0 ? (
+                    <tr><td colSpan={9} className="admin-empty">{products.length === 0 ? 'Chưa có sản phẩm nào — nhấn "Thêm Sản Phẩm" để bắt đầu' : 'Không tìm thấy sản phẩm nào phù hợp'}</td></tr>
+                  ) : filteredAdminProducts.map(p => (
                     <tr key={p.id} style={{ opacity: p.active ? 1 : 0.45 }}>
                       <td className="admin-num">{p.stt || '—'}</td>
                       <td>
@@ -1012,7 +1726,728 @@ export default function AdminPage() {
             </div>
           </>
         )}
+        {/* ======= RECIPES TAB ======= */}
+        {activeTab === 'recipes' && (
+          <>
+            <div style={{ display: 'flex', gap: '12px', marginBottom: '16px', flexWrap: 'wrap', alignItems: 'center' }}>
+              <div className="admin-search-wrap" style={{ flex: 1, minWidth: '200px' }}>
+                <i className="ti ti-search"></i>
+                <input className="admin-search" type="text" placeholder="Tìm công thức..." value={recipeSearch} onChange={e => setRecipeSearch(e.target.value)} />
+                {recipeSearch && <button onClick={() => setRecipeSearch('')} className="ct-search-clear"><i className="ti ti-x"></i></button>}
+              </div>
+              <select value={recipeKhoaFilter} onChange={e => setRecipeKhoaFilter(e.target.value)} style={{ padding: '8px 12px', border: '1.5px solid var(--border)', borderRadius: '8px', fontSize: '0.85rem', background: 'var(--white)', color: 'var(--text)', cursor: 'pointer', minWidth: '160px' }}>
+                <option value="">Tất cả khóa học</option>
+                {CT_COURSES.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+              {recipeKhoaFilter && <button onClick={() => setRecipeKhoaFilter('')} style={{ fontSize: '0.8rem', color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer' }}><i className="ti ti-x"></i> Xóa lọc</button>}
+              <button className="btn btn-primary" onClick={() => { setShowAddRecipe(v => !v); setEditingRecipe(null); setRecipeForm(BLANK_RECIPE); }}>
+                <i className={`ti ti-${showAddRecipe ? 'x' : 'plus'}`}></i> {showAddRecipe ? 'Đóng' : 'Thêm Công Thức'}
+              </button>
+            </div>
+
+            {/* Add form */}
+            {showAddRecipe && (
+              <div className="admin-add-card" style={{ marginBottom: '24px' }}>
+                <h3 className="admin-section-title">Thêm Công Thức Mới</h3>
+                <RecipeForm
+                  form={recipeForm} setForm={setRecipeForm} error={recipeFormError}
+                  saving={savingRecipe} uploadingImg={uploadingRecipeImg}
+                  fileRef={recipeImgRef} onSubmit={saveRecipe} onCancel={cancelRecipeEdit}
+                  submitLabel="Thêm Công Thức"
+                  products={products} prodFilterQ={prodFilterQ} setProdFilterQ={setProdFilterQ}
+                  filteredProducts={filteredProductsForRecipe} toggleLinkedProduct={toggleLinkedProduct}
+                  onImageFile={handleRecipeImageUpload}
+                  courses={CT_COURSES}
+                />
+              </div>
+            )}
+
+            {/* Edit modal */}
+            {editingRecipe && (
+              <div className="admin-modal-backdrop" onClick={e => { if (e.target === e.currentTarget) cancelRecipeEdit(); }}>
+                <div className="admin-modal-card" style={{ maxWidth: '700px' }}>
+                  <div className="admin-modal-head">
+                    <h3>Sửa: {editingRecipe.name}</h3>
+                    <button type="button" className="admin-modal-close" onClick={cancelRecipeEdit}><i className="ti ti-x"></i></button>
+                  </div>
+                  <RecipeForm
+                    form={recipeForm} setForm={setRecipeForm} error={recipeFormError}
+                    saving={savingRecipe} uploadingImg={uploadingRecipeImg}
+                    fileRef={recipeImgRef} onSubmit={saveRecipe} onCancel={cancelRecipeEdit}
+                    submitLabel="Cập Nhật"
+                    products={products} prodFilterQ={prodFilterQ} setProdFilterQ={setProdFilterQ}
+                    filteredProducts={filteredProductsForRecipe} toggleLinkedProduct={toggleLinkedProduct}
+                    onImageFile={handleRecipeImageUpload}
+                    courses={CT_COURSES}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Table */}
+            <div className="admin-table-wrap">
+              <table className="admin-table">
+                <thead><tr><th>#</th><th>Ảnh</th><th>Tên Món</th><th>Phân Loại</th><th>Khóa Học</th><th>Tổng Cost</th><th>NL</th><th></th></tr></thead>
+                <tbody>
+                  {filteredRecipes.length === 0 ? (
+                    <tr><td colSpan={7} className="admin-empty">Chưa có công thức nào</td></tr>
+                  ) : filteredRecipes.map((r, i) => (
+                    <tr key={r.id}>
+                      <td className="admin-num">{i + 1}</td>
+                      <td>
+                        {r.photo_url
+                          ? <img src={r.photo_url} alt={r.name} style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: '6px' }} />
+                          : <div style={{ width: '48px', height: '48px', background: 'var(--border)', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><i className="ti ti-coffee" style={{ color: 'var(--muted)' }}></i></div>
+                        }
+                      </td>
+                      <td className="admin-name">{r.name}</td>
+                      <td><span className="admin-course-tag" style={{ fontSize: '0.75rem' }}>{r.category || '—'}</span></td>
+                      <td style={{ maxWidth: '180px' }}>
+                        {(r.courses ?? []).length > 0
+                          ? <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                              {(r.courses ?? []).map(c => <span key={c} style={{ fontSize: '0.7rem', background: 'var(--bg-alt)', border: '1px solid var(--border)', borderRadius: '4px', padding: '2px 6px', whiteSpace: 'nowrap' }}>{c}</span>)}
+                            </div>
+                          : <span style={{ color: 'var(--muted)', fontSize: '0.8rem' }}>—</span>}
+                      </td>
+                      <td style={{ whiteSpace: 'nowrap' }}>{r.total_cost ? r.total_cost.toLocaleString('vi-VN') + ' đ' : '—'}</td>
+                      <td style={{ fontSize: '0.8rem', color: 'var(--text-3)' }}>{r.linked_product_ids?.length ?? 0} SP</td>
+                      <td style={{ display: 'flex', gap: '4px' }}>
+                        <button className="admin-edit-btn" onClick={() => startEditRecipe(r)} title="Sửa"><i className="ti ti-pencil"></i></button>
+                        <button className="admin-del-btn" onClick={() => deleteRecipe(r.id)} disabled={deletingRecipe === r.id} title="Xóa">
+                          {deletingRecipe === r.id ? <i className="ti ti-loader-2 spin"></i> : <i className="ti ti-trash"></i>}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
+
+        {/* ======= CT HVCP TAB ======= */}
+        {activeTab === 'ct-hvcp' && (
+          <>
+            <div style={{ display: 'flex', gap: '12px', marginBottom: '16px', flexWrap: 'wrap', alignItems: 'center' }}>
+              <div className="admin-search-wrap" style={{ flex: 1, minWidth: '200px' }}>
+                <i className="ti ti-search"></i>
+                <input className="admin-search" type="text" placeholder="Tìm CT HVCP..." value={hvcpSearch} onChange={e => setHvcpSearch(e.target.value)} />
+                {hvcpSearch && <button onClick={() => setHvcpSearch('')} className="ct-search-clear"><i className="ti ti-x"></i></button>}
+              </div>
+              <button className="btn btn-primary" onClick={() => { setShowAddHvcp(v => !v); setEditingHvcp(null); setHvcpForm(BLANK_HVCP); }}>
+                <i className={`ti ti-${showAddHvcp ? 'x' : 'plus'}`}></i> {showAddHvcp ? 'Đóng' : 'Thêm CT HVCP'}
+              </button>
+            </div>
+
+            {showAddHvcp && (
+              <div className="admin-add-card" style={{ marginBottom: '24px' }}>
+                <h3 className="admin-section-title">Thêm Công Thức HVCP Mới</h3>
+                <HVCPForm
+                  form={hvcpForm} setForm={setHvcpForm} error={hvcpFormError}
+                  saving={savingHvcp} uploadingImg={uploadingHvcpImg}
+                  fileRef={hvcpImgRef} onSubmit={saveHvcp} onCancel={cancelHvcpEdit}
+                  submitLabel="Thêm CT HVCP" onImageFile={handleHvcpImageUpload}
+                  products={products} prodFilterQ={hvcpProdQ} setProdFilterQ={setHvcpProdQ}
+                  filteredProducts={filteredProductsForHvcp} toggleLinkedProduct={toggleHvcpProduct}
+                />
+              </div>
+            )}
+
+            {editingHvcp && (
+              <div className="admin-modal-backdrop" onClick={e => { if (e.target === e.currentTarget) cancelHvcpEdit(); }}>
+                <div className="admin-modal-card" style={{ maxWidth: '700px' }}>
+                  <div className="admin-modal-head">
+                    <h3>Sửa: {editingHvcp.name}</h3>
+                    <button type="button" className="admin-modal-close" onClick={cancelHvcpEdit}><i className="ti ti-x"></i></button>
+                  </div>
+                  <HVCPForm
+                    form={hvcpForm} setForm={setHvcpForm} error={hvcpFormError}
+                    saving={savingHvcp} uploadingImg={uploadingHvcpImg}
+                    fileRef={hvcpImgRef} onSubmit={saveHvcp} onCancel={cancelHvcpEdit}
+                    submitLabel="Cập Nhật" onImageFile={handleHvcpImageUpload}
+                    products={products} prodFilterQ={hvcpProdQ} setProdFilterQ={setHvcpProdQ}
+                    filteredProducts={filteredProductsForHvcp} toggleLinkedProduct={toggleHvcpProduct}
+                  />
+                </div>
+              </div>
+            )}
+
+            <div className="admin-table-wrap">
+              <table className="admin-table">
+                <thead><tr><th>#</th><th>Ảnh</th><th>Tên Món</th><th>Phân Loại</th><th>Nguyên Liệu</th><th>Hiện</th><th></th></tr></thead>
+                <tbody>
+                  {filteredHvcp.length === 0 ? (
+                    <tr><td colSpan={7} className="admin-empty">Chưa có CT HVCP nào — nhấn "Thêm" để bắt đầu</td></tr>
+                  ) : filteredHvcp.map((r, i) => (
+                    <tr key={r.id} style={{ opacity: r.active ? 1 : 0.45 }}>
+                      <td className="admin-num">{i + 1}</td>
+                      <td>
+                        {r.photo_url
+                          ? <img src={r.photo_url} alt={r.name} style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: '6px' }} />
+                          : <div style={{ width: '48px', height: '48px', background: 'var(--border)', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><i className="ti ti-coffee" style={{ color: 'var(--muted)' }}></i></div>
+                        }
+                      </td>
+                      <td className="admin-name">{r.name}</td>
+                      <td><span className="admin-course-tag" style={{ fontSize: '0.75rem' }}>{r.category || '—'}</span></td>
+                      <td style={{ fontSize: '0.8rem', color: 'var(--text-3)' }}>{r.linked_product_ids?.length ?? 0} SP</td>
+                      <td>
+                        <button className={`course-toggle${r.active ? ' on' : ''}`} onClick={() => toggleHvcpActive(r)}>
+                          <i className={`ti ti-${r.active ? 'eye' : 'eye-off'}`}></i>
+                        </button>
+                      </td>
+                      <td style={{ display: 'flex', gap: '4px' }}>
+                        <button className="admin-edit-btn" onClick={() => startEditHvcp(r)}><i className="ti ti-pencil"></i></button>
+                        <button className="admin-del-btn" onClick={() => deleteHvcp(r.id)} disabled={deletingHvcp === r.id}>
+                          {deletingHvcp === r.id ? <i className="ti ti-loader-2 spin"></i> : <i className="ti ti-trash"></i>}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
+
+        {/* ======= KHO CT CHIA SẺ TAB ======= */}
+        {activeTab === 'kho-cong-thuc' && (
+          <>
+            <div style={{ display: 'flex', gap: '12px', marginBottom: '16px', flexWrap: 'wrap', alignItems: 'center' }}>
+              <div className="admin-search-wrap" style={{ flex: 1, minWidth: '200px' }}>
+                <i className="ti ti-search"></i>
+                <input className="admin-search" type="text" placeholder="Tìm công thức chia sẻ..." value={chiaSeSearch} onChange={e => setChiaSeSearch(e.target.value)} />
+                {chiaSeSearch && <button onClick={() => setChiaSeSearch('')} className="ct-search-clear"><i className="ti ti-x"></i></button>}
+              </div>
+              <button className="btn btn-primary" onClick={() => { setShowAddChiaSe(v => !v); setEditingChiaSe(null); setChiaSeForm(BLANK_CHIA_SE); }}>
+                <i className={`ti ti-${showAddChiaSe ? 'x' : 'plus'}`}></i> {showAddChiaSe ? 'Đóng' : 'Thêm Công Thức Chia Sẻ'}
+              </button>
+            </div>
+
+            {showAddChiaSe && (
+              <div className="admin-add-card" style={{ marginBottom: '24px' }}>
+                <h3 className="admin-section-title">Thêm Công Thức Chia Sẻ Mới</h3>
+                <ChiaSeForm
+                  form={chiaSeForm} setForm={setChiaSeForm} error={chiaSeFormError}
+                  saving={savingChiaSe} uploadingImg={uploadingChiaSeImg}
+                  fileRef={chiaSeImgRef} onSubmit={saveChiaSe} onCancel={cancelChiaSeEdit}
+                  submitLabel="Thêm Công Thức" onImageFile={handleChiaSeImageUpload}
+                />
+              </div>
+            )}
+
+            {editingChiaSe && (
+              <div className="admin-modal-backdrop" onClick={e => { if (e.target === e.currentTarget) cancelChiaSeEdit(); }}>
+                <div className="admin-modal-card" style={{ maxWidth: '740px' }}>
+                  <div className="admin-modal-head">
+                    <h3>Sửa: {editingChiaSe.name}</h3>
+                    <button type="button" className="admin-modal-close" onClick={cancelChiaSeEdit}><i className="ti ti-x"></i></button>
+                  </div>
+                  <ChiaSeForm
+                    form={chiaSeForm} setForm={setChiaSeForm} error={chiaSeFormError}
+                    saving={savingChiaSe} uploadingImg={uploadingChiaSeImg}
+                    fileRef={chiaSeImgRef} onSubmit={saveChiaSe} onCancel={cancelChiaSeEdit}
+                    submitLabel="Cập Nhật" onImageFile={handleChiaSeImageUpload}
+                  />
+                </div>
+              </div>
+            )}
+
+            <div className="admin-table-wrap">
+              <table className="admin-table">
+                <thead><tr><th>#</th><th>Ảnh</th><th>Tên Món</th><th>Phân Loại</th><th>Nguồn</th><th>Nguyên Liệu</th><th>Hiện</th><th></th></tr></thead>
+                <tbody>
+                  {filteredChiaSe.length === 0 ? (
+                    <tr><td colSpan={8} className="admin-empty">Chưa có công thức chia sẻ nào — nhấn "Thêm" để bắt đầu</td></tr>
+                  ) : filteredChiaSe.map((r, i) => (
+                    <tr key={r.id} style={{ opacity: r.active ? 1 : 0.45 }}>
+                      <td className="admin-num">{i + 1}</td>
+                      <td>
+                        {r.image_url
+                          ? <img src={r.image_url} alt={r.name} style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: '6px' }} />
+                          : <div style={{ width: '48px', height: '48px', background: 'var(--border)', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><i className="ti ti-world" style={{ color: 'var(--muted)' }}></i></div>
+                        }
+                      </td>
+                      <td className="admin-name">{r.name}</td>
+                      <td><span className="admin-course-tag" style={{ fontSize: '0.75rem' }}>{r.category || '—'}</span></td>
+                      <td style={{ fontSize: '0.8rem', color: 'var(--text-3)', maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.source || '—'}</td>
+                      <td style={{ fontSize: '0.8rem', color: 'var(--text-3)' }}>{r.ingredients?.length ?? 0} nguyên liệu</td>
+                      <td>
+                        <button className={`course-toggle${r.active ? ' on' : ''}`} onClick={() => toggleChiaSeActive(r)} title={r.active ? 'Đang hiện' : 'Đang ẩn'}>
+                          <i className={`ti ti-${r.active ? 'eye' : 'eye-off'}`}></i>
+                        </button>
+                      </td>
+                      <td style={{ display: 'flex', gap: '4px' }}>
+                        <button className="admin-edit-btn" onClick={() => startEditChiaSe(r)} title="Sửa"><i className="ti ti-pencil"></i></button>
+                        <button className="admin-del-btn" onClick={() => deleteChiaSe(r.id)} disabled={deletingChiaSe === r.id} title="Xóa">
+                          {deletingChiaSe === r.id ? <i className="ti ti-loader-2 spin"></i> : <i className="ti ti-trash"></i>}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
+
+        {/* ======= HÌNH ẢNH TAB ======= */}
+        {activeTab === 'hinh-anh' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', maxWidth: '600px' }}>
+            <div className="admin-add-card">
+              <h3 className="admin-section-title"><i className="ti ti-certificate"></i> Trao Bằng</h3>
+              <p style={{ color: 'var(--text-3)', fontSize: '0.875rem', marginBottom: '16px' }}>
+                Fetch dữ liệu từ Lark Base, download ảnh và lưu vào Supabase Storage bucket <code>trao-bang</code>.
+              </p>
+              <button className="btn btn-primary" onClick={syncTraoBang} disabled={syncingTraoBang || syncingLopHoc}>
+                {syncingTraoBang ? <><i className="ti ti-loader-2 spin"></i> Đang sync...</> : <><i className="ti ti-refresh"></i> Sync từ Lark</>}
+              </button>
+            </div>
+
+            <div className="admin-add-card">
+              <h3 className="admin-section-title"><i className="ti ti-school"></i> Lớp Học</h3>
+              <p style={{ color: 'var(--text-3)', fontSize: '0.875rem', marginBottom: '16px' }}>
+                Fetch dữ liệu từ Lark Base, download tất cả ảnh lớp học và lưu vào Supabase Storage bucket <code>lop-hoc</code>.
+              </p>
+              <button className="btn btn-primary" onClick={syncLopHoc} disabled={syncingTraoBang || syncingLopHoc}>
+                {syncingLopHoc ? <><i className="ti ti-loader-2 spin"></i> Đang sync...</> : <><i className="ti ti-refresh"></i> Sync từ Lark</>}
+              </button>
+            </div>
+
+            {syncMsg && (
+              <div style={{ padding: '14px 18px', background: syncMsg.startsWith('✅') ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)', border: `1px solid ${syncMsg.startsWith('✅') ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'}`, borderRadius: 'var(--r)', fontSize: '0.9rem', fontWeight: 500 }}>
+                {syncMsg}
+              </div>
+            )}
+
+            <div style={{ padding: '14px 18px', background: 'rgba(176,90,16,0.06)', border: '1px solid rgba(176,90,16,0.2)', borderRadius: 'var(--r)', fontSize: '0.85rem', color: 'var(--text-2)' }}>
+              <strong>⚠️ Lưu ý quota Lark API:</strong> Mỗi lần sync Trao Bằng tốn ~21 lượt, Lớp Học tốn nhiều hơn tùy số ảnh. Giới hạn 10.000 lượt/tháng. Chỉ sync khi cần thiết.
+            </div>
+          </div>
+        )}
+
+        {/* ======= VIDEOS (TikTok) TAB ======= */}
+        {activeTab === 'videos' && (
+          <>
+            <div className="admin-add-card">
+              <h3 className="admin-section-title"><i className="ti ti-brand-tiktok"></i> Thêm Video TikTok</h3>
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-3)', margin: '0 0 16px', lineHeight: 1.6 }}>
+                Dán link 1 video TikTok (mở video → Chia sẻ → Sao chép liên kết). Video sẽ tự hiện trên trang{' '}
+                <a href="/video" target="_blank" style={{ color: 'var(--accent)' }}>/video</a>. Hệ thống tự lấy mã video, tiêu đề và ảnh thumbnail.
+              </p>
+              <form className="admin-form" onSubmit={addTtVideo}>
+                <div className="admin-form-grid">
+                  <div className="af-group af-full">
+                    <label>Link video TikTok *</label>
+                    <input type="url" placeholder="https://www.tiktok.com/@congthucphache.hvcp/video/..." value={ttForm.url} onChange={e => setTtForm(f => ({ ...f, url: e.target.value }))} required />
+                  </div>
+                  <div className="af-group af-full">
+                    <label>Tiêu đề hiển thị (tùy chọn)</label>
+                    <input type="text" placeholder="Để trống sẽ tự lấy caption từ TikTok" value={ttForm.title} onChange={e => setTtForm(f => ({ ...f, title: e.target.value }))} />
+                  </div>
+                </div>
+                {ttError && <div className="f-error"><i className="ti ti-alert-circle"></i> {ttError}</div>}
+                <button className="btn btn-primary" type="submit" disabled={addingTt}>
+                  {addingTt ? <><i className="ti ti-loader-2 spin"></i> Đang thêm...</> : <><i className="ti ti-plus"></i> Thêm Video</>}
+                </button>
+              </form>
+            </div>
+
+            {ttVideos.length === 0 ? (
+              <div className="admin-empty" style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Chưa có video nào. Dán link TikTok ở trên để thêm.</div>
+            ) : (
+              <div className="tt-admin-grid">
+                {ttVideos.map(v => (
+                  <div key={v.id} className={`tt-admin-card${v.active ? '' : ' inactive'}`}>
+                    <a href={v.url} target="_blank" rel="noopener noreferrer" className="tt-admin-thumb">
+                      {v.thumbnail ? <img src={v.thumbnail} alt={v.title || ''} loading="lazy" /> : <i className="ti ti-brand-tiktok"></i>}
+                      <span className="tt-admin-play"><i className="ti ti-player-play-filled"></i></span>
+                    </a>
+                    <div className="tt-admin-body">
+                      <div className="tt-admin-title">{v.title || v.author || 'Video TikTok'}</div>
+                      {v.author && <div className="tt-admin-author"><i className="ti ti-user"></i> {v.author}</div>}
+                      <div className="tt-admin-actions">
+                        <button className={`course-toggle${v.active ? ' on' : ''}`} onClick={() => toggleTtActive(v)}>
+                          {v.active ? 'Đang hiện' : 'Đang ẩn'}
+                        </button>
+                        <button className="admin-del-btn" onClick={() => deleteTtVideo(v.id)} disabled={deletingTt === v.id} title="Xóa">
+                          {deletingTt === v.id ? <i className="ti ti-loader-2 spin"></i> : <i className="ti ti-trash"></i>}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+
+        {/* ======= ORDERS TAB ======= */}
+        {activeTab === 'orders' && (() => {
+          const ORDER_STATUS: Record<Order['status'], { label: string; cls: string }> = {
+            pending:   { label: 'Mới',         cls: 'order-status-pending' },
+            confirmed: { label: 'Đã xác nhận', cls: 'order-status-confirmed' },
+            shipping:  { label: 'Đang giao',   cls: 'order-status-shipping' },
+            done:      { label: 'Hoàn thành',  cls: 'order-status-done' },
+            cancelled: { label: 'Đã hủy',      cls: 'order-status-cancelled' },
+          };
+          const filteredOrders = orders.filter(o =>
+            !orderSearch ||
+            o.customer_name.toLowerCase().includes(orderSearch.toLowerCase()) ||
+            o.phone.includes(orderSearch)
+          );
+          return (
+            <>
+              <div className="admin-search-wrap">
+                <i className="ti ti-search"></i>
+                <input className="admin-search" type="text" placeholder="Tìm theo tên, SĐT..." value={orderSearch} onChange={e => setOrderSearch(e.target.value)} />
+                {orderSearch && <button onClick={() => setOrderSearch('')} className="ct-search-clear"><i className="ti ti-x"></i></button>}
+              </div>
+              <div className="admin-table-wrap">
+                <table className="admin-table">
+                  <thead>
+                    <tr><th>#</th><th>Khách hàng</th><th>SĐT</th><th>Sản phẩm</th><th>Tổng tiền</th><th>Ngày đặt</th><th>Trạng thái</th><th></th></tr>
+                  </thead>
+                  <tbody>
+                    {filteredOrders.length === 0 ? (
+                      <tr><td colSpan={8} className="admin-empty">Chưa có đơn hàng nào</td></tr>
+                    ) : filteredOrders.map((o, i) => (
+                      <>
+                        <tr key={o.id} className={o.status === 'pending' ? 'lead-row-new' : ''}>
+                          <td className="admin-num">{i + 1}</td>
+                          <td className="admin-name">
+                            <div>{o.customer_name}</div>
+                            {o.address && <div style={{ fontSize: '0.75rem', color: 'var(--text-3)' }}>{o.address}</div>}
+                          </td>
+                          <td><a href={`tel:${o.phone}`} className="admin-phone">{o.phone}</a></td>
+                          <td>
+                            <button className="order-expand-btn" onClick={() => setExpandedOrder(expandedOrder === o.id ? null : o.id)}>
+                              {o.items.length} sản phẩm <i className={`ti ti-chevron-${expandedOrder === o.id ? 'up' : 'down'}`}></i>
+                            </button>
+                          </td>
+                          <td style={{ fontWeight: 700, color: 'var(--accent)', whiteSpace: 'nowrap' }}>{o.total.toLocaleString('vi-VN')}đ</td>
+                          <td className="admin-date">{new Date(o.created_at).toLocaleDateString('vi-VN')}</td>
+                          <td>
+                            <select className={`lead-status-select ${ORDER_STATUS[o.status].cls}`} value={o.status} disabled={updatingOrder === o.id} onChange={e => updateOrderStatus(o.id, e.target.value as Order['status'])}>
+                              <option value="pending">Mới</option>
+                              <option value="confirmed">Đã xác nhận</option>
+                              <option value="shipping">Đang giao</option>
+                              <option value="done">Hoàn thành</option>
+                              <option value="cancelled">Đã hủy</option>
+                            </select>
+                          </td>
+                          <td>
+                            <button className="admin-del-btn" onClick={() => deleteOrder(o.id)} disabled={deletingOrder === o.id} title="Xóa">
+                              {deletingOrder === o.id ? <i className="ti ti-loader-2 spin"></i> : <i className="ti ti-trash"></i>}
+                            </button>
+                          </td>
+                        </tr>
+                        {expandedOrder === o.id && (
+                          <tr key={`${o.id}-detail`}>
+                            <td colSpan={8} style={{ padding: '0 16px 16px', background: 'rgba(176,90,16,0.03)' }}>
+                              <div className="order-detail-wrap">
+                                {o.items.map((item, idx) => (
+                                  <div key={idx} className="order-detail-item">
+                                    {item.image_url && <img src={item.image_url} alt={item.name} className="order-detail-img" />}
+                                    <div className="order-detail-info">
+                                      <span className="order-detail-name">{item.name}</span>
+                                      <span className="order-detail-unit">{item.unit}</span>
+                                    </div>
+                                    <span className="order-detail-qty">x{item.quantity}</span>
+                                    <span className="order-detail-price">{(item.price * item.quantity).toLocaleString('vi-VN')}đ</span>
+                                  </div>
+                                ))}
+                                {o.notes && (
+                                  <div style={{ marginTop: '10px', padding: '10px 12px', background: 'rgba(0,0,0,0.04)', borderRadius: '8px', fontSize: '0.85rem', color: 'var(--text-2)' }}>
+                                    <strong>Ghi chú:</strong> {o.notes}
+                                  </div>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          );
+        })()}
+          </div>
+        </div>
       </div>
     </main>
+  );
+}
+
+// ─── HVCP Form Component ─────────────────────────────────────────────────────
+type HVCPFormData = Omit<CongThucHVCP, 'id'>;
+function HVCPForm({
+  form, setForm, error, saving, uploadingImg, fileRef, onSubmit, onCancel, submitLabel, onImageFile,
+  products, prodFilterQ, setProdFilterQ, filteredProducts, toggleLinkedProduct,
+}: {
+  form: HVCPFormData; setForm: React.Dispatch<React.SetStateAction<HVCPFormData>>;
+  error: string; saving: boolean; uploadingImg: boolean;
+  fileRef: React.RefObject<HTMLInputElement | null>;
+  onSubmit: (e: React.FormEvent) => void; onCancel: () => void; submitLabel: string;
+  onImageFile: (f: File) => void;
+  products: any[]; prodFilterQ: string; setProdFilterQ: (v: string) => void;
+  filteredProducts: any[]; toggleLinkedProduct: (id: string) => void;
+}) {
+  return (
+    <form className="admin-form" onSubmit={onSubmit}>
+      <div className="admin-form-grid">
+        <div className="af-group af-full"><label>Tên món *</label><input type="text" placeholder="VD: KOMBUCHA LỰU HỒNG NGỌC" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} required /></div>
+        <div className="af-group"><label>Phân loại</label><input type="text" placeholder="VD: Trà Trái Cây" value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))} /></div>
+        <div className="af-group"><label>Thứ tự hiển thị</label><input type="number" value={form.sort_order} onChange={e => setForm(f => ({ ...f, sort_order: Number(e.target.value) }))} /></div>
+
+        <div className="af-group af-full">
+          <label>Hình ảnh</label>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <input type="text" placeholder="URL ảnh..." value={form.photo_url} onChange={e => setForm(f => ({ ...f, photo_url: e.target.value }))} style={{ flex: 1 }} />
+            <button type="button" className="btn btn-outline" style={{ whiteSpace: 'nowrap' }} disabled={uploadingImg} onClick={() => fileRef.current?.click()}>
+              {uploadingImg ? <><i className="ti ti-loader-2 spin"></i> Upload...</> : <><i className="ti ti-upload"></i> Upload</>}
+            </button>
+            <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f) onImageFile(f); e.target.value = ''; }} />
+          </div>
+          {form.photo_url && (
+            <div style={{ position: 'relative', display: 'inline-block', marginTop: '8px' }}>
+              <img src={form.photo_url} alt="" style={{ height: '80px', borderRadius: '6px', objectFit: 'cover' }} />
+              <button type="button" onClick={() => setForm(f => ({ ...f, photo_url: '' }))} style={{ position: 'absolute', top: '-6px', right: '-6px', background: '#c0392b', color: '#fff', border: 'none', borderRadius: '50%', width: '20px', height: '20px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px' }} title="Xóa ảnh"><i className="ti ti-x"></i></button>
+            </div>
+          )}
+        </div>
+
+        <div className="af-group af-full"><label>Hướng dẫn pha chế</label><textarea rows={5} placeholder="B1: ...&#10;B2: ..." value={form.instructions} onChange={e => setForm(f => ({ ...f, instructions: e.target.value }))} /></div>
+        <div className="af-group af-full"><label>Công thức (nguyên liệu + định lượng)</label><textarea rows={5} placeholder="1. Siro lựu COLOMIX: 35ml&#10;2. Lục trà: 40ml" value={form.recipe_text} onChange={e => setForm(f => ({ ...f, recipe_text: e.target.value }))} /></div>
+
+        <div className="af-group af-full">
+          <label>Nguyên liệu bán kèm ({form.linked_product_ids.length} đã chọn)</label>
+          <input type="text" placeholder="Tìm nguyên liệu..." value={prodFilterQ} onChange={e => setProdFilterQ(e.target.value)} style={{ marginBottom: '8px' }} />
+          <div style={{ border: '1px solid var(--border)', borderRadius: 'var(--r)', maxHeight: '200px', overflowY: 'auto', padding: '4px 0' }}>
+            {filteredProducts.length === 0 ? (
+              <p style={{ padding: '12px 16px', color: 'var(--text-3)', fontSize: '0.875rem' }}>Không tìm thấy</p>
+            ) : filteredProducts.map((p: any) => (
+              <label key={p.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px', cursor: 'pointer', background: form.linked_product_ids.includes(p.id) ? 'rgba(176,90,16,0.06)' : 'transparent', borderBottom: '1px solid var(--border)' }}>
+                <input type="checkbox" checked={form.linked_product_ids.includes(p.id)} onChange={() => toggleLinkedProduct(p.id)} style={{ accentColor: 'var(--accent)', flexShrink: 0 }} />
+                {p.image_url && <img src={p.image_url} alt="" style={{ width: '32px', height: '32px', objectFit: 'cover', borderRadius: '4px', flexShrink: 0 }} />}
+                <span style={{ fontSize: '0.875rem' }}>{p.name}</span>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-3)', marginLeft: 'auto' }}>{p.unit}</span>
+              </label>
+            ))}
+          </div>
+          {form.linked_product_ids.length > 0 && (
+            <div style={{ marginTop: '8px', display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+              {form.linked_product_ids.map((id: string) => {
+                const p = products.find((x: any) => x.id === id);
+                return p ? (
+                  <span key={id} style={{ background: 'var(--accent)', color: '#fff', padding: '2px 8px', borderRadius: '999px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    {p.name}
+                    <button type="button" onClick={() => toggleLinkedProduct(id)} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', padding: '0', lineHeight: 1, fontSize: '0.9em' }}>✕</button>
+                  </span>
+                ) : null;
+              })}
+            </div>
+          )}
+        </div>
+
+        <div className="af-group">
+          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+            <input type="checkbox" checked={form.active} onChange={e => setForm(f => ({ ...f, active: e.target.checked }))} />
+            Hiển thị công khai
+          </label>
+        </div>
+      </div>
+      {error && <div className="lf-error" style={{ marginBottom: '12px' }}><i className="ti ti-alert-circle"></i> {error}</div>}
+      <div style={{ display: 'flex', gap: '10px' }}>
+        <button type="submit" className="btn btn-primary" disabled={saving}>{saving ? <><i className="ti ti-loader-2 spin"></i> Đang lưu...</> : <><i className="ti ti-check"></i> {submitLabel}</>}</button>
+        <button type="button" className="btn btn-outline" onClick={onCancel}>Hủy</button>
+      </div>
+    </form>
+  );
+}
+
+// ─── ChiaSe Form Component ───────────────────────────────────────────────────
+type ChiaSeFormData = Omit<ChiaSeRecipe, 'id'>;
+const BLANK_ING: ChiaSeIngredient = { name: '', shopLink: '' };
+
+function ChiaSeForm({
+  form, setForm, error, saving, uploadingImg, fileRef, onSubmit, onCancel, submitLabel, onImageFile,
+}: {
+  form: ChiaSeFormData; setForm: React.Dispatch<React.SetStateAction<ChiaSeFormData>>;
+  error: string; saving: boolean; uploadingImg: boolean;
+  fileRef: React.RefObject<HTMLInputElement | null>;
+  onSubmit: (e: React.FormEvent) => void; onCancel: () => void; submitLabel: string;
+  onImageFile: (f: File) => void;
+}) {
+  const addIng = () => setForm(f => ({ ...f, ingredients: [...f.ingredients, { ...BLANK_ING }] }));
+  const removeIng = (i: number) => setForm(f => ({ ...f, ingredients: f.ingredients.filter((_, idx) => idx !== i) }));
+  const updateIng = (i: number, field: keyof ChiaSeIngredient, val: string) =>
+    setForm(f => ({ ...f, ingredients: f.ingredients.map((ing, idx) => idx === i ? { ...ing, [field]: val } : ing) }));
+
+  return (
+    <form className="admin-form" onSubmit={onSubmit}>
+      <div className="admin-form-grid">
+        <div className="af-group af-full"><label>Tên món đầy đủ *</label><input type="text" placeholder="VD: BROWN SUGAR BOBA MILK TEA" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} required /></div>
+        <div className="af-group"><label>Tên ngắn (hiển thị card)</label><input type="text" placeholder="VD: BROWN SUGAR BOBA" value={form.short_name} onChange={e => setForm(f => ({ ...f, short_name: e.target.value }))} /></div>
+        <div className="af-group"><label>Phân loại</label><input type="text" placeholder="VD: Trà sữa / Latte / Cafe" value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))} /></div>
+        <div className="af-group"><label>Nguồn / tác giả</label><input type="text" placeholder="VD: @boba.trend.vn" value={form.source} onChange={e => setForm(f => ({ ...f, source: e.target.value }))} /></div>
+        <div className="af-group"><label>Thứ tự hiển thị</label><input type="number" value={form.sort_order} onChange={e => setForm(f => ({ ...f, sort_order: Number(e.target.value) }))} /></div>
+
+        <div className="af-group af-full">
+          <label>Hình ảnh</label>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <input type="text" placeholder="URL ảnh..." value={form.image_url} onChange={e => setForm(f => ({ ...f, image_url: e.target.value }))} style={{ flex: 1 }} />
+            <button type="button" className="btn btn-outline" style={{ whiteSpace: 'nowrap' }} disabled={uploadingImg} onClick={() => fileRef.current?.click()}>
+              {uploadingImg ? <><i className="ti ti-loader-2 spin"></i> Upload...</> : <><i className="ti ti-upload"></i> Upload</>}
+            </button>
+            <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f) onImageFile(f); e.target.value = ''; }} />
+          </div>
+          {form.image_url && (
+            <div style={{ position: 'relative', display: 'inline-block', marginTop: '8px' }}>
+              <img src={form.image_url} alt="" style={{ height: '80px', borderRadius: '6px', objectFit: 'cover' }} />
+              <button type="button" onClick={() => setForm(f => ({ ...f, image_url: '' }))} style={{ position: 'absolute', top: '-6px', right: '-6px', background: '#c0392b', color: '#fff', border: 'none', borderRadius: '50%', width: '20px', height: '20px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px' }} title="Xóa ảnh"><i className="ti ti-x"></i></button>
+            </div>
+          )}
+        </div>
+
+        <div className="af-group af-full"><label>Hướng dẫn pha chế</label><textarea rows={6} placeholder="B1: ...&#10;B2: ..." value={form.steps} onChange={e => setForm(f => ({ ...f, steps: e.target.value }))} /></div>
+
+        <div className="af-group af-full">
+          <label>Nguyên liệu ({form.ingredients.length})</label>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '8px' }}>
+            {form.ingredients.map((ing, i) => (
+              <div key={i} style={{ display: 'grid', gridTemplateColumns: '2fr 2fr 36px', gap: '6px', alignItems: 'center', padding: '8px', background: 'var(--bg-alt)', borderRadius: 'var(--r)', border: '1px solid var(--border)' }}>
+                <input type="text" placeholder="Tên nguyên liệu" value={ing.name} onChange={e => updateIng(i, 'name', e.target.value)} style={{ fontSize: '0.82rem' }} />
+                <input type="text" placeholder="Link Shopee" value={ing.shopLink} onChange={e => updateIng(i, 'shopLink', e.target.value)} style={{ fontSize: '0.82rem' }} />
+                <button type="button" className="admin-del-btn" onClick={() => removeIng(i)} style={{ width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <i className="ti ti-trash"></i>
+                </button>
+              </div>
+            ))}
+            {form.ingredients.length === 0 && (
+              <p style={{ color: 'var(--muted)', fontSize: '0.82rem', padding: '8px 0' }}>Chưa có nguyên liệu — nhấn "+ Thêm nguyên liệu" để bắt đầu</p>
+            )}
+          </div>
+          <button type="button" className="btn btn-outline" style={{ fontSize: '0.8rem', padding: '6px 14px' }} onClick={addIng}>
+            <i className="ti ti-plus"></i> Thêm nguyên liệu
+          </button>
+        </div>
+
+        <div className="af-group">
+          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+            <input type="checkbox" checked={form.active} onChange={e => setForm(f => ({ ...f, active: e.target.checked }))} />
+            Hiển thị công khai
+          </label>
+        </div>
+      </div>
+
+      {error && <div className="lf-error" style={{ marginBottom: '12px' }}><i className="ti ti-alert-circle"></i> {error}</div>}
+      <div style={{ display: 'flex', gap: '10px' }}>
+        <button type="submit" className="btn btn-primary" disabled={saving}>{saving ? <><i className="ti ti-loader-2 spin"></i> Đang lưu...</> : <><i className="ti ti-check"></i> {submitLabel}</>}</button>
+        <button type="button" className="btn btn-outline" onClick={onCancel}>Hủy</button>
+      </div>
+    </form>
+  );
+}
+
+// ─── Recipe Form Component ────────────────────────────────────────────────────
+type RecipeFormData = { name: string; category: string; photo_url: string; instructions: string; total_cost: number | null; recipe_text: string; linked_product_ids: string[]; courses: string[]; sort_order: number; };
+function RecipeForm({
+  form, setForm, error, saving, uploadingImg, fileRef, onSubmit, onCancel, submitLabel,
+  products, prodFilterQ, setProdFilterQ, filteredProducts, toggleLinkedProduct, onImageFile, courses,
+}: {
+  form: RecipeFormData; setForm: React.Dispatch<React.SetStateAction<RecipeFormData>>;
+  error: string; saving: boolean; uploadingImg: boolean;
+  fileRef: React.RefObject<HTMLInputElement | null>;
+  onSubmit: (e: React.FormEvent) => void; onCancel: () => void; submitLabel: string;
+  products: any[]; prodFilterQ: string; setProdFilterQ: (v: string) => void;
+  filteredProducts: any[]; toggleLinkedProduct: (id: string) => void;
+  onImageFile: (f: File) => void; courses: string[];
+}) {
+  return (
+    <form className="admin-form" onSubmit={onSubmit}>
+      <div className="admin-form-grid">
+        {/* Tên + Phân loại */}
+        <div className="af-group af-full"><label>Tên món *</label><input type="text" placeholder="VD: MATCHA ĐẬU ĐỎ" value={form.name} onChange={e => setForm((f: RecipeFormData) => ({ ...f, name: e.target.value }))} required /></div>
+        <div className="af-group"><label>Phân loại</label><input type="text" placeholder="VD: Kombucha Soda" value={form.category} onChange={e => setForm((f: RecipeFormData) => ({ ...f, category: e.target.value }))} /></div>
+        <div className="af-group"><label>Tổng cost (VNĐ)</label><input type="number" placeholder="8500" value={form.total_cost ?? ''} onChange={e => setForm((f: RecipeFormData) => ({ ...f, total_cost: e.target.value ? Number(e.target.value) : null }))} /></div>
+        <div className="af-group"><label>Thứ tự hiển thị</label><input type="number" value={form.sort_order} onChange={e => setForm((f: RecipeFormData) => ({ ...f, sort_order: Number(e.target.value) }))} /></div>
+
+        {/* Ảnh */}
+        <div className="af-group af-full">
+          <label>Hình ảnh</label>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <input type="text" placeholder="URL ảnh..." value={form.photo_url} onChange={e => setForm((f: RecipeFormData) => ({ ...f, photo_url: e.target.value }))} style={{ flex: 1 }} />
+            <button type="button" className="btn btn-outline" style={{ whiteSpace: 'nowrap' }} disabled={uploadingImg} onClick={() => fileRef.current?.click()}>
+              {uploadingImg ? <><i className="ti ti-loader-2 spin"></i> Upload...</> : <><i className="ti ti-upload"></i> Upload</>}
+            </button>
+            <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f) onImageFile(f); e.target.value = ''; }} />
+          </div>
+          {form.photo_url && (
+            <div style={{ position: 'relative', display: 'inline-block', marginTop: '8px' }}>
+              <img src={form.photo_url} alt="" style={{ height: '80px', borderRadius: '6px', objectFit: 'cover' }} />
+              <button type="button" onClick={() => setForm((f: RecipeFormData) => ({ ...f, photo_url: '' }))} style={{ position: 'absolute', top: '-6px', right: '-6px', background: '#c0392b', color: '#fff', border: 'none', borderRadius: '50%', width: '20px', height: '20px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px' }} title="Xóa ảnh"><i className="ti ti-x"></i></button>
+            </div>
+          )}
+        </div>
+
+        {/* Hướng dẫn */}
+        <div className="af-group af-full"><label>Hướng dẫn pha chế</label><textarea rows={5} placeholder="B1: ...&#10;B2: ..." value={form.instructions} onChange={e => setForm((f: RecipeFormData) => ({ ...f, instructions: e.target.value }))} /></div>
+
+        {/* Công thức */}
+        <div className="af-group af-full"><label>Công thức (nguyên liệu + định lượng)</label><textarea rows={6} placeholder="1. Sữa tươi HAPPY BARN: 120 ml&#10;2. Bột matcha Bạch Dương: 3 gram" value={form.recipe_text} onChange={e => setForm((f: RecipeFormData) => ({ ...f, recipe_text: e.target.value }))} /></div>
+
+        {/* Khóa học */}
+        <div className="af-group af-full">
+          <label>Khóa học áp dụng</label>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '4px' }}>
+            {courses.map(c => (
+              <label key={c} style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', fontSize: '0.875rem' }}>
+                <input type="checkbox" checked={form.courses.includes(c)} onChange={e => setForm((f: RecipeFormData) => ({ ...f, courses: e.target.checked ? [...f.courses, c] : f.courses.filter((x: string) => x !== c) }))} style={{ accentColor: 'var(--accent)' }} />
+                {c}
+              </label>
+            ))}
+          </div>
+        </div>
+
+        {/* Nguyên liệu (multi-select) */}
+        <div className="af-group af-full">
+          <label>Nguyên liệu sử dụng ({form.linked_product_ids.length} đã chọn)</label>
+          <input type="text" placeholder="Tìm nguyên liệu..." value={prodFilterQ} onChange={e => setProdFilterQ(e.target.value)} style={{ marginBottom: '8px' }} />
+          <div style={{ border: '1px solid var(--border)', borderRadius: 'var(--r)', maxHeight: '220px', overflowY: 'auto', padding: '4px 0' }}>
+            {filteredProducts.length === 0 ? (
+              <p style={{ padding: '12px 16px', color: 'var(--text-3)', fontSize: '0.875rem' }}>Không tìm thấy</p>
+            ) : filteredProducts.map(p => (
+              <label key={p.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px', cursor: 'pointer', background: form.linked_product_ids.includes(p.id) ? 'rgba(176,90,16,0.06)' : 'transparent', borderBottom: '1px solid var(--border)' }}>
+                <input type="checkbox" checked={form.linked_product_ids.includes(p.id)} onChange={() => toggleLinkedProduct(p.id)} style={{ accentColor: 'var(--accent)', flexShrink: 0 }} />
+                {p.image_url && <img src={p.image_url} alt="" style={{ width: '32px', height: '32px', objectFit: 'cover', borderRadius: '4px', flexShrink: 0 }} />}
+                <span style={{ fontSize: '0.875rem' }}>{p.name}</span>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-3)', marginLeft: 'auto' }}>{p.unit}</span>
+              </label>
+            ))}
+          </div>
+          {form.linked_product_ids.length > 0 && (
+            <div style={{ marginTop: '8px', display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+              {form.linked_product_ids.map(id => {
+                const p = products.find((x: any) => x.id === id);
+                return p ? (
+                  <span key={id} style={{ background: 'var(--accent)', color: '#fff', padding: '2px 8px', borderRadius: '999px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    {p.name}
+                    <button type="button" onClick={() => toggleLinkedProduct(id)} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', padding: '0', lineHeight: 1, fontSize: '0.9em' }}>✕</button>
+                  </span>
+                ) : null;
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {error && <div className="lf-error" style={{ marginBottom: '12px' }}><i className="ti ti-alert-circle"></i> {error}</div>}
+      <div style={{ display: 'flex', gap: '10px' }}>
+        <button type="submit" className="btn btn-primary" disabled={saving}>{saving ? <><i className="ti ti-loader-2 spin"></i> Đang lưu...</> : <><i className="ti ti-check"></i> {submitLabel}</>}</button>
+        <button type="button" className="btn btn-outline" onClick={onCancel}>Hủy</button>
+      </div>
+    </form>
   );
 }
