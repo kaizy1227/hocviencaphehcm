@@ -4,12 +4,12 @@ import { fetchLarkClassSessions } from '@/lib/lark';
 
 export const dynamic = 'force-dynamic';
 
-const sb = sbClient(
+const getSb = () => sbClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
 );
 
-async function uploadToStorage(tmpUrl: string, filename: string): Promise<string> {
+async function uploadToStorage(sb: ReturnType<typeof getSb>, tmpUrl: string, filename: string): Promise<string> {
   try {
     const res = await fetch(tmpUrl, { cache: 'no-store' });
     if (!res.ok) return '';
@@ -27,11 +27,12 @@ async function uploadToStorage(tmpUrl: string, filename: string): Promise<string
 
 export async function POST() {
   try {
+    const sb = getSb();
     const sessions = await fetchLarkClassSessions();
     const rows = await Promise.all(
       sessions.map(async s => {
         const photos = (await Promise.all(
-          s.photos.map((url, i) => uploadToStorage(url, `${s.id}-${i}`))
+          s.photos.map((url, i) => uploadToStorage(sb, url, `${s.id}-${i}`))
         )).filter(Boolean);
         return {
           lark_id: s.id,

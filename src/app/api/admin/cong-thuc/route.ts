@@ -3,12 +3,13 @@ import { createClient as sbClient } from '@supabase/supabase-js';
 
 export const dynamic = 'force-dynamic';
 
-const sb = sbClient(
+const getSb = () => sbClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
 );
 
 export async function GET() {
+  const sb = getSb();
   const { data, error } = await sb.from('cong_thuc').select('*').order('sort_order').order('created_at');
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ recipes: data ?? [] });
@@ -28,6 +29,7 @@ export async function POST(req: NextRequest) {
       courses: body.courses ?? [],
       sort_order: body.sort_order ?? 0,
     };
+    const sb = getSb();
     const { data, error } = await sb.from('cong_thuc').insert(payload).select().single();
     if (error) throw error;
     return NextResponse.json({ recipe: data });

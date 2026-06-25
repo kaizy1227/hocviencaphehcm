@@ -3,13 +3,14 @@ import { createClient as sbClient } from '@supabase/supabase-js';
 
 export const dynamic = 'force-dynamic';
 
-const sb = sbClient(
+const getSb = () => sbClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
 );
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const sb = getSb();
     const { id } = await params;
     const body = await req.json();
     const payload = {
@@ -34,6 +35,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
 export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const sb = getSb();
     const { id } = await params;
     const { error } = await sb.from('cong_thuc').delete().eq('id', id);
     if (error) throw error;
@@ -46,6 +48,7 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
 // Upload recipe photo to Supabase Storage
 export async function POST(req: NextRequest, { params: _params }: { params: Promise<{ id: string }> }) {
   try {
+    const sb = getSb();
     const form = await req.formData();
     const file = form.get('file') as File | null;
     if (!file) return NextResponse.json({ error: 'No file' }, { status: 400 });

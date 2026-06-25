@@ -4,12 +4,13 @@ import { fetchLarkStudents } from '@/lib/lark';
 
 export const dynamic = 'force-dynamic';
 
-const sb = sbClient(
+const getSb = () => sbClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
 );
 
 async function uploadToStorage(tmpUrl: string, larkId: string): Promise<string> {
+  const sb = getSb();
   try {
     const res = await fetch(tmpUrl, { cache: 'no-store' });
     if (!res.ok) return '';
@@ -27,6 +28,7 @@ async function uploadToStorage(tmpUrl: string, larkId: string): Promise<string> 
 
 export async function POST() {
   try {
+    const sb = getSb();
     const students = await fetchLarkStudents();
     const rows = await Promise.all(
       students.map(async s => {
