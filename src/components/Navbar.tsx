@@ -101,6 +101,7 @@ export default function Navbar() {
             {/* MAIN NAV LINKS */}
             <div className="nav-menu">
               <Link href="/" className={`nav-link${isHome ? ' active' : ''}`}>Trang Chủ</Link>
+              <Link href="/gioi-thieu" className={`nav-link${pathname === '/gioi-thieu' ? ' active' : ''}`}>Giới Thiệu</Link>
 
               {/* Đào Tạo */}
               <div className={`nav-dropdown-wrap${isDaoTao ? ' active' : ''}`}>
@@ -236,6 +237,7 @@ export default function Navbar() {
         </div>
 
         <Link href="/" className={`mob-top-link${isHome ? ' active' : ''}`} onClick={close}>Trang Chủ</Link>
+        <Link href="/gioi-thieu" className={`mob-top-link${pathname === '/gioi-thieu' ? ' active' : ''}`} onClick={close}>Giới Thiệu</Link>
 
         <div className="mob-parent">
           <button className={`mob-parent-btn${expanded === 'dao-tao' ? ' open' : ''}${isDaoTao ? ' active-parent' : ''}`} onClick={() => toggle('dao-tao')}>
