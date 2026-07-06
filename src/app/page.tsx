@@ -2,6 +2,20 @@
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 
+// Bảng giá khóa học & dịch vụ — HTML thật (đọc được trên mobile, tốt cho SEO)
+const KHOA_TONG_HOP = [
+  { name: 'Tổng Hợp Truyền Thống', meta: '3 ngày', price: '5.200.000đ', pill: '' },
+  { name: 'Tổng Hợp Hiện Đại', meta: '4 ngày', price: '7.500.000đ', pill: 'Phổ biến' },
+  { name: 'Cà Phê Máy Nâng Cao', meta: '3 ngày', price: '8.300.000đ', pill: 'Chuyên sâu' },
+];
+const DICH_VU_GIA = [
+  { name: 'Khóa Khởi Nghiệp', meta: '1 ngày', price: '4.000.000đ' },
+  { name: 'Gói Set Up Menu', meta: 'Dưới 10 món', price: '7.000.000đ' },
+  { name: 'Setup Menu 15–20 Món', meta: 'Menu độc quyền', price: '15.000.000đ' },
+  { name: 'Đào Tạo Vận Hành', meta: 'Quản trị chuẩn', price: '15.000.000đ' },
+  { name: 'Đào Tạo Tại Quán', meta: 'Giảng viên tới quán', price: 'Từ 2.300.000đ/ngày' },
+];
+
 const HERO_IMGS = [
   'images/gallery/Life-styles-with-person/~12321.webp',
   'images/gallery/Life-styles-with-person/~12405.webp',
@@ -63,10 +77,34 @@ const MENU_ROW2: [string, string][] = [
 const IMG_PLACEHOLDER = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
 
 const FAQS = [
-  { q: 'Tôi chưa biết gì về pha chế — có học được không?', a: 'Dạ anh yên tâm nha, bên em có các khóa học từ cơ bản đến chuyên sâu, rất nhiều học viên bắt đầu từ con số 0 như anh vẫn học tốt ạ. Lớp học bên em chỉ từ 3–4 học viên để giảng viên theo sát từng người, thời gian học từ 9h đến 16h (nghỉ trưa 1 tiếng) nên mình rất dễ tiếp thu.' },
-  { q: 'Một khóa học kéo dài bao lâu?', a: 'Khóa tổng hợp: 3–4 ngày. Các chuyên đề lẻ: 1 ngày.' },
-  { q: 'Học phí dao động bao nhiêu?', a: 'Dạ bên em có khóa pha chế tổng hợp 3–4 ngày (5.200.000 – 7.500.000đ) và các chuyên đề lẻ 1 ngày từ 2.200.000 – 3.000.000đ.' },
-  { q: 'Học xong có được hỗ trợ mở quán không?', a: 'Dạ bên em hỗ trợ rất kỹ cho học viên muốn mở quán ạ. Bên em có dịch vụ Đào tạo tại quán — giảng viên sẽ đến tận nơi hỗ trợ setup, hướng dẫn thực tế và vận hành. Ngoài ra, bên em còn tư vấn trọn gói từ thiết kế, thi công, setup quầy bar, cung cấp máy móc, nguyên liệu đến marketing để quán mình đông khách hơn.' },
+  {
+    q: 'Chưa biết gì về pha chế, liệu có theo kịp không?',
+    a: 'Đây là băn khoăn của hầu hết học viên khi đăng ký lần đầu — và câu trả lời là hoàn toàn theo kịp. Học Viện Cà Phê HCM thiết kế chương trình dành riêng cho người bắt đầu từ con số 0, đi từng bước từ lý thuyết cơ bản đến thực hành trực tiếp trên máy và nguyên liệu thật. Lớp học chỉ 3–4 học viên, giảng viên theo sát và chỉnh tay cho từng người — không ai bị bỏ lại phía sau.',
+  },
+  {
+    q: 'Một khóa học mất bao nhiêu ngày? Có linh hoạt lịch không?',
+    a: 'Khóa tổng hợp kéo dài 3–4 ngày liên tục (9h–16h, nghỉ trưa 1 tiếng), các chuyên đề lẻ học trong 1 ngày. Học Viện mở lớp liên tục, bạn có thể chọn ngày bắt đầu phù hợp với lịch cá nhân và đăng ký linh hoạt — không cần chờ khai giảng theo đợt cố định.',
+  },
+  {
+    q: 'Học phí các khóa học là bao nhiêu?',
+    a: 'Khóa pha chế tổng hợp 3–4 ngày dao động từ 5.200.000 – 7.500.000đ tùy chương trình. Các chuyên đề lẻ 1 ngày từ 2.200.000 – 3.000.000đ. Học phí đã bao gồm toàn bộ nguyên liệu thực hành, tài liệu công thức và bằng chứng nhận sau khóa học (đối với khóa tổng hợp và cà phê nâng cao).',
+  },
+  {
+    q: 'Học xong có được hỗ trợ mở quán không?',
+    a: 'Học Viện đồng hành cùng bạn không chỉ trong lớp học. Sau khi hoàn thành khóa, bạn được tư vấn trọn gói về thiết kế, thi công, setup quầy bar, cung cấp máy móc và nguyên liệu. Với dịch vụ Đào tạo Tại Quán, giảng viên còn đến tận nơi hướng dẫn thực tế và hỗ trợ vận hành — để bạn tự tin mở quán mà không phải loay hoay một mình.',
+  },
+  {
+    q: 'Tuổi đã lớn, học có theo được không?',
+    a: 'Pha chế không có giới hạn tuổi. Tại Học Viện, học viên từ nhiều độ tuổi và hoàn cảnh khác nhau đều hoàn thành khóa học thành công. Chương trình được thiết kế để ai cũng tự tay thực hành làm ra từng món — có tài liệu công thức chi tiết từng bước, từng định lượng đi kèm để bạn làm theo dễ dàng, không cần ghi nhớ tất cả trong lớp.',
+  },
+  {
+    q: 'Học viên ở tỉnh khác đến học có chỗ nghỉ lại không?',
+    a: 'Học Viện hiểu rằng di chuyển từ xa là một trở ngại lớn. Vì vậy, với các bạn ở tỉnh khác đến học các khóa tổng hợp, Học Viện hỗ trợ chỗ ở miễn phí ngay gần cơ sở — để bạn tập trung hoàn toàn vào việc học mà không lo chỗ ngủ hay chi phí lưu trú.',
+  },
+  {
+    q: 'Sau khi hoàn thành khóa học có nhận bằng chứng nhận không?',
+    a: 'Có. Học viên hoàn thành các khóa tổng hợp và khóa cà phê nâng cao sẽ được cấp bằng chứng nhận của Học Viện Cà Phê HCM. Đây là minh chứng cho năng lực pha chế của bạn — có giá trị khi xin việc tại quán hoặc tự giới thiệu bản thân khi mở quán riêng.',
+  },
 ];
 
 export default function HomePage() {
@@ -224,49 +262,48 @@ export default function HomePage() {
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px', maxWidth: '960px', margin: '0 auto' }}>
             {/* Card Khóa Học */}
-            <div style={{ background: 'var(--white)', borderRadius: 'var(--r-lg)', overflow: 'hidden', boxShadow: 'var(--sh-sm)', display: 'flex', flexDirection: 'column' }}>
-              <div
-                className="hp-cta-img"
-                onClick={() => openLb('/images/danh-sach-khoa-hoc-pha-che.png', 'Bảng Giá Khóa Học Pha Chế')}
-              >
-                <img src="/images/danh-sach-khoa-hoc-pha-che.png" alt="Bảng giá khóa học pha chế" />
-                <span className="hp-cta-zoom"><i className="ti ti-zoom-in"></i></span>
+            <div className="hp-price-card">
+              <div className="hp-price-head">
+                <div className="hp-price-title"><i className="ti ti-coffee"></i> Khóa Học Pha Chế</div>
+                <p className="hp-price-desc">Cà phê, trà sữa, matcha, đá xay — khóa tổng hợp và chuyên đề lẻ. Thực hành trực tiếp, kèm 1–1.</p>
               </div>
-              <div style={{ padding: '22px 24px 24px', display: 'flex', flexDirection: 'column', flex: 1 }}>
-                <div style={{ fontSize: '1.08rem', fontWeight: 700, color: 'var(--text)', marginBottom: '8px' }}>Khóa Học Pha Chế</div>
-                <p style={{ fontSize: '0.84rem', color: 'var(--text-3)', lineHeight: 1.65, marginBottom: '20px', flex: 1 }}>
-                  Cà phê, trà sữa, matcha, đá xay — khóa tổng hợp và chuyên đề lẻ. Thực hành trực tiếp, kèm 1–1.
-                </p>
-                <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
-                  <button className="btn-reg" onClick={() => openLb('/images/danh-sach-khoa-hoc-pha-che.png', 'Bảng Giá Khóa Học Pha Chế')}>
-                    <i className="ti ti-zoom-in" style={{ marginRight: '4px' }}></i>Xem Bảng Giá
-                  </button>
-                  <Link href="/khoa-hoc" style={{ fontSize: '0.84rem', fontWeight: 600, color: 'var(--accent)', textDecoration: 'none' }}>Xem Chi Tiết →</Link>
-                </div>
-              </div>
+              <ul className="hp-price-list">
+                {KHOA_TONG_HOP.map(k => (
+                  <li key={k.name} className="hp-price-row">
+                    <div className="hp-price-name">
+                      {k.name}
+                      {k.pill && <span className="hp-price-pill">{k.pill}</span>}
+                      <span className="hp-price-meta">{k.meta}</span>
+                    </div>
+                    <span className="hp-price-val">{k.price}</span>
+                  </li>
+                ))}
+                <li className="hp-price-row hp-price-row-extra">
+                  <div className="hp-price-name">Chuyên đề lẻ <span className="hp-price-meta">8 khóa tự chọn</span></div>
+                  <span className="hp-price-val">từ 2.200.000đ</span>
+                </li>
+              </ul>
+              <Link href="/khoa-hoc" className="btn-reg hp-price-btn">Xem tất cả khóa học <i className="ti ti-arrow-right"></i></Link>
             </div>
 
             {/* Card Dịch Vụ */}
-            <div style={{ background: 'var(--white)', borderRadius: 'var(--r-lg)', overflow: 'hidden', boxShadow: 'var(--sh-sm)', display: 'flex', flexDirection: 'column' }}>
-              <div
-                className="hp-cta-img"
-                onClick={() => openLb('/images/tron-bo-dich-vu.png', 'Trọn Bộ Dịch Vụ Kinh Doanh')}
-              >
-                <img src="/images/tron-bo-dich-vu.png" alt="Trọn bộ dịch vụ kinh doanh" />
-                <span className="hp-cta-zoom"><i className="ti ti-zoom-in"></i></span>
+            <div className="hp-price-card">
+              <div className="hp-price-head">
+                <div className="hp-price-title"><i className="ti ti-briefcase"></i> Dịch Vụ Kinh Doanh</div>
+                <p className="hp-price-desc">Set up menu, khởi nghiệp, đào tạo vận hành — đồng hành từng bước để quán bạn phát triển bền vững.</p>
               </div>
-              <div style={{ padding: '22px 24px 24px', display: 'flex', flexDirection: 'column', flex: 1 }}>
-                <div style={{ fontSize: '1.08rem', fontWeight: 700, color: 'var(--text)', marginBottom: '8px' }}>Dịch Vụ Kinh Doanh</div>
-                <p style={{ fontSize: '0.84rem', color: 'var(--text-3)', lineHeight: 1.65, marginBottom: '20px', flex: 1 }}>
-                  Set up menu, khởi nghiệp, đào tạo vận hành — đồng hành từng bước để quán bạn phát triển bền vững.
-                </p>
-                <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
-                  <button className="btn-reg" onClick={() => openLb('/images/tron-bo-dich-vu.png', 'Trọn Bộ Dịch Vụ Kinh Doanh')}>
-                    <i className="ti ti-zoom-in" style={{ marginRight: '4px' }}></i>Xem Bảng Giá
-                  </button>
-                  <Link href="/dich-vu" style={{ fontSize: '0.84rem', fontWeight: 600, color: 'var(--accent)', textDecoration: 'none' }}>Xem Chi Tiết →</Link>
-                </div>
-              </div>
+              <ul className="hp-price-list">
+                {DICH_VU_GIA.map(s => (
+                  <li key={s.name} className="hp-price-row">
+                    <div className="hp-price-name">
+                      {s.name}
+                      <span className="hp-price-meta">{s.meta}</span>
+                    </div>
+                    <span className="hp-price-val">{s.price}</span>
+                  </li>
+                ))}
+              </ul>
+              <Link href="/dich-vu" className="btn-reg hp-price-btn">Xem chi tiết dịch vụ <i className="ti ti-arrow-right"></i></Link>
             </div>
           </div>
         </div>

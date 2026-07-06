@@ -1,9 +1,13 @@
 'use client';
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
+import { buildSlugIndex } from '@/lib/slug';
+import { useReviewStats } from '@/lib/useReviewStats';
+import CardRating from '@/components/CardRating';
 
 type Product = {
   id: string; stt: number; name: string; unit: string;
@@ -19,12 +23,12 @@ export default function NguyenLieuPage() {
   const [activeCategory, setActiveCategory] = useState('');
   const [activePhanLoai, setActivePhanLoai] = useState('');
   const [addedIds, setAddedIds] = useState<Set<string>>(new Set());
-  const [lightboxImg, setLightboxImg] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [sortBy, setSortBy] = useState<SortBy>('default');
   const [page, setPage] = useState(1);
   const { addItem } = useCart();
   const { toggle: toggleWish, has: isWishlisted } = useWishlist();
+  const reviewStats = useReviewStats('products');
 
   useEffect(() => {
     const timer = setTimeout(() => setLoading(false), 10000);
@@ -37,13 +41,8 @@ export default function NguyenLieuPage() {
     return () => clearTimeout(timer);
   }, []);
 
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setLightboxImg(null); };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, []);
-
   const categories = Array.from(new Set(products.map(p => p.category))).sort();
+  const slugById = buildSlugIndex(products, p => p.name).byId;
   const q = search.trim().toLowerCase();
 
   useEffect(() => { setPage(1); }, [search, activeCategory, activePhanLoai, sortBy]);
@@ -53,10 +52,15 @@ export default function NguyenLieuPage() {
     .filter(p => !activePhanLoai || p.phan_loai === activePhanLoai)
     .filter(p => !q || p.name.toLowerCase().includes(q) || p.category.toLowerCase().includes(q));
 
-  const sorted = sortBy === 'price-asc' ? [...filtered].sort((a, b) => a.price - b.price)
+  const sortedBase = sortBy === 'price-asc' ? [...filtered].sort((a, b) => a.price - b.price)
     : sortBy === 'price-desc' ? [...filtered].sort((a, b) => b.price - a.price)
     : sortBy === 'name-asc' ? [...filtered].sort((a, b) => a.name.localeCompare(b.name, 'vi'))
     : filtered;
+
+  // Sản phẩm Thương Hiệu (độc quyền) luôn ghim lên đầu
+  const sorted = [...sortedBase].sort((a, b) =>
+    (a.phan_loai === 'thuong-hieu' ? 0 : 1) - (b.phan_loai === 'thuong-hieu' ? 0 : 1)
+  );
 
   const totalPages = Math.ceil(sorted.length / PER_PAGE);
   const paginated = sorted.slice((page - 1) * PER_PAGE, page * PER_PAGE);
@@ -71,17 +75,39 @@ export default function NguyenLieuPage() {
 
   return (
     <main style={{ paddingTop: 'var(--nav-h)' }}>
-      {/* PAGE HEADER */}
-      <div className="sp-header">
-        <div className="container">
-          <div className="nl-hero-crumb">
-            <Link href="/">Trang Chủ</Link>
-            <i className="ti ti-chevron-right" style={{ fontSize: '.75rem' }}></i>
-            <span>Nguyên Liệu Pha Chế</span>
-          </div>
-          <h1 className="sp-title">Nguyên Liệu <em>Pha Chế</em></h1>
-          <p className="sp-desc">Nguyên liệu chất lượng cao — cung cấp cho quán cà phê, trà sữa và học viên.</p>
+      {/* HERO */}
+      <section className="ct-hero">
+        <div className="ct-hero-bg">
+          <img src="/images/gallery/Concept-studio-with-products/33. Cà phê sữa bg.webp" alt="Nguyên Liệu Pha Chế" loading="eager" />
         </div>
+        <div className="ct-hero-ov"></div>
+        <div className="container">
+          <div className="ct-hero-body">
+            <div className="ct-hero-crumb">
+              <Link href="/">Trang Chủ</Link>
+              <i className="ti ti-chevron-right" style={{ fontSize: '.75rem' }}></i>
+              <span>Nguyên Liệu Pha Chế</span>
+            </div>
+            <h1>Nguyên Liệu <em>Pha Chế</em></h1>
+            <p className="ct-hero-sub">Nguyên liệu chất lượng cao — cung cấp cho quán cà phê, trà sữa và học viên.</p>
+            <div className="ct-hero-badges">
+              <span className="ct-badge"><i className="ti ti-package"></i> {loading ? '...' : products.length} Sản Phẩm</span>
+              <span className="ct-badge"><i className="ti ti-category"></i> {categories.length} Danh Mục</span>
+              <span className="ct-badge"><i className="ti ti-truck-delivery"></i> Ship Toàn Quốc</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* THƯƠNG HIỆU BANNER */}
+      <div className="container" style={{ paddingTop: 28 }}>
+        <button
+          type="button"
+          className="nl-th-banner-img"
+          onClick={() => { setActivePhanLoai('thuong-hieu'); document.querySelector('.nl-grid')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}
+        >
+          <Image src="/images/banners/hang-thuong-hieu.png" alt="Hàng Thương Hiệu — sản phẩm độc quyền Học Viện Cà Phê HCM" width={2172} height={724} sizes="(max-width: 768px) 100vw, 900px" priority />
+        </button>
       </div>
 
       {/* TOOLBAR */}
@@ -167,49 +193,48 @@ export default function NguyenLieuPage() {
             <>
               <div className="nl-grid">
                 {paginated.map((p, i) => (
-                  <div key={p.id} className="nl-card">
-                    <div
-                      className={`nl-card-img${p.image_url ? ' kct-lb-trigger' : ''}`}
-                      onClick={() => p.image_url && setLightboxImg(p.image_url)}
-                    >
+                  <Link
+                    key={p.id}
+                    href={`/nguyen-lieu/${slugById.get(p.id)}`}
+                    className={`nl-card${p.phan_loai === 'thuong-hieu' ? ' nl-card-th' : ''}`}
+                  >
+                    <div className="nl-card-img" style={{ position: 'relative' }}>
                       {p.image_url
-                        ? <img src={p.image_url} alt={p.name} loading="lazy" />
+                        ? <Image src={p.image_url} alt={p.name} fill sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 200px" style={{ objectFit: 'contain' }} loading="lazy" />
                         : <div className="nl-card-img-placeholder"><i className="ti ti-package"></i></div>
                       }
                       <span className="nl-card-num">#{p.stt || i + 1}</span>
-                      {p.image_url && <span className="kct-lb-hint"><i className="ti ti-zoom-in"></i> Phóng to</span>}
+                      {p.phan_loai === 'thuong-hieu' && (
+                        <span className="nl-badge-th nl-badge-th-float"><i className="ti ti-shield-star"></i> Thương Hiệu</span>
+                      )}
+                      <button
+                        type="button"
+                        className={`nl-wish-btn nl-wish-btn-float${isWishlisted(p.id) ? ' wishlisted' : ''}`}
+                        onClick={e => { e.preventDefault(); e.stopPropagation(); toggleWish({ id: p.id, name: p.name, unit: p.unit, price: p.price, image_url: p.image_url, category: p.category, source: 'nguyen-lieu' }); }}
+                        aria-label={isWishlisted(p.id) ? 'Bỏ yêu thích' : 'Yêu thích'}
+                      >
+                        <i className={`ti ${isWishlisted(p.id) ? 'ti-hearts' : 'ti-heart'}`}></i>
+                      </button>
                     </div>
                     <div className="nl-card-body">
-                      <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '6px' }}>
+                      <div className="nl-card-catrow">
                         <span className="nl-card-cat">{p.category}</span>
-                        {p.phan_loai === 'thuong-hieu' && (
-                          <span className="nl-badge-th"><i className="ti ti-shield-star"></i> Thương Hiệu</span>
-                        )}
+                        <CardRating stat={reviewStats.get(p.id)} />
                       </div>
                       <h3 className="nl-card-name">{p.name}</h3>
                       {p.unit && <p className="nl-card-unit"><i className="ti ti-ruler-2"></i> {p.unit}</p>}
-                      <div className="nl-card-foot">
-                        <span className="nl-card-price">{p.price ? p.price.toLocaleString('vi-VN') + 'đ' : 'Liên hệ'}</span>
-                        <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                          <button
-                            className={`nl-wish-btn${isWishlisted(p.id) ? ' wishlisted' : ''}`}
-                            onClick={() => toggleWish({ id: p.id, name: p.name, unit: p.unit, price: p.price, image_url: p.image_url, category: p.category, source: 'nguyen-lieu' })}
-                            aria-label={isWishlisted(p.id) ? 'Bỏ yêu thích' : 'Yêu thích'}
-                          >
-                            <i className={`ti ${isWishlisted(p.id) ? 'ti-hearts' : 'ti-heart'}`}></i>
-                          </button>
-                          <button
-                            className={`nl-add-btn${addedIds.has(p.id) ? ' added' : ''}`}
-                            onClick={() => handleAddToCart(p)}
-                          >
-                            {addedIds.has(p.id)
-                              ? <><i className="ti ti-check"></i> Đã thêm</>
-                              : <><i className="ti ti-shopping-cart-plus"></i> Thêm</>}
-                          </button>
-                        </div>
-                      </div>
+                      <p className="nl-card-price">{p.price ? p.price.toLocaleString('vi-VN') + 'đ' : 'Liên hệ'}</p>
+                      <button
+                        type="button"
+                        className={`nl-add-btn${addedIds.has(p.id) ? ' added' : ''}`}
+                        onClick={e => { e.preventDefault(); e.stopPropagation(); handleAddToCart(p); }}
+                      >
+                        {addedIds.has(p.id)
+                          ? <><i className="ti ti-check"></i> Đã thêm vào giỏ</>
+                          : <><i className="ti ti-shopping-cart-plus"></i> Thêm vào giỏ</>}
+                      </button>
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
 
@@ -237,12 +262,15 @@ export default function NguyenLieuPage() {
 
           {/* CTA */}
           <div className="nl-cta">
-            <i className="ti ti-truck-delivery" style={{ fontSize: '2rem', color: 'var(--accent)', display: 'block', marginBottom: '12px' }}></i>
-            <h3>Cần đặt số lượng lớn?</h3>
-            <p>Liên hệ trực tiếp để được báo giá sỉ và hỗ trợ giao hàng tận nơi.</p>
+            <i className="ti ti-headset" style={{ fontSize: '2rem', color: 'var(--accent)', display: 'block', marginBottom: '12px' }}></i>
+            <h3>Tư Vấn Và Đặt Nguyên Liệu</h3>
+            <p>Liên hệ trực tiếp với Kho NVL để được tư vấn và hỗ trợ đặt hàng — ship toàn quốc.</p>
             <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap', marginTop: '20px' }}>
               <a href="https://zalo.me/0931433684" target="_blank" rel="noopener noreferrer" className="btn btn-primary">
                 <i className="ti ti-brand-zalo"></i> Chat Zalo ngay
+              </a>
+              <a href="https://www.facebook.com/profile.php?id=61560410163133" target="_blank" rel="noopener noreferrer" className="btn btn-facebook">
+                <i className="ti ti-brand-facebook"></i> Facebook Kho NVL
               </a>
               <a href="tel:0931433684" className="btn btn-outline">
                 <i className="ti ti-phone"></i> Gọi 0931.433.684
@@ -251,15 +279,6 @@ export default function NguyenLieuPage() {
           </div>
         </div>
       </section>
-
-      {lightboxImg && (
-        <div className="kct-lightbox" onClick={() => setLightboxImg(null)}>
-          <img src={lightboxImg} alt="Phóng to" onClick={e => e.stopPropagation()} />
-          <button className="kct-lb-close" onClick={() => setLightboxImg(null)} aria-label="Đóng">
-            <i className="ti ti-x"></i>
-          </button>
-        </div>
-      )}
     </main>
   );
 }

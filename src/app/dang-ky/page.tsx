@@ -71,6 +71,7 @@ function DangKyForm() {
     const { error } = await supabase.from('leads').insert({ name, phone, course, location, ghi_chu });
     setFormSubmitting(false);
     if (error) { setFormError('Có lỗi xảy ra, vui lòng thử lại hoặc liên hệ Zalo.'); return; }
+    void fetch('/api/notify-lark', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, phone, course, location, ghi_chu }) });
     setFormDone(true);
   }
 

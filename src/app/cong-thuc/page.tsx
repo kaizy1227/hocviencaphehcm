@@ -13,12 +13,15 @@ type Product = {
   id: string; name: string; unit: string; price: number; image_url: string;
 };
 
-export default function CongThuc2Page() {
+const PER_PAGE = 24;
+
+export default function CongThucPage() {
   const [recipes, setRecipes]           = useState<CongThuc[]>([]);
   const [loading, setLoading]           = useState(true);
   const [activeCat, setActiveCat]       = useState('Tất cả');
   const [activeCourse, setActiveCourse] = useState('');
   const [searchQ, setSearchQ]           = useState('');
+  const [page, setPage]                 = useState(1);
   const [modalOpen, setModalOpen]       = useState(false);
   const [selected, setSelected]         = useState<CongThuc | null>(null);
   const [isLoggedIn, setIsLoggedIn]     = useState<boolean | null>(null);
@@ -78,6 +81,10 @@ export default function CongThuc2Page() {
     return matchCat && matchCourse && (!q || r.name.toLowerCase().includes(q) || r.category.toLowerCase().includes(q));
   });
 
+  useEffect(() => { setPage(1); }, [activeCat, activeCourse, searchQ]);
+  const totalPages = Math.ceil(filtered.length / PER_PAGE);
+  const paginated = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
+
   const canView = (recipe: CongThuc) =>
     isAdmin ||
     !(recipe.courses ?? []).length ||
@@ -106,7 +113,7 @@ export default function CongThuc2Page() {
       {/* HERO */}
       <section className="ct-hero">
         <div className="ct-hero-bg">
-          <img src="/images/gallery/Concept-studio-with-products/14. Matcha latte bg.webp" alt="Công Thức 2" loading="eager" />
+          <img src="/images/gallery/Concept-studio-with-products/14. Matcha latte bg.webp" alt="Công Thức" loading="eager" />
         </div>
         <div className="ct-hero-ov"></div>
         <div className="container">
@@ -114,7 +121,7 @@ export default function CongThuc2Page() {
             <div className="ct-hero-crumb">
               <Link href="/">Trang Chủ</Link>
               <i className="ti ti-chevron-right" style={{ fontSize: '.75rem' }}></i>
-              <span>Công Thức 2</span>
+              <span>Công Thức</span>
             </div>
             <h1>Kho Công Thức<br /><em>Thực Tế</em></h1>
             <p className="ct-hero-sub">
@@ -192,30 +199,69 @@ export default function CongThuc2Page() {
               <button className="btn btn-outline" onClick={() => { setActiveCat('Tất cả'); setSearchQ(''); }}>Xem tất cả</button>
             </div>
           ) : (
-            <div className="ct-grid">
-              {filtered.map(r => (
-                <div key={r.id} className="ct-card" onClick={() => openModal(r)}>
-                  <div className="ct-card-img">
-                    {r.photo_url
-                      ? <img src={r.photo_url} alt={r.name} loading="lazy" onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
-                      : <div className="ct2-no-img"><i className="ti ti-coffee"></i></div>
-                    }
-                    <div className="ct-card-lock"><i className="ti ti-lock"></i></div>
+            <>
+              <div className="ct-grid">
+                {paginated.map(r => (
+                  <div key={r.id} className="ct-card" onClick={() => openModal(r)}>
+                    <div className="ct-card-img">
+                      {r.photo_url
+                        ? <img src={r.photo_url} alt={r.name} loading="lazy" onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
+                        : <div className="ct2-no-img"><i className="ti ti-coffee"></i></div>
+                      }
+                      <div className="ct-card-lock"><i className="ti ti-lock"></i></div>
+                    </div>
+                    <div className="ct-card-body">
+                      <span className="ct-card-cat">{r.category}</span>
+                      <h3 className="ct-card-name">{r.name}</h3>
+                      {r.total_cost != null && (
+                        <div className="ct-card-foot">
+                          <span className="ct-cost"><i className="ti ti-coin"></i> {fmtCost(r.total_cost)}</span>
+                          <span className="ct-view-btn">Xem công thức <i className="ti ti-arrow-right"></i></span>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <div className="ct-card-body">
-                    <span className="ct-card-cat">{r.category}</span>
-                    <h3 className="ct-card-name">{r.name}</h3>
-                    {r.total_cost != null && (
-                      <div className="ct-card-foot">
-                        <span className="ct-cost"><i className="ti ti-coin"></i> {fmtCost(r.total_cost)}</span>
-                        <span className="ct-view-btn">Xem công thức <i className="ti ti-arrow-right"></i></span>
-                      </div>
-                    )}
-                  </div>
+                ))}
+              </div>
+
+              {totalPages > 1 && (
+                <div className="nl-pagination">
+                  <button className="nl-page-btn" disabled={page === 1}
+                    onClick={() => { setPage(p => p - 1); window.scrollTo({ top: 260, behavior: 'smooth' }); }}>
+                    <i className="ti ti-chevron-left"></i>
+                  </button>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(n => (
+                    <button key={n} className={`nl-page-btn${page === n ? ' active' : ''}`}
+                      onClick={() => { setPage(n); window.scrollTo({ top: 260, behavior: 'smooth' }); }}>
+                      {n}
+                    </button>
+                  ))}
+                  <button className="nl-page-btn" disabled={page === totalPages}
+                    onClick={() => { setPage(p => p + 1); window.scrollTo({ top: 260, behavior: 'smooth' }); }}>
+                    <i className="ti ti-chevron-right"></i>
+                  </button>
                 </div>
-              ))}
-            </div>
+              )}
+            </>
           )}
+
+          {/* CTA */}
+          <div className="nl-cta">
+            <i className="ti ti-headset" style={{ fontSize: '2rem', color: 'var(--accent)', display: 'block', marginBottom: '12px' }}></i>
+            <h3>Tư Vấn Và Đặt Nguyên Liệu</h3>
+            <p>Liên hệ trực tiếp với Kho NVL để được tư vấn và hỗ trợ đặt hàng — ship toàn quốc.</p>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap', marginTop: '20px' }}>
+              <a href="https://zalo.me/0931433684" target="_blank" rel="noopener noreferrer" className="btn btn-primary">
+                <i className="ti ti-brand-zalo"></i> Chat Zalo ngay
+              </a>
+              <a href="https://www.facebook.com/profile.php?id=61560410163133" target="_blank" rel="noopener noreferrer" className="btn btn-facebook">
+                <i className="ti ti-brand-facebook"></i> Facebook Kho NVL
+              </a>
+              <a href="tel:0931433684" className="btn btn-outline">
+                <i className="ti ti-phone"></i> Gọi 0931.433.684
+              </a>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -235,7 +281,7 @@ export default function CongThuc2Page() {
                   <div className="ct-modal-lock-box">
                     <div className="ct-lock-ico"><i className="ti ti-user-circle"></i></div>
                     <h3>Đăng Nhập Để Xem</h3>
-                    <p>Chỉ học viên Học Viện Cà Phê mới xem được công thức chi tiết.</p>
+                    <p>Nội dung chỉ dành cho khách hàng và học viên của Học Viện Cà Phê.</p>
                     <Link href="/login" className="btn btn-primary" onClick={closeModal}>
                       <i className="ti ti-login"></i> Đăng Nhập Ngay
                     </Link>

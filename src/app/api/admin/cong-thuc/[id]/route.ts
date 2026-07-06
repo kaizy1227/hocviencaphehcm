@@ -55,7 +55,7 @@ export async function POST(req: NextRequest, { params: _params }: { params: Prom
     const buf = await file.arrayBuffer();
     const ext = file.name.split('.').pop() ?? 'jpg';
     const path = `${Date.now()}.${ext}`;
-    const { data, error } = await sb.storage.from('cong-thuc').upload(path, buf, { contentType: file.type, upsert: true });
+    const { data, error } = await sb.storage.from('cong-thuc').upload(path, buf, { contentType: file.type, upsert: true, cacheControl: '31536000' });
     if (error || !data) throw error ?? new Error('Upload failed');
     const publicUrl = sb.storage.from('cong-thuc').getPublicUrl(data.path).data.publicUrl;
     return NextResponse.json({ url: publicUrl });

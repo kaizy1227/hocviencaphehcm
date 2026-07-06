@@ -13,7 +13,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE}/nguyen-lieu`,  lastModified: TODAY, changeFrequency: 'weekly',  priority: 0.9 },
     { url: `${BASE}/dung-cu`,      lastModified: TODAY, changeFrequency: 'weekly',  priority: 0.9 },
     { url: `${BASE}/cong-thuc`,    lastModified: TODAY, changeFrequency: 'monthly', priority: 0.7 },
-    { url: `${BASE}/cong-thuc-2`,  lastModified: TODAY, changeFrequency: 'monthly', priority: 0.6 },
     { url: `${BASE}/kho-cong-thuc`,lastModified: TODAY, changeFrequency: 'weekly',  priority: 0.7 },
     { url: `${BASE}/lien-he`,             lastModified: TODAY, changeFrequency: 'monthly', priority: 0.7 },
     { url: `${BASE}/hinh-anh/trao-bang`, lastModified: TODAY, changeFrequency: 'monthly', priority: 0.5 },

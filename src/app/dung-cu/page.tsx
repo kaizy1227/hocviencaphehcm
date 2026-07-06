@@ -1,9 +1,12 @@
 'use client';
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
+import { useReviewStats } from '@/lib/useReviewStats';
+import CardRating from '@/components/CardRating';
 
 type Tool = {
   id: string; stt: number; name: string; unit: string;
@@ -23,6 +26,7 @@ export default function DungCuPage() {
   const [page, setPage] = useState(1);
   const { addItem } = useCart();
   const { toggle: toggleWish, has: isWishlisted } = useWishlist();
+  const reviewStats = useReviewStats('dung_cu');
 
   useEffect(() => {
     const timer = setTimeout(() => setLoading(false), 10000);
@@ -68,18 +72,29 @@ export default function DungCuPage() {
 
   return (
     <main style={{ paddingTop: 'var(--nav-h)' }}>
-      {/* PAGE HEADER */}
-      <div className="sp-header">
-        <div className="container">
-          <div className="nl-hero-crumb">
-            <Link href="/">Trang Chủ</Link>
-            <i className="ti ti-chevron-right" style={{ fontSize: '.75rem' }}></i>
-            <span>Dụng Cụ Pha Chế</span>
-          </div>
-          <h1 className="sp-title">Dụng Cụ <em>Pha Chế</em></h1>
-          <p className="sp-desc">Dụng cụ pha chế chuyên nghiệp — cung cấp cho quán cà phê, trà sữa và học viên.</p>
+      {/* HERO */}
+      <section className="ct-hero">
+        <div className="ct-hero-bg">
+          <img src="/images/gallery/Concept-studio-with-products/30. Cappuccino nóng bg.webp" alt="Dụng Cụ Pha Chế" loading="eager" />
         </div>
-      </div>
+        <div className="ct-hero-ov"></div>
+        <div className="container">
+          <div className="ct-hero-body">
+            <div className="ct-hero-crumb">
+              <Link href="/">Trang Chủ</Link>
+              <i className="ti ti-chevron-right" style={{ fontSize: '.75rem' }}></i>
+              <span>Dụng Cụ Pha Chế</span>
+            </div>
+            <h1>Dụng Cụ <em>Pha Chế</em></h1>
+            <p className="ct-hero-sub">Dụng cụ pha chế chuyên nghiệp — cung cấp cho quán cà phê, trà sữa và học viên.</p>
+            <div className="ct-hero-badges">
+              <span className="ct-badge"><i className="ti ti-tool"></i> {loading ? '...' : tools.length} Sản Phẩm</span>
+              <span className="ct-badge"><i className="ti ti-category"></i> {categories.length} Danh Mục</span>
+              <span className="ct-badge"><i className="ti ti-truck-delivery"></i> Ship Toàn Quốc</span>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* TOOLBAR */}
       <div className="sp-toolbar">
@@ -160,16 +175,20 @@ export default function DungCuPage() {
                     <div
                       className={`nl-card-img${p.image_url ? ' kct-lb-trigger' : ''}`}
                       onClick={() => p.image_url && setLightboxImg(p.image_url)}
+                      style={{ position: 'relative' }}
                     >
                       {p.image_url
-                        ? <img src={p.image_url} alt={p.name} loading="lazy" />
+                        ? <Image src={p.image_url} alt={p.name} fill sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 200px" style={{ objectFit: 'contain' }} loading="lazy" />
                         : <div className="nl-card-img-placeholder"><i className="ti ti-tool"></i></div>
                       }
                       <span className="nl-card-num">#{p.stt || i + 1}</span>
                       {p.image_url && <span className="kct-lb-hint"><i className="ti ti-zoom-in"></i> Phóng to</span>}
                     </div>
                     <div className="nl-card-body">
-                      <span className="nl-card-cat">{p.category}</span>
+                      <div className="nl-card-catrow">
+                        <span className="nl-card-cat">{p.category}</span>
+                        <CardRating stat={reviewStats.get(p.id)} />
+                      </div>
                       <h3 className="nl-card-name">{p.name}</h3>
                       {p.unit && <p className="nl-card-unit"><i className="ti ti-ruler-2"></i> {p.unit}</p>}
                       <div className="nl-card-foot">
@@ -219,12 +238,15 @@ export default function DungCuPage() {
           )}
 
           <div className="nl-cta">
-            <i className="ti ti-truck-delivery" style={{ fontSize: '2rem', color: 'var(--accent)', display: 'block', marginBottom: '12px' }}></i>
-            <h3>Cần đặt số lượng lớn?</h3>
-            <p>Liên hệ trực tiếp để được báo giá sỉ và hỗ trợ giao hàng tận nơi.</p>
+            <i className="ti ti-headset" style={{ fontSize: '2rem', color: 'var(--accent)', display: 'block', marginBottom: '12px' }}></i>
+            <h3>Tư Vấn Và Đặt Nguyên Liệu</h3>
+            <p>Liên hệ trực tiếp với Kho NVL để được tư vấn và hỗ trợ đặt hàng — ship toàn quốc.</p>
             <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap', marginTop: '20px' }}>
               <a href="https://zalo.me/0931433684" target="_blank" rel="noopener noreferrer" className="btn btn-primary">
                 <i className="ti ti-brand-zalo"></i> Chat Zalo ngay
+              </a>
+              <a href="https://www.facebook.com/profile.php?id=61560410163133" target="_blank" rel="noopener noreferrer" className="btn btn-facebook">
+                <i className="ti ti-brand-facebook"></i> Facebook Kho NVL
               </a>
               <a href="tel:0931433684" className="btn btn-outline">
                 <i className="ti ti-phone"></i> Gọi 0931.433.684

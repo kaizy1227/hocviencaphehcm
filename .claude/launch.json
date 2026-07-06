@@ -6,6 +6,12 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
       "port": 3000
+    },
+    {
+      "name": "expo-web",
+      "runtimeExecutable": "cmd",
+      "runtimeArgs": ["/c", "cd /d D:\\Claude\\hvcp-mobile && npx expo start --web --port 8090"],
+      "port": 8090
     }
   ]
 }

@@ -1,34 +1,35 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
+import { SERVICES } from '@/lib/services';
 
-const SERVICES_DEFAULT = [
-  { img: 'khoi-nghiep-v2.png', name: 'Khóa Khởi Nghiệp', desc: 'Nền tảng mở quán, quản lý chi phí, vận hành hiệu quả — 1 ngày (2 buổi). Hỗ trợ online 1 tháng sau khai trương.', price: '4.000.000đ' },
-  { img: 'setup-menu-7tr.png', name: 'Gói Set Up Menu', desc: 'Menu nhỏ gọn dưới 10 món: xây dựng 2–3 signature, thiết kế menu, hướng dẫn cost, tư vấn thiết bị và test món 2 lần.', price: '7.000.000đ' },
-  { img: 'setup-menu-15-20-mon.png', name: 'Setup Menu 15–20 Món', desc: 'Menu độc quyền 15–20 món: 3–5 signature, tính cost toàn bộ, tư vấn nguyên liệu & thiết bị, test món 2 buổi tại Học Viện.', price: '15.000.000đ' },
-  { img: 'dao-tao-van-hanh-v2.png', name: 'Đào Tạo Vận Hành', desc: 'Vận hành chuẩn, quản trị chặt: xây dựng chính sách, quản lý nhân sự, kiểm soát chi phí & doanh thu. Hỗ trợ online 1 tháng sau khai trương.', price: '15.000.000đ' },
-  { img: 'dao-tao-tai-quan.png', name: 'Đào Tạo Tại Quán', desc: 'Giảng viên đến trực tiếp quán đào tạo nhân viên pha chế, thiết lập quy trình bar & hỗ trợ sắp xếp thiết bị phù hợp với thực tế quán.', price: 'Từ 2.300.000đ/ngày' },
-];
+type ServiceItem = { img: string; name: string; desc: string; price: string; slug?: string; };
 
-type ServiceItem = { img: string; name: string; desc: string; price: string; };
+function resolveImg(img: string | null): string {
+  if (!img) return '';
+  if (img.startsWith('http')) return img;
+  return `/images/services/${img}`;
+}
+
+const SERVICES_DEFAULT: ServiceItem[] = SERVICES.map(s => ({ img: `/images/services/${s.img}`, name: s.name, desc: s.desc, price: s.price, slug: s.slug }));
 
 export default function DichVuPage() {
-  const router = useRouter();
   const [lb, setLb] = useState<{ src: string; alt: string } | null>(null);
   const [services, setServices] = useState<ServiceItem[]>(SERVICES_DEFAULT);
 
   const openLb = (src: string, alt: string) => { setLb({ src, alt }); document.body.style.overflow = 'hidden'; };
   const closeLb = () => { setLb(null); document.body.style.overflow = ''; };
-  const dangKy = (name: string) => router.push(`/dang-ky?course=${encodeURIComponent(name)}`);
 
   useEffect(() => {
-    const supabase = createClient();
-    supabase.from('courses').select('*').eq('active', true).eq('category', 'kinh-doanh').order('sort_order').then(({ data }) => {
+    createClient().from('courses').select('name,image,description,price,slug').eq('active', true).eq('category', 'kinh-doanh').order('sort_order').then(({ data }) => {
       if (!data || !data.length) return;
-      setServices(data.map((c: { image: string; name: string; description: string; price: string }) => ({
-        img: c.image, name: c.name, desc: c.description, price: c.price,
+      setServices(data.map((c: { image: string | null; name: string; description: string | null; price: string; slug: string | null }) => ({
+        img: resolveImg(c.image),
+        name: c.name,
+        desc: c.description ?? '',
+        price: c.price,
+        slug: c.slug ?? undefined,
       })));
     });
   }, []);
@@ -71,15 +72,17 @@ export default function DichVuPage() {
           <div className="poster-grid">
             {services.map(s => (
               <div className="poster-card" key={s.name}>
-                <div className="poster-img" onClick={() => openLb(`/images/services/${s.img}`, s.name)}>
-                  <img src={`/images/services/${s.img}`} alt={s.name} loading="lazy" />
+                <div className="poster-img" onClick={() => s.img && openLb(s.img, s.name)}>
+                  {s.img && <img src={s.img} alt={s.name} loading="lazy" />}
                 </div>
                 <div className="poster-body">
                   <div className="poster-name">{s.name}</div>
                   <p className="poster-desc">{s.desc}</p>
                   <div className="poster-foot">
                     <div className="card-price">{s.price}</div>
-                    <button className="btn-reg" onClick={() => dangKy(s.name)}>Đăng Ký</button>
+                    {s.slug && (
+                      <Link href={`/dich-vu/${s.slug}`} className="btn-reg">Xem Chi Tiết →</Link>
+                    )}
                   </div>
                 </div>
               </div>

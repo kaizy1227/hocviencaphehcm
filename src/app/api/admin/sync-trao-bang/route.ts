@@ -18,7 +18,7 @@ async function uploadToStorage(tmpUrl: string, larkId: string): Promise<string> 
     const ct = res.headers.get('content-type') || 'image/jpeg';
     const ext = ct.includes('png') ? 'png' : ct.includes('webp') ? 'webp' : 'jpg';
     const path = `${larkId}.${ext}`;
-    const { data, error } = await sb.storage.from('trao-bang').upload(path, buf, { contentType: ct, upsert: true });
+    const { data, error } = await sb.storage.from('trao-bang').upload(path, buf, { contentType: ct, upsert: true, cacheControl: '31536000' });
     if (error || !data) return '';
     return sb.storage.from('trao-bang').getPublicUrl(data.path).data.publicUrl;
   } catch {

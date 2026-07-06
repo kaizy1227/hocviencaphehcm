@@ -50,6 +50,7 @@ function LienHeForm() {
     const { error: err } = await createClient().from('leads').insert({ name, phone, course, location, ghi_chu });
     setSending(false);
     if (err) { setError('Có lỗi xảy ra, vui lòng thử lại hoặc nhắn Zalo.'); return; }
+    void fetch('/api/notify-lark', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, phone, course, location, ghi_chu }) });
     setDone(true);
   }
 
@@ -420,7 +421,7 @@ export default function GioiThieuPage() {
             <span className="gt-cta-tag">Bắt Đầu Ngay Hôm Nay</span>
             <h2>Bắt Đầu Hành Trình<br />Của Bạn Từ Hôm Nay</h2>
             <p>Đặt lịch tư vấn miễn phí — đội ngũ Học Viện sẽ liên hệ trong vòng 30 phút để cùng bạn tìm ra lộ trình học tập phù hợp nhất.</p>
-            <Link href="/#dangky" className="cta-white"><i className="ti ti-calendar-check"></i> Đăng Ký Tư Vấn Miễn Phí</Link>
+            <Link href="/dang-ky" className="cta-white"><i className="ti ti-calendar-check"></i> Đăng Ký Tư Vấn Miễn Phí</Link>
           </div>
         </div>
       </section>

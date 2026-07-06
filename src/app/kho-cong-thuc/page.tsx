@@ -1,27 +1,24 @@
 'use client';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
-import { useCart } from '@/context/CartContext';
+import { buildSlugIndex } from '@/lib/slug';
 
 type CongThuc = {
   id: string; name: string; category: string; photo_url: string;
   instructions: string; total_cost: number | null; recipe_text: string;
-  linked_product_ids: string[]; courses: string[];
-};
-type Product = {
-  id: string; name: string; unit: string; price: number; image_url: string;
+  linked_product_ids: string[]; courses: string[]; locked?: boolean;
 };
 type ExternalIngredient = {
   name: string; shopLink: string;
 };
 type ExternalRecipe = {
   id: string; name: string; short_name: string; category: string; source: string;
-  image_url: string; steps: string; ingredients: ExternalIngredient[]; active: boolean;
+  image_url: string; steps: string; ingredients: ExternalIngredient[]; active: boolean; locked?: boolean;
 };
 
-
-const PLATFORM_LABEL: Record<string, string> = { shopee: 'Shopee', lazada: 'Lazada', tiki: 'Tiki' };
+const PER_PAGE = 24;
 
 export default function KhoCongThucPage() {
   const [tab, setTab]               = useState<'internal' | 'external'>('internal');
@@ -30,19 +27,28 @@ export default function KhoCongThucPage() {
   const [loading, setLoading]       = useState(true);
   const [activeCat, setActiveCat]   = useState('Tất cả');
   const [searchQ, setSearchQ]       = useState('');
-  const [modalOpen, setModalOpen]   = useState(false);
-  const [selInternal, setSelInternal] = useState<CongThuc | null>(null);
-  const [selExternal, setSelExternal] = useState<ExternalRecipe | null>(null);
-  const [allProducts, setAllProducts] = useState<Product[]>([]);
-  const [addedIds, setAddedIds]     = useState<Set<string>>(new Set());
-  const [lightboxImg, setLightboxImg] = useState<string | null>(null);
-
-  const { addItem, openCart } = useCart();
+  const [page, setPage]             = useState(1);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
+  const [courseAccess, setCourseAccess] = useState<string[] | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     const sb = createClient();
-    void sb.from('products').select('id,name,unit,price,image_url').eq('active', true)
-      .then(({ data }) => { if (data) setAllProducts(data); });
+    void (async () => {
+      const { data: { session } } = await sb.auth.getSession();
+      setIsLoggedIn(!!session);
+      if (session?.user) {
+        if (session.user.app_metadata?.role === 'admin') {
+          setIsAdmin(true);
+          setCourseAccess(['admin']);
+        } else {
+          const { data } = await sb.from('students').select('course_access').eq('auth_user_id', session.user.id).maybeSingle();
+          setCourseAccess((data?.course_access as string[]) ?? []);
+        }
+      } else {
+        setCourseAccess([]);
+      }
+    })();
     void sb.from('cong_thuc_hvcp').select('*').order('sort_order').order('created_at')
       .then(({ data }) => { setRecipes(data ?? []); });
     void sb.from('cong_thuc_chia_se').select('*').eq('active', true).order('sort_order').order('created_at')
@@ -50,52 +56,42 @@ export default function KhoCongThucPage() {
   }, []);
 
   const switchTab = (t: 'internal' | 'external') => {
-    setTab(t); setActiveCat('Tất cả'); setSearchQ(''); setModalOpen(false);
+    setTab(t); setActiveCat('Tất cả'); setSearchQ(''); setPage(1);
   };
+
+  useEffect(() => { setPage(1); }, [activeCat, searchQ, tab]);
+
+  const hasAccess = isAdmin || (isLoggedIn === true && courseAccess !== null && courseAccess.length > 0);
+
+  const internalIndex = useMemo(() => buildSlugIndex(recipes, r => r.name), [recipes]);
+  const externalIndex = useMemo(() => buildSlugIndex(externalRecipes, r => r.name), [externalRecipes]);
+
+  const byLockedLast = <T extends { locked?: boolean }>(list: T[]) =>
+    [...list].sort((a, b) => (a.locked ? 1 : 0) - (b.locked ? 1 : 0));
 
   // --- INTERNAL ---
   const internalCats = ['Tất cả', ...Array.from(new Set(recipes.map(r => r.category).filter(Boolean))).sort()];
-  const filteredInternal = recipes.filter(r => {
+  const filteredInternal = byLockedLast(recipes.filter(r => {
     const matchCat = activeCat === 'Tất cả' || r.category === activeCat;
     const q = searchQ.toLowerCase();
     return matchCat && (!q || r.name.toLowerCase().includes(q) || r.category.toLowerCase().includes(q));
-  });
-  const linkedProducts = selInternal ? allProducts.filter(p => selInternal.linked_product_ids?.includes(p.id)) : [];
+  }));
 
   // --- EXTERNAL ---
   const externalCats = ['Tất cả', ...Array.from(new Set(externalRecipes.map(r => r.category).filter(Boolean))).sort()];
-  const filteredExternal = externalRecipes.filter(r => {
+  const filteredExternal = byLockedLast(externalRecipes.filter(r => {
     const matchCat = activeCat === 'Tất cả' || r.category === activeCat;
     const q = searchQ.toLowerCase();
     return matchCat && (!q || r.name.toLowerCase().includes(q) || r.category.toLowerCase().includes(q));
-  });
+  }));
 
-  const openInternal = (r: CongThuc) => { setSelInternal(r); setSelExternal(null); setModalOpen(true); setAddedIds(new Set()); };
-  const openExternal = (r: ExternalRecipe) => { setSelExternal(r); setSelInternal(null); setModalOpen(true); };
-  const closeModal = () => { setModalOpen(false); setSelInternal(null); setSelExternal(null); };
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key !== 'Escape') return;
-      if (lightboxImg) { setLightboxImg(null); return; }
-      setModalOpen(false); setSelInternal(null); setSelExternal(null);
-    };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [lightboxImg]);
-
-  const handleAddToCart = useCallback((p: Product) => {
-    addItem({ id: p.id, name: p.name, price: p.price, image_url: p.image_url, unit: p.unit });
-    setAddedIds(prev => new Set([...prev, p.id]));
-    setTimeout(() => setAddedIds(prev => { const n = new Set(prev); n.delete(p.id); return n; }), 1500);
-  }, [addItem]);
-
-  const splitLines = (text: string) => text.split(/\n/).map(l => l.trim()).filter(Boolean);
   const fmtCost = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + ' VNĐ';
 
   const cats = tab === 'internal' ? internalCats : externalCats;
   const filteredCount = tab === 'internal' ? filteredInternal.length : filteredExternal.length;
-  const externalLoading = loading && tab === 'external';
+  const totalPages = Math.ceil(filteredCount / PER_PAGE);
+  const paginatedInternal = filteredInternal.slice((page - 1) * PER_PAGE, page * PER_PAGE);
+  const paginatedExternal = filteredExternal.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
   return (
     <>
@@ -124,6 +120,16 @@ export default function KhoCongThucPage() {
           </div>
         </div>
       </section>
+
+      {/* UNLOCK OFFER BANNER */}
+      <div className="kct-unlock-wrap">
+        <div className="container">
+          <a href="https://zalo.me/0834790555" target="_blank" rel="noopener noreferrer" className="kct-unlock-banner-link">
+            <Image src="/images/banners/kct-unlock-banner.png" alt="Ưu đãi khách hàng mới — Mua nguyên liệu từ 3.000.000đ trở lên, mở khóa toàn bộ công thức nội bộ hoàn toàn miễn phí"
+              width={2172} height={724} className="kct-unlock-img" priority />
+          </a>
+        </div>
+      </div>
 
       {/* TYPE TABS */}
       <div className="kct-type-tabs">
@@ -190,27 +196,40 @@ export default function KhoCongThucPage() {
               </div>
             ) : (
               <div className="ct-grid">
-                {filteredInternal.map(r => (
-                  <div key={r.id} className="ct-card" onClick={() => openInternal(r)}>
+                {paginatedInternal.map(r => {
+                  const showLock = !hasAccess && r.locked;
+                  const slug = internalIndex.byId.get(r.id);
+                  return (
+                  <Link href={`/kho-cong-thuc/${slug}`} key={r.id} className="ct-card" style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
                     <div className="ct-card-img">
                       {r.photo_url
-                        ? <img src={r.photo_url} alt={r.name} loading="lazy" onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
+                        ? <img src={r.photo_url} alt={showLock ? '' : r.name} loading="lazy"
+                            style={showLock ? { filter: 'blur(10px)', transform: 'scale(1.12)' } : {}}
+                            onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
                         : <div className="ct2-no-img"><i className="ti ti-coffee"></i></div>
                       }
-                      <span className="kct-tag-internal"><i className="ti ti-building-store"></i> Nội bộ</span>
+                      {showLock
+                        ? <div className="kct-card-lock-ov"><i className="ti ti-lock"></i></div>
+                        : <span className="kct-tag-internal"><i className="ti ti-building-store"></i> Nội bộ</span>}
                     </div>
                     <div className="ct-card-body">
                       <span className="ct-card-cat">{r.category}</span>
                       <h3 className="ct-card-name">{r.name}</h3>
-                      {r.total_cost != null && (
+                      {!showLock && r.total_cost != null && (
                         <div className="ct-card-foot">
                           <span className="ct-cost"><i className="ti ti-coin"></i> {fmtCost(r.total_cost)}</span>
                           <span className="ct-view-btn">Xem công thức <i className="ti ti-arrow-right"></i></span>
                         </div>
                       )}
+                      {showLock && (
+                        <div className="ct-card-foot">
+                          <span style={{ fontSize: '.75rem', color: '#c0392b', fontWeight: 600 }}><i className="ti ti-lock"></i> Đang khóa</span>
+                        </div>
+                      )}
                     </div>
-                  </div>
-                ))}
+                  </Link>
+                  );
+                })}
               </div>
             )
           ) : (
@@ -222,176 +241,86 @@ export default function KhoCongThucPage() {
               </div>
             ) : (
               <div className="ct-grid">
-                {filteredExternal.map(r => (
-                  <div key={r.id} className="ct-card" onClick={() => openExternal(r)}>
+                {paginatedExternal.map(r => {
+                  const showLock = !hasAccess && r.locked;
+                  const slug = externalIndex.byId.get(r.id);
+                  return (
+                  <Link href={`/kho-cong-thuc/${slug}`} key={r.id} className="ct-card" style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
                     <div className="ct-card-img">
                       {r.image_url
-                        ? <img src={r.image_url} alt={r.name} loading="lazy" />
+                        ? <img src={r.image_url} alt={showLock ? '' : r.name} loading="lazy"
+                            style={showLock ? { filter: 'blur(10px)', transform: 'scale(1.12)' } : {}} />
                         : <div className="ct2-no-img"><i className="ti ti-world"></i></div>}
-                      <span className="kct-tag-external"><i className="ti ti-gift"></i> Miễn phí</span>
+                      {showLock
+                        ? <div className="kct-card-lock-ov"><i className="ti ti-lock"></i></div>
+                        : <span className="kct-tag-external"><i className="ti ti-gift"></i> Miễn phí</span>}
                     </div>
                     <div className="ct-card-body">
                       <span className="ct-card-cat">{r.category}</span>
                       <h3 className="ct-card-name">{r.short_name || r.name}</h3>
-                      {r.source && (
+                      {!showLock && r.source && (
                         <div className="ct-card-foot">
                           <span className="kct-source-hint"><i className="ti ti-link"></i> {r.source}</span>
                         </div>
                       )}
+                      {showLock && (
+                        <div className="ct-card-foot">
+                          <span style={{ fontSize: '.75rem', color: '#c0392b', fontWeight: 600 }}><i className="ti ti-lock"></i> Đang khóa</span>
+                        </div>
+                      )}
                     </div>
-                  </div>
-                ))}
+                  </Link>
+                  );
+                })}
               </div>
             )
           )}
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="nl-pagination">
+              <button className="nl-page-btn" disabled={page === 1}
+                onClick={() => { setPage(p => p - 1); window.scrollTo({ top: 260, behavior: 'smooth' }); }}>
+                <i className="ti ti-chevron-left"></i>
+              </button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(n => (
+                <button key={n} className={`nl-page-btn${page === n ? ' active' : ''}`}
+                  onClick={() => { setPage(n); window.scrollTo({ top: 260, behavior: 'smooth' }); }}>
+                  {n}
+                </button>
+              ))}
+              <button className="nl-page-btn" disabled={page === totalPages}
+                onClick={() => { setPage(p => p + 1); window.scrollTo({ top: 260, behavior: 'smooth' }); }}>
+                <i className="ti ti-chevron-right"></i>
+              </button>
+            </div>
+          )}
+
+          {/* CTA */}
+          <div className="nl-cta">
+            <i className="ti ti-headset" style={{ fontSize: '2rem', color: 'var(--accent)', display: 'block', marginBottom: '12px' }}></i>
+            <h3>Tư Vấn Và Đặt Nguyên Liệu</h3>
+            <p>Liên hệ trực tiếp với Kho NVL để được tư vấn và hỗ trợ đặt hàng — ship toàn quốc.</p>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap', marginTop: '20px' }}>
+              <a href="https://zalo.me/0931433684" target="_blank" rel="noopener noreferrer" className="btn btn-primary">
+                <i className="ti ti-brand-zalo"></i> Chat Zalo ngay
+              </a>
+              <a href="https://www.facebook.com/profile.php?id=61560410163133" target="_blank" rel="noopener noreferrer" className="btn btn-facebook">
+                <i className="ti ti-brand-facebook"></i> Facebook Kho NVL
+              </a>
+              <a href="tel:0931433684" className="btn btn-outline">
+                <i className="ti ti-phone"></i> Gọi 0931.433.684
+              </a>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* MODAL — INTERNAL */}
-      {modalOpen && selInternal && (
-        <div className="ct-modal-bg" onClick={closeModal}>
-          <div className="ct-modal" onClick={e => e.stopPropagation()}>
-            <button className="ct-modal-close" onClick={closeModal} aria-label="Đóng"><i className="ti ti-x"></i></button>
-            {selInternal.photo_url ? (
-              <div className="ct-modal-img kct-lb-trigger" onClick={() => setLightboxImg(selInternal.photo_url)}>
-                <img src={selInternal.photo_url} alt={selInternal.name} />
-                <span className="kct-lb-hint"><i className="ti ti-zoom-in"></i> Phóng to</span>
-              </div>
-            ) : (
-              <div className="ct-modal-img"><div className="ct2-modal-no-img"><i className="ti ti-coffee"></i></div></div>
-            )}
-            <div className="ct-modal-body">
-              <span className="ct-card-cat">{selInternal.category}</span>
-              <h2>{selInternal.name}</h2>
-              {selInternal.total_cost != null && (
-                <div className="ct-modal-meta">
-                  <span><i className="ti ti-coin"></i> Tổng cost: <strong>{fmtCost(selInternal.total_cost)}</strong></span>
-                </div>
-              )}
-
-              {selInternal.instructions && (
-                <div className="ct-modal-section">
-                  <h4><i className="ti ti-steps"></i> Hướng dẫn pha chế</h4>
-                  <ol className="ct-steps-list">
-                    {splitLines(selInternal.instructions).map((line, i) => (
-                      <li key={i}>{line.replace(/^B\d+:\s*/, '')}</li>
-                    ))}
-                  </ol>
-                </div>
-              )}
-
-              {selInternal.recipe_text && (
-                <div className="ct-modal-section">
-                  <h4><i className="ti ti-list"></i> Công thức</h4>
-                  <ul className="ct-ing-list">
-                    {splitLines(selInternal.recipe_text).map((line, i) => (
-                      <li key={i}>{line}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {linkedProducts.length > 0 && (
-                <div className="ct-modal-section ct-linked-products">
-                  <h4><i className="ti ti-package"></i> Nguyên liệu sử dụng</h4>
-                  <div className="ct-prod-list">
-                    {linkedProducts.map(p => (
-                      <div key={p.id} className="ct-prod-item">
-                        <div className="ct-prod-img">
-                          {p.image_url
-                            ? <img src={p.image_url} alt={p.name} loading="lazy" />
-                            : <div className="ct-prod-img-ph"><i className="ti ti-package"></i></div>}
-                        </div>
-                        <div className="ct-prod-info">
-                          <p className="ct-prod-name">{p.name}</p>
-                          <p className="ct-prod-meta">{p.unit} · <strong>{p.price.toLocaleString('vi-VN')}đ</strong></p>
-                        </div>
-                        <div className="ct-prod-btns">
-                          <Link href="/nguyen-lieu" className="ct-prod-view" onClick={closeModal}>Xem</Link>
-                          <button
-                            className={`ct-prod-add${addedIds.has(p.id) ? ' added' : ''}`}
-                            onClick={() => handleAddToCart(p)}
-                          >
-                            {addedIds.has(p.id)
-                              ? <><i className="ti ti-check"></i> Đã thêm</>
-                              : <><i className="ti ti-shopping-cart-plus"></i> Thêm</>}
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <button className="ct-view-cart-btn" onClick={() => { closeModal(); openCart(); }}>
-                    <i className="ti ti-shopping-cart"></i> Xem giỏ hàng
-                  </button>
-                </div>
-              )}
-
-              <div className="kct-order-note">
-                <p><i className="ti ti-truck-delivery"></i> <strong>Đặt nguyên liệu</strong></p>
-                <p>Thêm vào giỏ và liên hệ qua Zalo để đặt hàng — ship toàn quốc.</p>
-                <a href="https://zalo.me/0834790555" target="_blank" rel="noopener" className="kct-zalo-btn">
-                  <i className="ti ti-brand-hipchat"></i> Chat Zalo Ngay
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* MODAL — EXTERNAL */}
-      {modalOpen && selExternal && (
-        <div className="ct-modal-bg" onClick={closeModal}>
-          <div className="ct-modal" onClick={e => e.stopPropagation()}>
-            <button className="ct-modal-close" onClick={closeModal} aria-label="Đóng"><i className="ti ti-x"></i></button>
-            {selExternal.image_url ? (
-              <div className="ct-modal-img kct-lb-trigger" onClick={() => setLightboxImg(selExternal.image_url)}>
-                <img src={selExternal.image_url} alt={selExternal.name} />
-                <span className="kct-lb-hint"><i className="ti ti-zoom-in"></i> Phóng to</span>
-              </div>
-            ) : (
-              <div className="ct-modal-img"><div className="ct2-modal-no-img"><i className="ti ti-world"></i></div></div>
-            )}
-            <div className="ct-modal-body">
-              <span className="ct-card-cat">{selExternal.category}</span>
-              <h2>{selExternal.name}</h2>
-              {selExternal.source && (
-                <p className="kct-source"><i className="ti ti-link" style={{ fontSize: '.75rem' }}></i> {selExternal.source}</p>
-              )}
-
-              {selExternal.steps && (
-                <div className="ct-modal-section">
-                  <h4><i className="ti ti-list-check"></i> Công thức</h4>
-                  <ol className="ct-steps-list">
-                    {splitLines(selExternal.steps).map((line, i) => (
-                      <li key={i}>{line.replace(/^B\d+:\s*/, '')}</li>
-                    ))}
-                  </ol>
-                </div>
-              )}
-
-              {(selExternal.ingredients ?? []).length > 0 && (
-                <div className="ct-modal-section">
-                  <h4><i className="ti ti-basket"></i> Nguyên liệu sử dụng</h4>
-                  <div className="kct-ext-ing-list">
-                    {selExternal.ingredients.map((ing, i) => (
-                      <div key={i} className="kct-ext-ing-item">
-                        <span className="kct-ext-ing-name">{ing.name}</span>
-                        {ing.shopLink && (
-                          <a href={ing.shopLink} target="_blank" rel="noopener" className="kct-platform-link kct-platform-shopee">
-                            <i className="ti ti-external-link" style={{ fontSize: '.7rem' }}></i> Shopee
-                          </a>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
       <style>{`
+        .kct-unlock-wrap { background: var(--bg); padding: 24px 0 4px; }
+        .kct-unlock-banner-link { display: block; border-radius: var(--r-lg); overflow: hidden; box-shadow: 0 10px 28px rgba(176,90,16,.25); transition: transform .2s, box-shadow .2s; }
+        .kct-unlock-banner-link:hover { transform: translateY(-2px); box-shadow: 0 14px 34px rgba(176,90,16,.32); }
+        .kct-unlock-img { width: 100%; height: auto; display: block; }
         .kct-type-tabs { background: var(--white); border-bottom: 1px solid var(--border); position: sticky; top: var(--nav-h); z-index: 92; }
         .kct-type-tabs .container { display: flex; overflow-x: auto; scrollbar-width: none; }
         .kct-type-tabs .container::-webkit-scrollbar { display: none; }
@@ -406,21 +335,8 @@ export default function KhoCongThucPage() {
         .kct-tag-internal { background: #ECFDF5; color: #065F46; }
         .kct-tag-external { background: #EFF6FF; color: #1D4ED8; }
         .kct-source-hint { font-size: .69rem; color: var(--muted); display: flex; align-items: center; gap: 4px; }
-        .kct-source { font-size: .76rem; color: var(--muted); display: flex; align-items: center; gap: 4px; margin-bottom: 16px; }
-        .kct-ext-ing-list { display: flex; flex-direction: column; gap: 8px; }
-        .kct-ext-ing-item { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border-radius: 10px; background: var(--bg); border: 1px solid var(--border); }
-        .kct-ext-ing-name { font-size: .82rem; font-weight: 600; color: var(--text); flex: 1; min-width: 0; }
-        .kct-platform-link { flex-shrink: 0; display: inline-flex; align-items: center; gap: 4px; font-size: .72rem; font-weight: 600; padding: 5px 11px; border-radius: 8px; border: 1.5px solid; text-decoration: none; transition: all .2s; white-space: nowrap; }
-        .kct-platform-shopee { color: #EE4D2D; border-color: rgba(238,77,45,.3); background: rgba(238,77,45,.04); }
-        .kct-platform-shopee:hover { background: rgba(238,77,45,.12); }
-        .kct-platform-lazada { color: #0F146D; border-color: rgba(15,20,109,.25); background: rgba(15,20,109,.03); }
-        .kct-platform-lazada:hover { background: rgba(15,20,109,.1); }
-        .kct-platform-tiki { color: #1A94FF; border-color: rgba(26,148,255,.3); background: rgba(26,148,255,.04); }
-        .kct-order-note { margin-top: 20px; padding: 14px 16px; background: #FFF5ED; border-radius: 12px; border: 1px solid rgba(176,90,16,.15); }
-        .kct-order-note p { font-size: .8rem; color: var(--text-3); line-height: 1.6; margin-bottom: 4px; }
-        .kct-order-note p:first-child { color: var(--accent); font-weight: 600; margin-bottom: 4px; }
-        .kct-zalo-btn { display: inline-flex; align-items: center; gap: 6px; margin-top: 10px; padding: 9px 18px; border-radius: 10px; background: #0068FF; color: #fff; font-size: .82rem; font-weight: 700; text-decoration: none; transition: background .2s; }
-        .kct-zalo-btn:hover { background: #0052CC; }
+        .kct-card-lock-ov { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,.42); }
+        .kct-card-lock-ov i { font-size: 2rem; color: #fff; }
         .ct2-skeleton-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:20px; }
         .ct2-skeleton-card { background:var(--white); border-radius:var(--r-lg); overflow:hidden; box-shadow:var(--sh-sm); }
         .ct2-sk-img { height:180px; background:linear-gradient(90deg,#f0e8df 25%,#e8ddd4 50%,#f0e8df 75%); background-size:200% 100%; animation:ct2shimmer 1.4s infinite; }
@@ -429,18 +345,7 @@ export default function KhoCongThucPage() {
         .ct2-sk-line.short { width:55%; }
         @keyframes ct2shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
         .ct2-no-img { width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:3rem; color:var(--muted); background:var(--bg-alt); }
-        .ct2-modal-no-img { width:100%; height:220px; display:flex; align-items:center; justify-content:center; font-size:4rem; color:var(--muted); background:var(--bg-alt); }
       `}</style>
-
-      {/* LIGHTBOX */}
-      {lightboxImg && (
-        <div className="kct-lightbox" onClick={() => setLightboxImg(null)}>
-          <img src={lightboxImg} alt="Phóng to" onClick={e => e.stopPropagation()} />
-          <button className="kct-lb-close" onClick={() => setLightboxImg(null)} aria-label="Đóng lightbox">
-            <i className="ti ti-x"></i>
-          </button>
-        </div>
-      )}
     </>
   );
 }

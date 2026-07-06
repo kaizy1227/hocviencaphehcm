@@ -58,6 +58,7 @@ export default function LienHePage() {
     const { error: dbErr } = await createClient().from('leads').insert({ name, phone, course, location, ghi_chu });
     setSending(false);
     if (dbErr) { setError('Có lỗi xảy ra, vui lòng thử lại hoặc liên hệ Zalo.'); return; }
+    void fetch('/api/notify-lark', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, phone, course, location, ghi_chu }) });
     setDone(true);
   }
 

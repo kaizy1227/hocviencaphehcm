@@ -5,6 +5,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import FloatingButtons from '@/components/FloatingButtons';
 import CartDrawer from '@/components/CartDrawer';
+import PageViewTracker from '@/components/PageViewTracker';
 import { CartProvider } from '@/context/CartContext';
 import { WishlistProvider } from '@/context/WishlistContext';
 
@@ -54,6 +55,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <CartProvider>
           <WishlistProvider>
+            <PageViewTracker />
             <Navbar />
             <FloatingButtons />
             <CartDrawer />

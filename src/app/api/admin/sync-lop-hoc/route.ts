@@ -17,7 +17,7 @@ async function uploadToStorage(sb: ReturnType<typeof getSb>, tmpUrl: string, fil
     const ct = res.headers.get('content-type') || 'image/jpeg';
     const ext = ct.includes('png') ? 'png' : ct.includes('webp') ? 'webp' : 'jpg';
     const path = `${filename}.${ext}`;
-    const { data, error } = await sb.storage.from('lop-hoc').upload(path, buf, { contentType: ct, upsert: true });
+    const { data, error } = await sb.storage.from('lop-hoc').upload(path, buf, { contentType: ct, upsert: true, cacheControl: '31536000' });
     if (error || !data) return '';
     return sb.storage.from('lop-hoc').getPublicUrl(data.path).data.publicUrl;
   } catch {

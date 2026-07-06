@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 
 type LopHoc = { id: string; date: string; course: string; class_name: string; student_names: string; photos: string[]; };
@@ -10,10 +11,13 @@ interface LightboxState {
   label: string;
 }
 
+const PER_PAGE = 24;
+
 export default function LopHocPage() {
   const [sessions, setSessions] = useState<LopHoc[]>([]);
   const [loading, setLoading] = useState(true);
   const [lb, setLb] = useState<LightboxState | null>(null);
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     void createClient()
@@ -37,6 +41,8 @@ export default function LopHocPage() {
 
   const parseDate = (d: string) => { try { const [day, mo, yr] = d.split('/'); return new Date(`${yr}-${mo}-${day}`).getTime(); } catch { return 0; } };
   const sorted = [...sessions].sort((a, b) => parseDate(b.date) - parseDate(a.date));
+  const totalPages = Math.ceil(sorted.length / PER_PAGE);
+  const paginated = sorted.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
   function openLb(session: LopHoc, index: number) {
     const label = [session.date, session.course].filter(Boolean).join(' · ');
@@ -46,13 +52,28 @@ export default function LopHocPage() {
   return (
     <main style={{ paddingTop: 'var(--nav-h)' }}>
       {/* HERO */}
-      <section className="tb-hero">
+      <section className="ct-hero">
+        <div className="ct-hero-bg">
+          <img src="/images/gallery/Concept-studio-with-products/28. Latte nóng bg.webp" alt="Hình Ảnh Lớp Học" loading="eager" />
+        </div>
+        <div className="ct-hero-ov"></div>
         <div className="container">
-          <span className="tag">Lớp Học</span>
-          <h1>Hình Ảnh<br /><em>Lớp Học</em></h1>
-          <p className="sub" style={{ maxWidth: 520, margin: '0 auto' }}>
-            Những khoảnh khắc thực hành tại lớp — không gian học tập thân thiện, chuyên nghiệp cùng đội ngũ giảng viên giàu kinh nghiệm.
-          </p>
+          <div className="ct-hero-body">
+            <div className="ct-hero-crumb">
+              <Link href="/">Trang Chủ</Link>
+              <i className="ti ti-chevron-right" style={{ fontSize: '.75rem' }}></i>
+              <span>Thư Viện</span>
+              <i className="ti ti-chevron-right" style={{ fontSize: '.75rem' }}></i>
+              <span>Hình Ảnh Lớp Học</span>
+            </div>
+            <h1>Hình Ảnh <em>Lớp Học</em></h1>
+            <p className="ct-hero-sub">
+              Những khoảnh khắc thực hành tại lớp — không gian học tập thân thiện, chuyên nghiệp cùng đội ngũ giảng viên giàu kinh nghiệm.
+            </p>
+            <div className="ct-hero-badges">
+              <span className="ct-badge"><i className="ti ti-school"></i> {loading ? '...' : sorted.length} Buổi Học</span>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -65,7 +86,7 @@ export default function LopHocPage() {
             <p style={{ textAlign: 'center', color: 'var(--text-3)', padding: '60px 0' }}>Chưa có dữ liệu.</p>
           ) : (
             <div className="lh-card-grid">
-              {sorted.map(session => (
+              {paginated.map(session => (
                 <div
                   key={session.id}
                   className="lh-card"
@@ -109,6 +130,25 @@ export default function LopHocPage() {
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+
+          {totalPages > 1 && (
+            <div className="nl-pagination">
+              <button className="nl-page-btn" disabled={page === 1}
+                onClick={() => { setPage(p => p - 1); window.scrollTo({ top: 260, behavior: 'smooth' }); }}>
+                <i className="ti ti-chevron-left"></i>
+              </button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(n => (
+                <button key={n} className={`nl-page-btn${page === n ? ' active' : ''}`}
+                  onClick={() => { setPage(n); window.scrollTo({ top: 260, behavior: 'smooth' }); }}>
+                  {n}
+                </button>
+              ))}
+              <button className="nl-page-btn" disabled={page === totalPages}
+                onClick={() => { setPage(p => p + 1); window.scrollTo({ top: 260, behavior: 'smooth' }); }}>
+                <i className="ti ti-chevron-right"></i>
+              </button>
             </div>
           )}
         </div>

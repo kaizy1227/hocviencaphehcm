@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 
 type TraoBang = { id: string; name: string; date: string; course: string; photo_url: string; };
@@ -31,13 +32,28 @@ export default function TraoBangPage() {
   return (
     <main style={{ paddingTop: 'var(--nav-h)' }}>
       {/* HERO */}
-      <section className="tb-hero">
+      <section className="ct-hero">
+        <div className="ct-hero-bg">
+          <img src="/images/gallery/Concept-studio-with-products/22. Bạc xỉu bg.webp" alt="Trao Bằng Học Viên" loading="eager" />
+        </div>
+        <div className="ct-hero-ov"></div>
         <div className="container">
-          <span className="tag">Học Viên</span>
-          <h1>Học Viên Nhận<br /><em>Chứng Nhận</em></h1>
-          <p className="sub" style={{ maxWidth: 520, margin: '0 auto' }}>
-            Mỗi học viên hoàn thành khóa học đều nhận chứng nhận từ Học Viện Cà Phê — bước đầu trên hành trình kinh doanh của riêng bạn.
-          </p>
+          <div className="ct-hero-body">
+            <div className="ct-hero-crumb">
+              <Link href="/">Trang Chủ</Link>
+              <i className="ti ti-chevron-right" style={{ fontSize: '.75rem' }}></i>
+              <span>Thư Viện</span>
+              <i className="ti ti-chevron-right" style={{ fontSize: '.75rem' }}></i>
+              <span>Trao Bằng Học Viên</span>
+            </div>
+            <h1>Học Viên Nhận <em>Chứng Nhận</em></h1>
+            <p className="ct-hero-sub">
+              Mỗi học viên hoàn thành khóa học đều nhận chứng nhận từ Học Viện Cà Phê — bước đầu trên hành trình kinh doanh của riêng bạn.
+            </p>
+            <div className="ct-hero-badges">
+              <span className="ct-badge"><i className="ti ti-certificate"></i> {loading ? '...' : sorted.length} Học Viên</span>
+            </div>
+          </div>
         </div>
       </section>
 

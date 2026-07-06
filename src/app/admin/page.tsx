@@ -17,11 +17,12 @@ type Course = {
   id: string; name: string; category: 'tong-hop' | 'chuyen-de' | 'kinh-doanh';
   price: string; duration: string | null; description: string | null;
   image: string | null; active: boolean; sort_order: number;
+  slug: string | null; detail: string | null;
 };
 type Product = {
   id: string; stt: number; name: string; unit: string;
   price: number; image_url: string; category: string; active: boolean;
-  phan_loai: 'thuong-mai' | 'thuong-hieu';
+  phan_loai: 'thuong-mai' | 'thuong-hieu'; description: string | null;
 };
 type Tool = {
   id: string; stt: number; name: string; unit: string;
@@ -41,15 +42,28 @@ type CongThuc = {
   linked_product_ids: string[]; courses: string[]; sort_order: number;
 };
 
-type TikTokVideoRow = {
-  id: string; url: string; video_id: string; title: string;
-  thumbnail: string; author: string; sort_order: number; active: boolean;
+const VIDEO_CATEGORIES = [
+  { slug: 'series-100-ngay', label: 'Series 100 Ngày Pha Chế' },
+  { slug: 'giang-vien', label: 'Giảng Viên Làm Món' },
+  { slug: 'hoc-vien-workshop', label: 'Học Viên & Workshop' },
+  { slug: 'phong-van', label: 'Phỏng Vấn Khách Hàng' },
+] as const;
+
+type VideoRow = {
+  id: string; title: string; video_url: string;
+  thumbnail_url: string | null; sort_order: number; active: boolean; created_at: string;
+  service_slug: string | null; category: string;
+};
+type ServiceVideoRow = {
+  id: string; title: string | null; video_url: string;
+  thumbnail_url: string | null; service_slug: string;
+  sort_order: number; active: boolean; created_at: string;
 };
 type ChiaSeIngredient = { name: string; shopLink: string; };
 type ChiaSeRecipe = {
   id: string; name: string; short_name: string; category: string;
   source: string; image_url: string; steps: string;
-  ingredients: ChiaSeIngredient[]; sort_order: number; active: boolean;
+  ingredients: ChiaSeIngredient[]; sort_order: number; active: boolean; locked: boolean;
 };
 const RECIPE_COURSES = ['Khóa hiện đại', 'Khóa truyền thống', 'Trà sữa hiện đại', 'Trà sữa truyền thống', 'Trà trái cây & Matcha', 'Đá xay & Sinh tố', 'Cà phê phin - Đá xay & Sữa chua', 'Cà phê máy cơ bản'];
 const STUDENT_COURSES = [
@@ -64,10 +78,10 @@ const CAT_LABEL: Record<Course['category'], string> = {
   'tong-hop': 'Khóa Tổng Hợp', 'chuyen-de': 'Chuyên Đề Lẻ', 'kinh-doanh': 'Gói Kinh Doanh',
 };
 const BLANK_COURSE: Omit<Course, 'id' | 'sort_order'> = {
-  name: '', category: 'tong-hop', price: '', duration: '', description: '', image: '', active: true,
+  name: '', category: 'tong-hop', price: '', duration: '', description: '', image: '', active: true, slug: '', detail: '',
 };
 const BLANK_PRODUCT: Omit<Product, 'id'> = {
-  stt: 0, name: '', unit: '', price: 0, image_url: '', category: 'Nguyên liệu', active: true, phan_loai: 'thuong-mai',
+  stt: 0, name: '', unit: '', price: 0, image_url: '', category: 'Nguyên liệu', active: true, phan_loai: 'thuong-mai', description: '',
 };
 const BLANK_TOOL: Omit<Tool, 'id'> = {
   stt: 0, name: '', unit: '', price: 0, image_url: '', category: 'Dụng cụ pha chế', active: true,
@@ -78,16 +92,16 @@ const BLANK_RECIPE: Omit<CongThuc, 'id'> = {
 };
 const BLANK_CHIA_SE: Omit<ChiaSeRecipe, 'id'> = {
   name: '', short_name: '', category: '', source: '', image_url: '',
-  steps: '', ingredients: [], sort_order: 0, active: true,
+  steps: '', ingredients: [], sort_order: 0, active: true, locked: false,
 };
 type CongThucHVCP = {
   id: string; name: string; category: string; photo_url: string;
   instructions: string; recipe_text: string;
-  linked_product_ids: string[]; sort_order: number; active: boolean;
+  linked_product_ids: string[]; sort_order: number; active: boolean; locked: boolean;
 };
 const BLANK_HVCP: Omit<CongThucHVCP, 'id'> = {
   name: '', category: '', photo_url: '', instructions: '',
-  recipe_text: '', linked_product_ids: [], sort_order: 0, active: true,
+  recipe_text: '', linked_product_ids: [], sort_order: 0, active: true, locked: false,
 };
 const CT_COURSES = ['Khóa hiện đại', 'Khóa truyền thống', 'Trà sữa hiện đại', 'Trà sữa truyền thống', 'Trà trái cây & Matcha', 'Đá xay & Sinh tố', 'Cà phê phin - Đá xay & Sữa chua', 'Cà phê máy cơ bản'];
 
@@ -95,7 +109,7 @@ export default function AdminPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'leads' | 'students' | 'content' | 'products' | 'tools' | 'recipes' | 'ct-hvcp' | 'kho-cong-thuc' | 'hinh-anh' | 'videos' | 'orders'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'traffic' | 'leads' | 'students' | 'content' | 'products' | 'tools' | 'recipes' | 'ct-hvcp' | 'kho-cong-thuc' | 'hinh-anh' | 'videos' | 'service-videos' | 'orders'>('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Students
@@ -115,6 +129,12 @@ export default function AdminPage() {
   const [leadSearch, setLeadSearch] = useState('');
   const [updatingLead, setUpdatingLead] = useState<string | null>(null);
   const [deletingLead, setDeletingLead] = useState<string | null>(null);
+
+  // Traffic (page views dashboard)
+  const [trafficLoading, setTrafficLoading] = useState(true);
+  const [trafficRows, setTrafficRows] = useState<{ path: string; source: string; created_at: string }[]>([]);
+  const [trafficTotals, setTrafficTotals] = useState({ today: 0, week: 0, month: 0, allTime: 0 });
+  const [trafficRangeDays, setTrafficRangeDays] = useState<7 | 14 | 30>(14);
 
   // Courses
   const [courses, setCourses] = useState<Course[]>([]);
@@ -205,12 +225,25 @@ export default function AdminPage() {
   const [syncingLopHoc, setSyncingLopHoc] = useState(false);
   const [syncMsg, setSyncMsg] = useState('');
 
-  // TikTok Videos
-  const [ttVideos, setTtVideos] = useState<TikTokVideoRow[]>([]);
-  const [ttForm, setTtForm] = useState({ url: '', title: '' });
-  const [addingTt, setAddingTt] = useState(false);
-  const [ttError, setTtError] = useState('');
-  const [deletingTt, setDeletingTt] = useState<string | null>(null);
+  // Videos (Tư Liệu Truyền Thông)
+  const [videos, setVideos] = useState<VideoRow[]>([]);
+  const [videoForm, setVideoForm] = useState({ title: '', youtubeUrl: '', category: 'series-100-ngay' });
+  const [videoError, setVideoError] = useState('');
+  const [addingVideo, setAddingVideo] = useState(false);
+  const [deletingVideo, setDeletingVideo] = useState<string | null>(null);
+  const [editingVideoId, setEditingVideoId] = useState<string | null>(null);
+  const [editVideoForm, setEditVideoForm] = useState({ title: '', youtubeUrl: '', category: 'series-100-ngay' });
+  const [savingVideo, setSavingVideo] = useState(false);
+  // Service Videos (Video Dịch Vụ)
+  const [dichVuServices, setDichVuServices] = useState<{ slug: string; name: string }[]>([]);
+  const [serviceVideos, setServiceVideos] = useState<ServiceVideoRow[]>([]);
+  const [svForm, setSvForm] = useState({ title: '', youtubeUrl: '', serviceSlug: '' });
+  const [svError, setSvError] = useState('');
+  const [addingSv, setAddingSv] = useState(false);
+  const [deletingSv, setDeletingSv] = useState<string | null>(null);
+  const [editingSvId, setEditingSvId] = useState<string | null>(null);
+  const [editSvForm, setEditSvForm] = useState({ title: '', youtubeUrl: '', serviceSlug: '' });
+  const [savingSv, setSavingSv] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -230,6 +263,7 @@ export default function AdminPage() {
         if (!admin) return;
         void loadStudents();
         void loadLeads();
+        void loadTraffic();
         void loadCourses();
         void loadProducts();
         void loadTools();
@@ -237,7 +271,9 @@ export default function AdminPage() {
         void loadChiaSeRecipes();
         void loadHVCPRecipes();
         void loadOrders();
-        void loadTtVideos();
+        void loadVideos();
+        void loadDichVuServices();
+        void loadServiceVideos();
       } catch {
         if (!mounted) return;
         router.replace('/login?redirect=/admin');
@@ -264,6 +300,26 @@ export default function AdminPage() {
     const { data, error } = await createClient().from('leads').select('*').order('created_at', { ascending: false });
     if (error) throw error;
     setLeads(data ?? []);
+  }
+  async function loadTraffic() {
+    setTrafficLoading(true);
+    const supabase = createClient();
+    const now = new Date();
+    const startToday = new Date(now); startToday.setHours(0, 0, 0, 0);
+    const start7 = new Date(now.getTime() - 7 * 86400000);
+    const start30 = new Date(now.getTime() - 30 * 86400000);
+
+    const [{ data: rows }, today, week, month, allTime] = await Promise.all([
+      supabase.from('page_views').select('path, source, created_at').gte('created_at', start30.toISOString()).order('created_at', { ascending: false }).limit(5000),
+      supabase.from('page_views').select('*', { count: 'exact', head: true }).gte('created_at', startToday.toISOString()),
+      supabase.from('page_views').select('*', { count: 'exact', head: true }).gte('created_at', start7.toISOString()),
+      supabase.from('page_views').select('*', { count: 'exact', head: true }).gte('created_at', start30.toISOString()),
+      supabase.from('page_views').select('*', { count: 'exact', head: true }),
+    ]);
+
+    setTrafficRows(rows ?? []);
+    setTrafficTotals({ today: today.count ?? 0, week: week.count ?? 0, month: month.count ?? 0, allTime: allTime.count ?? 0 });
+    setTrafficLoading(false);
   }
   async function loadCourses() {
     const { data, error } = await createClient().from('courses').select('*').order('sort_order');
@@ -300,55 +356,176 @@ export default function AdminPage() {
     if (error) throw error;
     setOrders(data ?? []);
   }
-  async function loadTtVideos() {
-    const { data, error } = await createClient().from('tiktok_videos').select('*').order('sort_order').order('created_at', { ascending: false });
+  async function loadVideos() {
+    const { data, error } = await createClient().from('videos').select('*').order('sort_order').order('created_at', { ascending: false });
     if (error) throw error;
-    setTtVideos(data ?? []);
+    setVideos(data ?? []);
   }
-  async function addTtVideo(e: FormEvent) {
-    e.preventDefault();
-    setTtError('');
-    const url = ttForm.url.trim();
-    if (!/tiktok\.com/i.test(url)) { setTtError('Vui lòng dán link TikTok hợp lệ.'); return; }
-    setAddingTt(true);
-    // Resolve qua oEmbed để lấy video_id + thumbnail + tên kênh (hỗ trợ cả link rút gọn)
-    let meta = { url, videoId: '', thumbnail: '', author: '', title: '' };
-    try {
-      const r = await fetch(`/api/tiktok-resolve?url=${encodeURIComponent(url)}`);
-      const d = await r.json();
-      if (d.ok) meta = { url: d.url || url, videoId: d.videoId || '', thumbnail: d.thumbnail || '', author: d.author || '', title: d.title || '' };
-    } catch { /* fallback bên dưới */ }
-    if (!meta.videoId) {
-      setAddingTt(false);
-      setTtError('Không lấy được mã video. Hãy dùng link đầy đủ dạng .../video/123... hoặc thử lại.');
-      return;
+  function extractYouTubeId(url: string): string | null {
+    const patterns = [
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([A-Za-z0-9_-]{11})/,
+    ];
+    for (const p of patterns) {
+      const m = url.match(p);
+      if (m) return m[1];
     }
-    const { error } = await createClient().from('tiktok_videos').insert({
-      url: meta.url, video_id: meta.videoId,
-      title: ttForm.title.trim() || meta.title, thumbnail: meta.thumbnail, author: meta.author,
-      sort_order: ttVideos.length, active: true,
+    return null;
+  }
+
+  async function addVideo(e: FormEvent) {
+    e.preventDefault();
+    setVideoError('');
+    const ytId = extractYouTubeId(videoForm.youtubeUrl.trim());
+    if (!ytId) { setVideoError('URL YouTube không hợp lệ. VD: https://youtu.be/ABC123 hoặc https://www.youtube.com/watch?v=ABC123'); return; }
+    setAddingVideo(true);
+    const supabase = createClient();
+    const embedUrl = `https://www.youtube.com/embed/${ytId}`;
+    const thumbnailUrl = `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg`;
+    const { error: dbErr } = await supabase.from('videos').insert({
+      title: videoForm.title.trim() || null,
+      video_url: embedUrl,
+      thumbnail_url: thumbnailUrl,
+      sort_order: videos.length,
+      active: true,
+      category: videoForm.category,
     });
-    setAddingTt(false);
-    if (error) { setTtError('Lỗi lưu: ' + error.message); return; }
-    setTtForm({ url: '', title: '' });
-    loadTtVideos();
+    setAddingVideo(false);
+    if (dbErr) { setVideoError('Lỗi lưu DB: ' + dbErr.message); return; }
+    setVideoForm({ title: '', youtubeUrl: '', category: 'series-100-ngay' });
+    void loadVideos();
   }
-  async function deleteTtVideo(id: string) {
-    if (!confirm('Xóa video này khỏi trang /video?')) return;
-    setDeletingTt(id);
-    await createClient().from('tiktok_videos').delete().eq('id', id);
-    setTtVideos(prev => prev.filter(v => v.id !== id));
-    setDeletingTt(null);
+  async function deleteVideo(v: VideoRow) {
+    if (!confirm('Xóa video "' + (v.title || 'này') + '"?')) return;
+    setDeletingVideo(v.id);
+    const supabase = createClient();
+    // Chỉ xóa file storage nếu là URL Supabase cũ (không phải YouTube embed)
+    if (!v.video_url.includes('youtube.com/embed/')) {
+      const videoPath = v.video_url.split('/videos/')[1];
+      if (videoPath) await supabase.storage.from('videos').remove([videoPath]);
+      if (v.thumbnail_url && !v.thumbnail_url.includes('img.youtube.com')) {
+        const thumbPath = v.thumbnail_url.split('/videos/')[1];
+        if (thumbPath) await supabase.storage.from('videos').remove([thumbPath]);
+      }
+    }
+    await supabase.from('videos').delete().eq('id', v.id);
+    setVideos(prev => prev.filter(x => x.id !== v.id));
+    setDeletingVideo(null);
   }
-  async function toggleTtActive(v: TikTokVideoRow) {
-    await createClient().from('tiktok_videos').update({ active: !v.active }).eq('id', v.id);
-    setTtVideos(prev => prev.map(x => x.id === v.id ? { ...x, active: !x.active } : x));
+  async function toggleVideoActive(v: VideoRow) {
+    await createClient().from('videos').update({ active: !v.active }).eq('id', v.id);
+    setVideos(prev => prev.map(x => x.id === v.id ? { ...x, active: !x.active } : x));
   }
+
+  // --- SERVICE VIDEOS ---
+  async function loadDichVuServices() {
+    const { data } = await createClient().from('courses').select('slug,name').eq('category', 'kinh-doanh').not('slug', 'is', null).order('sort_order');
+    setDichVuServices((data ?? []).filter((d: { slug: string | null; name: string }) => d.slug) as { slug: string; name: string }[]);
+  }
+  async function loadServiceVideos() {
+    const { data } = await createClient().from('service_videos').select('*').order('service_slug').order('sort_order').order('created_at', { ascending: false });
+    setServiceVideos(data ?? []);
+  }
+  async function addServiceVideo(e: FormEvent) {
+    e.preventDefault();
+    setSvError('');
+    if (!svForm.serviceSlug) { setSvError('Vui lòng chọn dịch vụ.'); return; }
+    const ytId = extractYouTubeId(svForm.youtubeUrl.trim());
+    if (!ytId) { setSvError('URL YouTube không hợp lệ.'); return; }
+    setAddingSv(true);
+    const embedUrl = `https://www.youtube.com/embed/${ytId}`;
+    const thumbnailUrl = `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg`;
+    const { error } = await createClient().from('service_videos').insert({
+      title: svForm.title.trim() || null,
+      video_url: embedUrl,
+      thumbnail_url: thumbnailUrl,
+      service_slug: svForm.serviceSlug,
+      sort_order: serviceVideos.filter(v => v.service_slug === svForm.serviceSlug).length,
+      active: true,
+    });
+    setAddingSv(false);
+    if (error) { setSvError('Lỗi lưu DB: ' + error.message); return; }
+    setSvForm({ title: '', youtubeUrl: '', serviceSlug: svForm.serviceSlug });
+    void loadServiceVideos();
+  }
+  async function deleteServiceVideo(v: ServiceVideoRow) {
+    if (!confirm('Xóa video "' + (v.title || 'này') + '"?')) return;
+    setDeletingSv(v.id);
+    await createClient().from('service_videos').delete().eq('id', v.id);
+    setServiceVideos(prev => prev.filter(x => x.id !== v.id));
+    setDeletingSv(null);
+  }
+  async function toggleSvActive(v: ServiceVideoRow) {
+    await createClient().from('service_videos').update({ active: !v.active }).eq('id', v.id);
+    setServiceVideos(prev => prev.map(x => x.id === v.id ? { ...x, active: !x.active } : x));
+  }
+
+  function startEditVideo(v: VideoRow) {
+    setEditingVideoId(v.id);
+    setEditVideoForm({ title: v.title ?? '', youtubeUrl: '', category: v.category ?? 'series-100-ngay' });
+  }
+  async function saveVideoEdit(v: VideoRow) {
+    setSavingVideo(true);
+    const update: Partial<VideoRow> = {
+      title: editVideoForm.title.trim() || null as unknown as string,
+      category: editVideoForm.category,
+    };
+    if (editVideoForm.youtubeUrl.trim()) {
+      const ytId = extractYouTubeId(editVideoForm.youtubeUrl.trim());
+      if (ytId) {
+        update.video_url = `https://www.youtube.com/embed/${ytId}`;
+        update.thumbnail_url = `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg`;
+      }
+    }
+    await createClient().from('videos').update(update).eq('id', v.id);
+    setVideos(prev => prev.map(x => x.id === v.id ? { ...x, ...update } : x));
+    setEditingVideoId(null);
+    setSavingVideo(false);
+  }
+
+  function startEditSv(v: ServiceVideoRow) {
+    setEditingSvId(v.id);
+    setEditSvForm({ title: v.title ?? '', youtubeUrl: '', serviceSlug: v.service_slug });
+  }
+  async function saveSvEdit(v: ServiceVideoRow) {
+    setSavingSv(true);
+    const update: Partial<ServiceVideoRow> = {
+      title: editSvForm.title.trim() || null as unknown as string,
+      service_slug: editSvForm.serviceSlug || v.service_slug,
+    };
+    if (editSvForm.youtubeUrl.trim()) {
+      const ytId = extractYouTubeId(editSvForm.youtubeUrl.trim());
+      if (ytId) {
+        update.video_url = `https://www.youtube.com/embed/${ytId}`;
+        update.thumbnail_url = `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg`;
+      }
+    }
+    await createClient().from('service_videos').update(update).eq('id', v.id);
+    setServiceVideos(prev => prev.map(x => x.id === v.id ? { ...x, ...update } : x));
+    setEditingSvId(null);
+    setSavingSv(false);
+  }
+
   async function updateOrderStatus(id: string, status: Order['status']) {
     setUpdatingOrder(id);
     await createClient().from('orders').update({ status }).eq('id', id);
     setOrders(prev => prev.map(o => o.id === id ? { ...o, status } : o));
     setUpdatingOrder(null);
+
+    const order = orders.find(o => o.id === id);
+    if (order?.user_id) {
+      const MSG: Partial<Record<Order['status'], string>> = {
+        confirmed: 'Đơn hàng của bạn đã được xác nhận ✅',
+        shipping:  'Đơn hàng của bạn đang được giao 🚚',
+        done:      'Đơn hàng đã giao thành công! Cảm ơn bạn ☕',
+        cancelled: 'Đơn hàng của bạn đã bị hủy',
+      };
+      const body = MSG[status];
+      if (body) fetch('/api/notify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: order.user_id, title: 'Học Viện Cà Phê', body }),
+      }).catch(() => {});
+    }
   }
   async function deleteOrder(id: string) {
     if (!confirm('Xóa đơn hàng này?')) return;
@@ -410,16 +587,16 @@ export default function AdminPage() {
   // --- COURSES ---
   function startEditCourse(c: Course) {
     setEditingCourse(c);
-    setCourseForm({ name: c.name, category: c.category, price: c.price, duration: c.duration ?? '', description: c.description ?? '', image: c.image ?? '', active: c.active });
+    setCourseForm({ name: c.name, category: c.category, price: c.price, duration: c.duration ?? '', description: c.description ?? '', image: c.image ?? '', active: c.active, slug: c.slug ?? '', detail: c.detail ?? '' });
     setShowAddCourse(false); setCourseFormError('');
   }
   function cancelCourseEdit() { setEditingCourse(null); setShowAddCourse(false); setCourseForm(BLANK_COURSE); setCourseFormError(''); }
   async function handleCourseImageUpload(file: File) {
     setUploadingCourseImg(true);
     const supabase = createClient();
-    const ext = file.name.split('.').pop() ?? 'jpg';
-    const path = `courses/${Date.now()}.${ext}`;
-    const { data, error } = await supabase.storage.from('products').upload(path, file, { upsert: true });
+    const compressed = await compressImage(file);
+    const path = `courses/${Date.now()}.webp`;
+    const { data, error } = await supabase.storage.from('products').upload(path, compressed, { upsert: true, contentType: 'image/webp', cacheControl: '31536000' });
     setUploadingCourseImg(false);
     if (error) { setCourseFormError('Upload ảnh thất bại: ' + error.message); return; }
     const { data: { publicUrl } } = supabase.storage.from('products').getPublicUrl(data.path);
@@ -429,7 +606,7 @@ export default function AdminPage() {
     e.preventDefault();
     if (!courseForm.name.trim() || !courseForm.price.trim()) { setCourseFormError('Vui lòng điền tên và giá.'); return; }
     setSavingCourse(true); setCourseFormError('');
-    const payload = { name: courseForm.name.trim(), category: courseForm.category, price: courseForm.price.trim(), duration: courseForm.duration?.trim() || null, description: courseForm.description?.trim() || null, image: courseForm.image?.trim() || null, active: courseForm.active };
+    const payload = { name: courseForm.name.trim(), category: courseForm.category, price: courseForm.price.trim(), duration: courseForm.duration?.trim() || null, description: courseForm.description?.trim() || null, image: courseForm.image?.trim() || null, active: courseForm.active, slug: courseForm.slug?.trim() || null, detail: courseForm.detail?.trim() || null };
     const { error } = editingCourse
       ? await createClient().from('courses').update(payload).eq('id', editingCourse.id)
       : await createClient().from('courses').insert({ ...payload, sort_order: courses.length });
@@ -451,7 +628,7 @@ export default function AdminPage() {
   // --- PRODUCTS ---
   function startEditProduct(p: Product) {
     setEditingProduct(p);
-    setProductForm({ stt: p.stt, name: p.name, unit: p.unit, price: p.price, image_url: p.image_url, category: p.category, active: p.active, phan_loai: p.phan_loai ?? 'thuong-mai' });
+    setProductForm({ stt: p.stt, name: p.name, unit: p.unit, price: p.price, image_url: p.image_url, category: p.category, active: p.active, phan_loai: p.phan_loai ?? 'thuong-mai', description: p.description ?? '' });
     setShowAddProduct(false); setProductFormError('');
   }
   function cancelProductEdit() { setEditingProduct(null); setShowAddProduct(false); setProductForm(BLANK_PRODUCT); setProductFormError(''); }
@@ -459,9 +636,9 @@ export default function AdminPage() {
   async function handleProductImageUpload(file: File) {
     setUploadingImg(true);
     const supabase = createClient();
-    const ext = file.name.split('.').pop() ?? 'jpg';
-    const path = `${Date.now()}.${ext}`;
-    const { data, error } = await supabase.storage.from('products').upload(path, file, { upsert: true });
+    const compressed = await compressImage(file);
+    const path = editingProduct ? `product-${editingProduct.id}.webp` : `${Date.now()}.webp`;
+    const { data, error } = await supabase.storage.from('products').upload(path, compressed, { upsert: true, contentType: 'image/webp', cacheControl: '31536000' });
     setUploadingImg(false);
     if (error) { setProductFormError('Upload ảnh thất bại: ' + error.message); return; }
     const { data: { publicUrl } } = supabase.storage.from('products').getPublicUrl(data.path);
@@ -472,7 +649,7 @@ export default function AdminPage() {
     e.preventDefault();
     if (!productForm.name.trim()) { setProductFormError('Vui lòng điền tên sản phẩm.'); return; }
     setSavingProduct(true); setProductFormError('');
-    const payload = { stt: productForm.stt, name: productForm.name.trim(), unit: productForm.unit.trim(), price: productForm.price, image_url: productForm.image_url.trim(), category: productForm.category.trim(), active: productForm.active, phan_loai: productForm.phan_loai };
+    const payload = { stt: productForm.stt, name: productForm.name.trim(), unit: productForm.unit.trim(), price: productForm.price, image_url: productForm.image_url.trim(), category: productForm.category.trim(), active: productForm.active, phan_loai: productForm.phan_loai, description: productForm.description?.trim() || null };
     const { error } = editingProduct
       ? await createClient().from('products').update(payload).eq('id', editingProduct.id)
       : await createClient().from('products').insert(payload);
@@ -503,9 +680,9 @@ export default function AdminPage() {
   async function handleToolImageUpload(file: File) {
     setUploadingToolImg(true);
     const supabase = createClient();
-    const ext = file.name.split('.').pop() ?? 'jpg';
-    const path = `${Date.now()}.${ext}`;
-    const { data, error } = await supabase.storage.from('products').upload(path, file, { upsert: true });
+    const compressed = await compressImage(file);
+    const path = editingTool ? `tool-${editingTool.id}.webp` : `${Date.now()}.webp`;
+    const { data, error } = await supabase.storage.from('products').upload(path, compressed, { upsert: true, contentType: 'image/webp', cacheControl: '31536000' });
     setUploadingToolImg(false);
     if (error) { setToolFormError('Upload ảnh thất bại: ' + error.message); return; }
     const { data: { publicUrl } } = supabase.storage.from('products').getPublicUrl(data.path);
@@ -544,22 +721,23 @@ export default function AdminPage() {
   }
   function cancelRecipeEdit() { setEditingRecipe(null); setShowAddRecipe(false); setRecipeForm(BLANK_RECIPE); setRecipeFormError(''); setProdFilterQ(''); }
 
-  async function compressImage(file: File): Promise<File> {
+  async function compressImage(file: File, maxPx = 900, quality = 0.82): Promise<File> {
     return new Promise(resolve => {
       const img = new Image();
+      const url = URL.createObjectURL(file);
       img.onload = () => {
-        const maxW = 1200;
-        const ratio = Math.min(1, maxW / img.width);
+        URL.revokeObjectURL(url);
+        const scale = Math.min(1, maxPx / Math.max(img.naturalWidth, img.naturalHeight));
         const canvas = document.createElement('canvas');
-        canvas.width = Math.round(img.width * ratio);
-        canvas.height = Math.round(img.height * ratio);
+        canvas.width = Math.round(img.naturalWidth * scale);
+        canvas.height = Math.round(img.naturalHeight * scale);
         canvas.getContext('2d')!.drawImage(img, 0, 0, canvas.width, canvas.height);
         canvas.toBlob(blob => {
-          resolve(blob ? new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' }) : file);
-        }, 'image/jpeg', 0.85);
+          resolve(blob ? new File([blob], file.name.replace(/\.[^.]+$/, '.webp'), { type: 'image/webp' }) : file);
+        }, 'image/webp', quality);
       };
-      img.onerror = () => resolve(file);
-      img.src = URL.createObjectURL(file);
+      img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
+      img.src = url;
     });
   }
 
@@ -622,7 +800,7 @@ export default function AdminPage() {
   // --- CT HVCP ---
   function startEditHvcp(r: CongThucHVCP) {
     setEditingHvcp(r);
-    setHvcpForm({ name: r.name, category: r.category, photo_url: r.photo_url, instructions: r.instructions, recipe_text: r.recipe_text, linked_product_ids: r.linked_product_ids ?? [], sort_order: r.sort_order, active: r.active });
+    setHvcpForm({ name: r.name, category: r.category, photo_url: r.photo_url, instructions: r.instructions, recipe_text: r.recipe_text, linked_product_ids: r.linked_product_ids ?? [], sort_order: r.sort_order, active: r.active, locked: r.locked ?? false });
     setShowAddHvcp(false); setHvcpFormError(''); setHvcpProdQ('');
   }
   function cancelHvcpEdit() { setEditingHvcp(null); setShowAddHvcp(false); setHvcpForm(BLANK_HVCP); setHvcpFormError(''); setHvcpProdQ(''); }
@@ -653,7 +831,7 @@ export default function AdminPage() {
       photo_url: hvcpForm.photo_url.trim(), instructions: hvcpForm.instructions.trim(),
       recipe_text: hvcpForm.recipe_text.trim(),
       linked_product_ids: hvcpForm.linked_product_ids,
-      sort_order: hvcpForm.sort_order, active: hvcpForm.active,
+      sort_order: hvcpForm.sort_order, active: hvcpForm.active, locked: hvcpForm.locked,
     };
     const { error } = editingHvcp
       ? await createClient().from('cong_thuc_hvcp').update(payload).eq('id', editingHvcp.id)
@@ -675,6 +853,11 @@ export default function AdminPage() {
     await loadHVCPRecipes();
   }
 
+  async function toggleHvcpLocked(r: CongThucHVCP) {
+    await createClient().from('cong_thuc_hvcp').update({ locked: !r.locked }).eq('id', r.id);
+    await loadHVCPRecipes();
+  }
+
   function toggleHvcpProduct(productId: string) {
     setHvcpForm(f => ({
       ...f,
@@ -687,7 +870,7 @@ export default function AdminPage() {
   // --- KHO CT CHIA SẺ ---
   function startEditChiaSe(r: ChiaSeRecipe) {
     setEditingChiaSe(r);
-    setChiaSeForm({ name: r.name, short_name: r.short_name ?? r.name, category: r.category ?? '', source: r.source ?? '', image_url: r.image_url ?? '', steps: r.steps ?? '', ingredients: r.ingredients ?? [], sort_order: r.sort_order ?? 0, active: r.active });
+    setChiaSeForm({ name: r.name, short_name: r.short_name ?? r.name, category: r.category ?? '', source: r.source ?? '', image_url: r.image_url ?? '', steps: r.steps ?? '', ingredients: r.ingredients ?? [], sort_order: r.sort_order ?? 0, active: r.active, locked: r.locked ?? false });
     setShowAddChiaSe(false); setChiaSeFormError('');
   }
   function cancelChiaSeEdit() { setEditingChiaSe(null); setShowAddChiaSe(false); setChiaSeForm(BLANK_CHIA_SE); setChiaSeFormError(''); }
@@ -724,6 +907,7 @@ export default function AdminPage() {
         ingredients: chiaSeForm.ingredients ?? [],
         sort_order: chiaSeForm.sort_order ?? 0,
         active: chiaSeForm.active,
+        locked: chiaSeForm.locked,
       };
       const { error } = editingChiaSe
         ? await createClient().from('cong_thuc_chia_se').update(payload).eq('id', editingChiaSe.id)
@@ -746,6 +930,11 @@ export default function AdminPage() {
 
   async function toggleChiaSeActive(r: ChiaSeRecipe) {
     await createClient().from('cong_thuc_chia_se').update({ active: !r.active }).eq('id', r.id);
+    await loadChiaSeRecipes();
+  }
+
+  async function toggleChiaSeLocked(r: ChiaSeRecipe) {
+    await createClient().from('cong_thuc_chia_se').update({ locked: !r.locked }).eq('id', r.id);
     await loadChiaSeRecipes();
   }
 
@@ -836,12 +1025,50 @@ export default function AdminPage() {
   );
 
   const pendingOrders = orders.filter(o => o.status === 'pending').length;
+
+  // ── Traffic aggregation (derived from trafficRows) ──
+  const SOURCE_LABELS: Record<string, string> = {
+    direct: 'Trực tiếp', google: 'Google', facebook: 'Facebook', zalo: 'Zalo',
+    tiktok: 'TikTok', instagram: 'Instagram', bing: 'Bing', yahoo: 'Yahoo', khac: 'Khác',
+  };
+  const SOURCE_ICONS: Record<string, string> = {
+    direct: 'ti-link', google: 'ti-brand-google', facebook: 'ti-brand-facebook', zalo: 'ti-brand-zalo',
+    tiktok: 'ti-brand-tiktok', instagram: 'ti-brand-instagram', bing: 'ti-search', yahoo: 'ti-search', khac: 'ti-world',
+  };
+  const viewsByDay: { date: string; label: string; count: number }[] = (() => {
+    const days: { date: string; label: string; count: number }[] = [];
+    for (let i = trafficRangeDays - 1; i >= 0; i--) {
+      const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - i);
+      const dateKey = d.toISOString().slice(0, 10);
+      days.push({ date: dateKey, label: `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`, count: 0 });
+    }
+    const byDate = new Map(days.map(d => [d.date, d]));
+    for (const r of trafficRows) {
+      const key = r.created_at.slice(0, 10);
+      const bucket = byDate.get(key);
+      if (bucket) bucket.count++;
+    }
+    return days;
+  })();
+  const maxDayCount = Math.max(1, ...viewsByDay.map(d => d.count));
+  const viewsBySource: { source: string; count: number }[] = (() => {
+    const counts = new Map<string, number>();
+    for (const r of trafficRows) counts.set(r.source, (counts.get(r.source) ?? 0) + 1);
+    return [...counts.entries()].map(([source, count]) => ({ source, count })).sort((a, b) => b.count - a.count);
+  })();
+  const totalSourceViews = viewsBySource.reduce((s, x) => s + x.count, 0) || 1;
+  const topPages: { path: string; count: number }[] = (() => {
+    const counts = new Map<string, number>();
+    for (const r of trafficRows) counts.set(r.path, (counts.get(r.path) ?? 0) + 1);
+    return [...counts.entries()].map(([path, count]) => ({ path, count })).sort((a, b) => b.count - a.count).slice(0, 8);
+  })();
+
   function navTo(tab: typeof activeTab) { setActiveTab(tab); setSidebarOpen(false); }
   const TAB_LABELS: Record<string, string> = {
-    dashboard: 'Dashboard', leads: 'Yêu Cầu Tư Vấn', students: 'Học Viên',
+    dashboard: 'Dashboard', traffic: 'Thống Kê Traffic', leads: 'Yêu Cầu Tư Vấn', students: 'Học Viên',
     content: 'Khóa Học', products: 'Nguyên Liệu', tools: 'Dụng Cụ',
-    recipes: 'Công Thức 2', 'ct-hvcp': 'CT HVCP', 'kho-cong-thuc': 'CT Miễn Phí',
-    'hinh-anh': 'Hình Ảnh', videos: 'Video', orders: 'Đơn Hàng',
+    recipes: 'Công Thức', 'ct-hvcp': 'CT HVCP', 'kho-cong-thuc': 'CT Miễn Phí',
+    'hinh-anh': 'Hình Ảnh', videos: 'Tư Liệu Truyền Thông', 'service-videos': 'Video Dịch Vụ', orders: 'Đơn Hàng',
   };
 
   return (
@@ -863,6 +1090,9 @@ export default function AdminPage() {
           <button className={`admin-sb-item${activeTab === 'dashboard' ? ' active' : ''}`} onClick={() => navTo('dashboard')}>
             <i className="ti ti-layout-dashboard"></i> Dashboard
           </button>
+          <button className={`admin-sb-item${activeTab === 'traffic' ? ' active' : ''}`} onClick={() => navTo('traffic')}>
+            <i className="ti ti-chart-line"></i> Thống Kê Traffic
+          </button>
           <div className="admin-sb-sep"></div>
           <div className="admin-sb-group">Quản lý</div>
           <button className={`admin-sb-item${activeTab === 'leads' ? ' active' : ''}`} onClick={() => navTo('leads')}>
@@ -882,7 +1112,7 @@ export default function AdminPage() {
             <i className="ti ti-book-2"></i> Khóa Học
           </button>
           <button className={`admin-sb-item${activeTab === 'recipes' ? ' active' : ''}`} onClick={() => navTo('recipes')}>
-            <i className="ti ti-coffee"></i> Công Thức 2
+            <i className="ti ti-coffee"></i> Công Thức
           </button>
           <button className={`admin-sb-item${activeTab === 'ct-hvcp' ? ' active' : ''}`} onClick={() => navTo('ct-hvcp')}>
             <i className="ti ti-building-store"></i> CT HVCP
@@ -906,8 +1136,12 @@ export default function AdminPage() {
             <i className="ti ti-photo"></i> Hình Ảnh
           </button>
           <button className={`admin-sb-item${activeTab === 'videos' ? ' active' : ''}`} onClick={() => navTo('videos')}>
-            <i className="ti ti-brand-tiktok"></i> Video
-            {ttVideos.length > 0 && <span className="admin-sb-badge">{ttVideos.length}</span>}
+            <i className="ti ti-video"></i> Tư Liệu
+            {videos.length > 0 && <span className="admin-sb-badge">{videos.length}</span>}
+          </button>
+          <button className={`admin-sb-item${activeTab === 'service-videos' ? ' active' : ''}`} onClick={() => navTo('service-videos')}>
+            <i className="ti ti-brand-youtube"></i> Video Dịch Vụ
+            {serviceVideos.length > 0 && <span className="admin-sb-badge">{serviceVideos.length}</span>}
           </button>
         </nav>
       </aside>
@@ -998,6 +1232,109 @@ export default function AdminPage() {
                 </div>
               </>
             )}
+
+        {/* ======= TRAFFIC TAB ======= */}
+        {activeTab === 'traffic' && (
+          <>
+            {trafficLoading ? (
+              <div className="admin-loading"><i className="ti ti-loader-2 spin"></i> Đang tải số liệu...</div>
+            ) : trafficTotals.allTime === 0 ? (
+              <div className="admin-empty-state">
+                <i className="ti ti-chart-line"></i>
+                <p>Chưa có dữ liệu traffic.</p>
+                <p style={{ fontSize: '.85rem', color: 'var(--text-3)' }}>Số liệu sẽ xuất hiện sau khi có người truy cập website (theo dõi tự động từ giờ trở đi).</p>
+              </div>
+            ) : (
+              <>
+                <div className="admin-stats-grid">
+                  <div className="admin-stat-card">
+                    <i className="ti ti-calendar-event"></i>
+                    <div className="admin-stat-num">{trafficTotals.today}</div>
+                    <div className="admin-stat-label">Lượt xem hôm nay</div>
+                  </div>
+                  <div className="admin-stat-card">
+                    <i className="ti ti-calendar-week"></i>
+                    <div className="admin-stat-num">{trafficTotals.week}</div>
+                    <div className="admin-stat-label">Lượt xem 7 ngày qua</div>
+                  </div>
+                  <div className="admin-stat-card">
+                    <i className="ti ti-calendar-month"></i>
+                    <div className="admin-stat-num">{trafficTotals.month}</div>
+                    <div className="admin-stat-label">Lượt xem 30 ngày qua</div>
+                  </div>
+                  <div className="admin-stat-card">
+                    <i className="ti ti-chart-bar"></i>
+                    <div className="admin-stat-num">{trafficTotals.allTime}</div>
+                    <div className="admin-stat-label">Tổng lượt xem</div>
+                  </div>
+                </div>
+
+                {/* Daily views chart */}
+                <div className="admin-dash-section">
+                  <div className="admin-dash-sec-hd">
+                    <h3>Lượt xem theo ngày</h3>
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                      {([7, 14, 30] as const).map(n => (
+                        <button key={n} className={`traffic-range-btn${trafficRangeDays === n ? ' active' : ''}`} onClick={() => setTrafficRangeDays(n)}>
+                          {n} ngày
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="traffic-bar-chart">
+                    {viewsByDay.map(d => (
+                      <div key={d.date} className="traffic-bar-col" title={`${d.label}: ${d.count} lượt`}>
+                        <div className="traffic-bar" style={{ height: `${Math.max(3, (d.count / maxDayCount) * 100)}%` }}>
+                          {d.count > 0 && <span className="traffic-bar-val">{d.count}</span>}
+                        </div>
+                        <span className="traffic-bar-label">{d.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="admin-dash-2col">
+                  {/* Traffic sources */}
+                  <div className="admin-dash-section">
+                    <div className="admin-dash-sec-hd"><h3>Nguồn traffic (30 ngày)</h3></div>
+                    <div className="traffic-source-list">
+                      {viewsBySource.map(s => (
+                        <div key={s.source} className="traffic-source-row">
+                          <div className="traffic-source-label">
+                            <i className={`ti ${SOURCE_ICONS[s.source] ?? 'ti-world'}`}></i>
+                            {SOURCE_LABELS[s.source] ?? s.source}
+                          </div>
+                          <div className="traffic-source-bar-wrap">
+                            <div className="traffic-source-bar" style={{ width: `${(s.count / totalSourceViews) * 100}%` }}></div>
+                          </div>
+                          <div className="traffic-source-count">{s.count} <span>({Math.round((s.count / totalSourceViews) * 100)}%)</span></div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Top pages */}
+                  <div className="admin-dash-section">
+                    <div className="admin-dash-sec-hd"><h3>Trang được xem nhiều nhất</h3></div>
+                    <div className="admin-table-wrap">
+                      <table className="admin-table">
+                        <thead><tr><th>Đường dẫn</th><th>Lượt xem</th></tr></thead>
+                        <tbody>
+                          {topPages.map(p => (
+                            <tr key={p.path}>
+                              <td className="admin-name" style={{ fontFamily: 'monospace', fontSize: '.82rem' }}>{p.path}</td>
+                              <td>{p.count}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+          </>
+        )}
 
         {/* ======= LEADS TAB ======= */}
         {activeTab === 'leads' && (
@@ -1164,8 +1501,12 @@ export default function AdminPage() {
                         </div>
                       )}
                     </div>
-                    <div className="af-group af-full"><label>Mô tả</label><textarea rows={3} placeholder="Mô tả ngắn về khóa học..." value={courseForm.description ?? ''} onChange={e => setCourseForm(f => ({ ...f, description: e.target.value }))} /></div>
-                    <div className="af-group"><label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}><input type="checkbox" checked={courseForm.active} onChange={e => setCourseForm(f => ({ ...f, active: e.target.checked }))} />Hiển thị trên trang chủ</label></div>
+                    <div className="af-group af-full"><label>Mô tả ngắn</label><textarea rows={2} placeholder="Mô tả ngắn về khóa học..." value={courseForm.description ?? ''} onChange={e => setCourseForm(f => ({ ...f, description: e.target.value }))} /></div>
+                    {courseForm.category === 'kinh-doanh' && (<>
+                      <div className="af-group"><label>Slug (URL) *<span style={{ fontWeight: 400, color: 'var(--text-3)', marginLeft: 6 }}>vd: nitro-soda</span></label><input type="text" placeholder="nitro-soda" value={courseForm.slug ?? ''} onChange={e => setCourseForm(f => ({ ...f, slug: e.target.value.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') }))} /></div>
+                      <div className="af-group af-full"><label>Mô tả chi tiết (trang riêng)</label><textarea rows={3} placeholder="Nội dung chi tiết hiển thị trên trang /dich-vu/slug..." value={courseForm.detail ?? ''} onChange={e => setCourseForm(f => ({ ...f, detail: e.target.value }))} /></div>
+                    </>)}
+                    <div className="af-group"><label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}><input type="checkbox" checked={courseForm.active} onChange={e => setCourseForm(f => ({ ...f, active: e.target.checked }))} />Hiển thị trên trang</label></div>
                   </div>
                   {courseFormError && <div className="lf-error" style={{ marginBottom: '12px' }}><i className="ti ti-alert-circle"></i> {courseFormError}</div>}
                   <div style={{ display: 'flex', gap: '10px' }}>
@@ -1205,8 +1546,12 @@ export default function AdminPage() {
                           </div>
                         )}
                       </div>
-                      <div className="af-group af-full"><label>Mô tả</label><textarea rows={3} placeholder="Mô tả ngắn về khóa học..." value={courseForm.description ?? ''} onChange={e => setCourseForm(f => ({ ...f, description: e.target.value }))} /></div>
-                      <div className="af-group"><label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}><input type="checkbox" checked={courseForm.active} onChange={e => setCourseForm(f => ({ ...f, active: e.target.checked }))} />Hiển thị trên trang chủ</label></div>
+                      <div className="af-group af-full"><label>Mô tả ngắn</label><textarea rows={2} placeholder="Mô tả ngắn về khóa học..." value={courseForm.description ?? ''} onChange={e => setCourseForm(f => ({ ...f, description: e.target.value }))} /></div>
+                      {courseForm.category === 'kinh-doanh' && (<>
+                        <div className="af-group"><label>Slug (URL) *<span style={{ fontWeight: 400, color: 'var(--text-3)', marginLeft: 6 }}>vd: nitro-soda</span></label><input type="text" placeholder="nitro-soda" value={courseForm.slug ?? ''} onChange={e => setCourseForm(f => ({ ...f, slug: e.target.value.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') }))} /></div>
+                        <div className="af-group af-full"><label>Mô tả chi tiết (trang riêng)</label><textarea rows={3} placeholder="Nội dung chi tiết hiển thị trên trang /dich-vu/slug..." value={courseForm.detail ?? ''} onChange={e => setCourseForm(f => ({ ...f, detail: e.target.value }))} /></div>
+                      </>)}
+                      <div className="af-group"><label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}><input type="checkbox" checked={courseForm.active} onChange={e => setCourseForm(f => ({ ...f, active: e.target.checked }))} />Hiển thị trên trang</label></div>
                     </div>
                     {courseFormError && <div className="lf-error" style={{ marginBottom: '12px' }}><i className="ti ti-alert-circle"></i> {courseFormError}</div>}
                     <div style={{ display: 'flex', gap: '10px' }}>
@@ -1227,7 +1572,7 @@ export default function AdminPage() {
                   </h3>
                   <div className="admin-table-wrap">
                     <table className="admin-table">
-                      <thead><tr><th>Tên Khóa Học</th><th>Giá</th><th>Thời Lượng</th><th>Hiển Thị</th><th></th></tr></thead>
+                      <thead><tr><th>Tên Khóa Học</th><th>Giá</th><th>{cat === 'kinh-doanh' ? 'Slug / URL' : 'Thời Lượng'}</th><th>Hiển Thị</th><th></th></tr></thead>
                       <tbody>
                         {list.length === 0 ? (
                           <tr><td colSpan={5} className="admin-empty">Chưa có khóa học nào</td></tr>
@@ -1235,7 +1580,11 @@ export default function AdminPage() {
                           <tr key={c.id} style={{ opacity: c.active ? 1 : 0.45 }}>
                             <td className="admin-name">{c.name}</td>
                             <td style={{ fontWeight: 600, color: 'var(--accent)', whiteSpace: 'nowrap' }}>{c.price}</td>
-                            <td className="admin-date">{c.duration ?? '—'}</td>
+                            <td className="admin-date">
+                              {cat === 'kinh-doanh'
+                                ? (c.slug ? <a href={`/dich-vu/${c.slug}`} target="_blank" style={{ color: 'var(--accent)', fontSize: '0.8rem' }}>/dich-vu/{c.slug}</a> : <span style={{ color: 'var(--text-3)', fontSize: '0.8rem' }}>Chưa có slug</span>)
+                                : (c.duration ?? '—')}
+                            </td>
                             <td><button className={`course-toggle${c.active ? ' on' : ''}`} onClick={() => toggleCourseActive(c)}><i className={`ti ti-${c.active ? 'eye' : 'eye-off'}`}></i></button></td>
                             <td style={{ display: 'flex', gap: '4px' }}>
                               <button className="admin-edit-btn" onClick={() => startEditCourse(c)}><i className="ti ti-pencil"></i></button>
@@ -1554,6 +1903,11 @@ export default function AdminPage() {
                         </div>
                       </div>
                     </div>
+                    <div className="af-group af-full">
+                      <label>Mô tả / Hướng dẫn sử dụng</label>
+                      <textarea rows={4} placeholder="Mô tả thêm về sản phẩm, thành phần, hướng dẫn bảo quản hoặc sử dụng..."
+                        value={productForm.description ?? ''} onChange={e => setProductForm(f => ({ ...f, description: e.target.value }))} />
+                    </div>
                     <div className="af-group">
                       <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
                         <input type="checkbox" checked={productForm.active} onChange={e => setProductForm(f => ({ ...f, active: e.target.checked }))} />
@@ -1634,6 +1988,11 @@ export default function AdminPage() {
                             </button>
                           </div>
                         </div>
+                      </div>
+                      <div className="af-group af-full">
+                        <label>Mô tả / Hướng dẫn sử dụng</label>
+                        <textarea rows={4} placeholder="Mô tả thêm về sản phẩm, thành phần, hướng dẫn bảo quản hoặc sử dụng..."
+                          value={productForm.description ?? ''} onChange={e => setProductForm(f => ({ ...f, description: e.target.value }))} />
                       </div>
                       <div className="af-group">
                         <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
@@ -1874,10 +2233,10 @@ export default function AdminPage() {
 
             <div className="admin-table-wrap">
               <table className="admin-table">
-                <thead><tr><th>#</th><th>Ảnh</th><th>Tên Món</th><th>Phân Loại</th><th>Nguyên Liệu</th><th>Hiện</th><th></th></tr></thead>
+                <thead><tr><th>#</th><th>Ảnh</th><th>Tên Món</th><th>Phân Loại</th><th>Nguyên Liệu</th><th>Hiện</th><th>Khóa</th><th></th></tr></thead>
                 <tbody>
                   {filteredHvcp.length === 0 ? (
-                    <tr><td colSpan={7} className="admin-empty">Chưa có CT HVCP nào — nhấn "Thêm" để bắt đầu</td></tr>
+                    <tr><td colSpan={8} className="admin-empty">Chưa có CT HVCP nào — nhấn "Thêm" để bắt đầu</td></tr>
                   ) : filteredHvcp.map((r, i) => (
                     <tr key={r.id} style={{ opacity: r.active ? 1 : 0.45 }}>
                       <td className="admin-num">{i + 1}</td>
@@ -1891,8 +2250,18 @@ export default function AdminPage() {
                       <td><span className="admin-course-tag" style={{ fontSize: '0.75rem' }}>{r.category || '—'}</span></td>
                       <td style={{ fontSize: '0.8rem', color: 'var(--text-3)' }}>{r.linked_product_ids?.length ?? 0} SP</td>
                       <td>
-                        <button className={`course-toggle${r.active ? ' on' : ''}`} onClick={() => toggleHvcpActive(r)}>
+                        <button className={`course-toggle${r.active ? ' on' : ''}`} onClick={() => toggleHvcpActive(r)} title={r.active ? 'Đang hiện' : 'Đang ẩn'}>
                           <i className={`ti ti-${r.active ? 'eye' : 'eye-off'}`}></i>
+                        </button>
+                      </td>
+                      <td>
+                        <button
+                          className={`course-toggle${r.locked ? ' on' : ''}`}
+                          style={r.locked ? { background: '#c0392b', borderColor: '#c0392b' } : {}}
+                          onClick={() => toggleHvcpLocked(r)}
+                          title={r.locked ? 'Đang khóa — nhấn để mở khóa' : 'Đang mở — nhấn để khóa'}
+                        >
+                          <i className={`ti ti-${r.locked ? 'lock' : 'lock-open'}`}></i>
                         </button>
                       </td>
                       <td style={{ display: 'flex', gap: '4px' }}>
@@ -1954,10 +2323,10 @@ export default function AdminPage() {
 
             <div className="admin-table-wrap">
               <table className="admin-table">
-                <thead><tr><th>#</th><th>Ảnh</th><th>Tên Món</th><th>Phân Loại</th><th>Nguồn</th><th>Nguyên Liệu</th><th>Hiện</th><th></th></tr></thead>
+                <thead><tr><th>#</th><th>Ảnh</th><th>Tên Món</th><th>Phân Loại</th><th>Nguồn</th><th>Nguyên Liệu</th><th>Hiện</th><th>Khóa</th><th></th></tr></thead>
                 <tbody>
                   {filteredChiaSe.length === 0 ? (
-                    <tr><td colSpan={8} className="admin-empty">Chưa có công thức chia sẻ nào — nhấn "Thêm" để bắt đầu</td></tr>
+                    <tr><td colSpan={9} className="admin-empty">Chưa có công thức chia sẻ nào — nhấn "Thêm" để bắt đầu</td></tr>
                   ) : filteredChiaSe.map((r, i) => (
                     <tr key={r.id} style={{ opacity: r.active ? 1 : 0.45 }}>
                       <td className="admin-num">{i + 1}</td>
@@ -1974,6 +2343,16 @@ export default function AdminPage() {
                       <td>
                         <button className={`course-toggle${r.active ? ' on' : ''}`} onClick={() => toggleChiaSeActive(r)} title={r.active ? 'Đang hiện' : 'Đang ẩn'}>
                           <i className={`ti ti-${r.active ? 'eye' : 'eye-off'}`}></i>
+                        </button>
+                      </td>
+                      <td>
+                        <button
+                          className={`course-toggle${r.locked ? ' on' : ''}`}
+                          style={r.locked ? { background: '#c0392b', borderColor: '#c0392b' } : {}}
+                          onClick={() => toggleChiaSeLocked(r)}
+                          title={r.locked ? 'Đang khóa — nhấn để mở khóa' : 'Đang mở — nhấn để khóa'}
+                        >
+                          <i className={`ti ti-${r.locked ? 'lock' : 'lock-open'}`}></i>
                         </button>
                       </td>
                       <td style={{ display: 'flex', gap: '4px' }}>
@@ -2025,58 +2404,243 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* ======= VIDEOS (TikTok) TAB ======= */}
+        {/* ======= VIDEOS TAB ======= */}
         {activeTab === 'videos' && (
           <>
             <div className="admin-add-card">
-              <h3 className="admin-section-title"><i className="ti ti-brand-tiktok"></i> Thêm Video TikTok</h3>
+              <h3 className="admin-section-title"><i className="ti ti-brand-youtube"></i> Thêm Video YouTube</h3>
               <p style={{ fontSize: '0.85rem', color: 'var(--text-3)', margin: '0 0 16px', lineHeight: 1.6 }}>
-                Dán link 1 video TikTok (mở video → Chia sẻ → Sao chép liên kết). Video sẽ tự hiện trên trang{' '}
-                <a href="/video" target="_blank" style={{ color: 'var(--accent)' }}>/video</a>. Hệ thống tự lấy mã video, tiêu đề và ảnh thumbnail.
+                Dán link YouTube (youtube.com hoặc youtu.be). Video sẽ hiện trên trang{' '}
+                <a href="/video" target="_blank" style={{ color: 'var(--accent)' }}>/video</a>.
               </p>
-              <form className="admin-form" onSubmit={addTtVideo}>
+              <form className="admin-form" onSubmit={addVideo}>
                 <div className="admin-form-grid">
                   <div className="af-group af-full">
-                    <label>Link video TikTok *</label>
-                    <input type="url" placeholder="https://www.tiktok.com/@congthucphache.hvcp/video/..." value={ttForm.url} onChange={e => setTtForm(f => ({ ...f, url: e.target.value }))} required />
+                    <label>Nhóm video *</label>
+                    <select value={videoForm.category} onChange={e => setVideoForm(f => ({ ...f, category: e.target.value }))} required>
+                      {VIDEO_CATEGORIES.map(c => <option key={c.slug} value={c.slug}>{c.label}</option>)}
+                    </select>
                   </div>
                   <div className="af-group af-full">
-                    <label>Tiêu đề hiển thị (tùy chọn)</label>
-                    <input type="text" placeholder="Để trống sẽ tự lấy caption từ TikTok" value={ttForm.title} onChange={e => setTtForm(f => ({ ...f, title: e.target.value }))} />
+                    <label>Tiêu đề video</label>
+                    <input type="text" placeholder="VD: Americano Bưởi - Thầy Liêm hướng dẫn" value={videoForm.title} onChange={e => setVideoForm(f => ({ ...f, title: e.target.value }))} />
+                  </div>
+                  <div className="af-group af-full">
+                    <label>Link YouTube *</label>
+                    <input type="url" placeholder="https://youtu.be/ABC123 hoặc https://www.youtube.com/watch?v=ABC123"
+                      value={videoForm.youtubeUrl} onChange={e => setVideoForm(f => ({ ...f, youtubeUrl: e.target.value }))} required />
                   </div>
                 </div>
-                {ttError && <div className="f-error"><i className="ti ti-alert-circle"></i> {ttError}</div>}
-                <button className="btn btn-primary" type="submit" disabled={addingTt}>
-                  {addingTt ? <><i className="ti ti-loader-2 spin"></i> Đang thêm...</> : <><i className="ti ti-plus"></i> Thêm Video</>}
+                {videoError && <div className="f-error"><i className="ti ti-alert-circle"></i> {videoError}</div>}
+                <button className="btn btn-primary" type="submit" disabled={addingVideo}>
+                  {addingVideo ? <><i className="ti ti-loader-2 spin"></i> Đang lưu...</> : <><i className="ti ti-plus"></i> Thêm Video</>}
                 </button>
               </form>
             </div>
 
-            {ttVideos.length === 0 ? (
-              <div className="admin-empty" style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Chưa có video nào. Dán link TikTok ở trên để thêm.</div>
+            {videos.length === 0 ? (
+              <div className="admin-empty" style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Chưa có video nào. Upload video ở trên để bắt đầu.</div>
             ) : (
-              <div className="tt-admin-grid">
-                {ttVideos.map(v => (
-                  <div key={v.id} className={`tt-admin-card${v.active ? '' : ' inactive'}`}>
-                    <a href={v.url} target="_blank" rel="noopener noreferrer" className="tt-admin-thumb">
-                      {v.thumbnail ? <img src={v.thumbnail} alt={v.title || ''} loading="lazy" /> : <i className="ti ti-brand-tiktok"></i>}
-                      <span className="tt-admin-play"><i className="ti ti-player-play-filled"></i></span>
-                    </a>
-                    <div className="tt-admin-body">
-                      <div className="tt-admin-title">{v.title || v.author || 'Video TikTok'}</div>
-                      {v.author && <div className="tt-admin-author"><i className="ti ti-user"></i> {v.author}</div>}
-                      <div className="tt-admin-actions">
-                        <button className={`course-toggle${v.active ? ' on' : ''}`} onClick={() => toggleTtActive(v)}>
-                          {v.active ? 'Đang hiện' : 'Đang ẩn'}
-                        </button>
-                        <button className="admin-del-btn" onClick={() => deleteTtVideo(v.id)} disabled={deletingTt === v.id} title="Xóa">
-                          {deletingTt === v.id ? <i className="ti ti-loader-2 spin"></i> : <i className="ti ti-trash"></i>}
-                        </button>
+              <>
+                {VIDEO_CATEGORIES.map(cat => {
+                  const catVideos = videos.filter(v => v.category === cat.slug);
+                  if (!catVideos.length) return null;
+                  return (
+                    <div key={cat.slug} style={{ marginBottom: 32 }}>
+                      <h4 style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 12, paddingBottom: 8, borderBottom: '1px solid var(--border)' }}>
+                        {cat.label} <span style={{ fontWeight: 400 }}>({catVideos.length} video)</span>
+                      </h4>
+                      <div className="vd-admin-grid">
+                        {catVideos.map(v => (
+                          <div key={v.id} className={`vd-admin-card${v.active ? '' : ' inactive'}${editingVideoId === v.id ? ' editing' : ''}`}>
+                            <div className="vd-admin-thumb">
+                              {v.thumbnail_url
+                                ? <img src={v.thumbnail_url} alt={v.title || 'Video'} loading="lazy" />
+                                : <div style={{ width: '100%', height: '100%', background: 'var(--bg-dark)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><i className="ti ti-brand-youtube" style={{ fontSize: 28, color: '#ff0000' }}></i></div>
+                              }
+                              <span className="vd-admin-play-ico"><i className="ti ti-player-play-filled"></i></span>
+                            </div>
+                            <div className="vd-admin-body">
+                              {editingVideoId === v.id ? (
+                                <div className="vd-edit-form">
+                                  <select value={editVideoForm.category} onChange={e => setEditVideoForm(f => ({ ...f, category: e.target.value }))} className="vd-edit-input">
+                                    {VIDEO_CATEGORIES.map(c => <option key={c.slug} value={c.slug}>{c.label}</option>)}
+                                  </select>
+                                  <input type="text" placeholder="Tiêu đề" value={editVideoForm.title} onChange={e => setEditVideoForm(f => ({ ...f, title: e.target.value }))} className="vd-edit-input" />
+                                  <input type="url" placeholder="Link YouTube mới (để trống nếu không đổi)" value={editVideoForm.youtubeUrl} onChange={e => setEditVideoForm(f => ({ ...f, youtubeUrl: e.target.value }))} className="vd-edit-input" />
+                                  <div className="vd-edit-actions">
+                                    <button className="btn btn-primary" style={{ fontSize: '0.8rem', padding: '6px 14px' }} onClick={() => saveVideoEdit(v)} disabled={savingVideo}>
+                                      {savingVideo ? <i className="ti ti-loader-2 spin"></i> : <><i className="ti ti-check"></i> Lưu</>}
+                                    </button>
+                                    <button className="btn btn-outline" style={{ fontSize: '0.8rem', padding: '6px 14px' }} onClick={() => setEditingVideoId(null)}>Hủy</button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <>
+                                  <div className="vd-admin-title">{v.title || 'Video không tiêu đề'}</div>
+                                  <div className="vd-admin-date"><i className="ti ti-calendar"></i> {new Date(v.created_at).toLocaleDateString('vi-VN')}</div>
+                                  <div className="tt-admin-actions">
+                                    <button className={`course-toggle${v.active ? ' on' : ''}`} onClick={() => toggleVideoActive(v)}>
+                                      {v.active ? 'Đang hiện' : 'Đang ẩn'}
+                                    </button>
+                                    <button className="admin-edit-btn" onClick={() => startEditVideo(v)} title="Chỉnh sửa">
+                                      <i className="ti ti-pencil"></i>
+                                    </button>
+                                    <button className="admin-del-btn" onClick={() => deleteVideo(v)} disabled={deletingVideo === v.id} title="Xóa">
+                                      {deletingVideo === v.id ? <i className="ti ti-loader-2 spin"></i> : <i className="ti ti-trash"></i>}
+                                    </button>
+                                  </div>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     </div>
+                  );
+                })}
+                {/* Video chưa phân loại */}
+                {(() => {
+                  const known = VIDEO_CATEGORIES.map(c => c.slug);
+                  const uncat = videos.filter(v => !known.includes(v.category as typeof VIDEO_CATEGORIES[number]['slug']));
+                  if (!uncat.length) return null;
+                  return (
+                    <div style={{ marginBottom: 32 }}>
+                      <h4 style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 12, paddingBottom: 8, borderBottom: '1px solid var(--border)' }}>
+                        Chưa phân loại <span style={{ fontWeight: 400 }}>({uncat.length} video)</span>
+                      </h4>
+                      <div className="vd-admin-grid">
+                        {uncat.map(v => (
+                          <div key={v.id} className={`vd-admin-card${v.active ? '' : ' inactive'}`}>
+                            <div className="vd-admin-thumb">
+                              {v.thumbnail_url
+                                ? <img src={v.thumbnail_url} alt={v.title || 'Video'} loading="lazy" />
+                                : <div style={{ width: '100%', height: '100%', background: 'var(--bg-dark)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><i className="ti ti-brand-youtube" style={{ fontSize: 28, color: '#ff0000' }}></i></div>
+                              }
+                              <span className="vd-admin-play-ico"><i className="ti ti-player-play-filled"></i></span>
+                            </div>
+                            <div className="vd-admin-body">
+                              <div className="vd-admin-title">{v.title || 'Video không tiêu đề'}</div>
+                              <div className="vd-admin-date"><i className="ti ti-calendar"></i> {new Date(v.created_at).toLocaleDateString('vi-VN')}</div>
+                              <div className="tt-admin-actions">
+                                <button className={`course-toggle${v.active ? ' on' : ''}`} onClick={() => toggleVideoActive(v)}>
+                                  {v.active ? 'Đang hiện' : 'Đang ẩn'}
+                                </button>
+                                <button className="admin-edit-btn" onClick={() => startEditVideo(v)} title="Chỉnh sửa">
+                                  <i className="ti ti-pencil"></i>
+                                </button>
+                                <button className="admin-del-btn" onClick={() => deleteVideo(v)} disabled={deletingVideo === v.id} title="Xóa">
+                                  {deletingVideo === v.id ? <i className="ti ti-loader-2 spin"></i> : <i className="ti ti-trash"></i>}
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
+              </>
+            )}
+          </>
+        )}
+
+        {/* ======= SERVICE VIDEOS TAB ======= */}
+        {activeTab === 'service-videos' && (
+          <>
+            <div className="admin-add-card">
+              <h3 className="admin-section-title"><i className="ti ti-brand-youtube"></i> Thêm Video Dịch Vụ</h3>
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-3)', margin: '0 0 16px', lineHeight: 1.6 }}>
+                Video sẽ hiển thị trên trang chi tiết của dịch vụ tương ứng (ví dụ: <a href="/dich-vu/khoi-nghiep" target="_blank" style={{ color: 'var(--accent)' }}>/dich-vu/khoi-nghiep</a>).
+              </p>
+              <form className="admin-form" onSubmit={addServiceVideo}>
+                <div className="admin-form-grid">
+                  <div className="af-group af-full">
+                    <label>Dịch Vụ *</label>
+                    <select value={svForm.serviceSlug} onChange={e => setSvForm(f => ({ ...f, serviceSlug: e.target.value }))} required>
+                      <option value="">— Chọn dịch vụ —</option>
+                      {dichVuServices.map(s => <option key={s.slug} value={s.slug}>{s.name}</option>)}
+                    </select>
                   </div>
-                ))}
-              </div>
+                  <div className="af-group af-full">
+                    <label>Tiêu đề video</label>
+                    <input type="text" placeholder="VD: Buổi setup menu thực tế tại quán anh Tuấn" value={svForm.title} onChange={e => setSvForm(f => ({ ...f, title: e.target.value }))} />
+                  </div>
+                  <div className="af-group af-full">
+                    <label>Link YouTube *</label>
+                    <input type="url" placeholder="https://youtu.be/ABC123 hoặc https://www.youtube.com/watch?v=ABC123"
+                      value={svForm.youtubeUrl} onChange={e => setSvForm(f => ({ ...f, youtubeUrl: e.target.value }))} required />
+                  </div>
+                </div>
+                {svError && <div className="f-error"><i className="ti ti-alert-circle"></i> {svError}</div>}
+                <button className="btn btn-primary" type="submit" disabled={addingSv}>
+                  {addingSv ? <><i className="ti ti-loader-2 spin"></i> Đang lưu...</> : <><i className="ti ti-plus"></i> Thêm Video</>}
+                </button>
+              </form>
+            </div>
+
+            {serviceVideos.length === 0 ? (
+              <div className="admin-empty" style={{ padding: 40, textAlign: 'center', color: 'var(--text-3)' }}>Chưa có video dịch vụ nào. Thêm video ở trên để bắt đầu.</div>
+            ) : (
+              <>
+                {dichVuServices.map(s => {
+                  const svs = serviceVideos.filter(v => v.service_slug === s.slug);
+                  if (!svs.length) return null;
+                  return (
+                    <div key={s.slug} style={{ marginBottom: 32 }}>
+                      <h4 style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 12, paddingBottom: 8, borderBottom: '1px solid var(--border)' }}>
+                        {s.name} <span style={{ fontWeight: 400 }}>({svs.length} video)</span>
+                      </h4>
+                      <div className="vd-admin-grid">
+                        {svs.map(v => (
+                          <div key={v.id} className={`vd-admin-card${v.active ? '' : ' inactive'}${editingSvId === v.id ? ' editing' : ''}`}>
+                            <div className="vd-admin-thumb">
+                              {v.thumbnail_url
+                                ? <img src={v.thumbnail_url} alt={v.title || 'Video'} loading="lazy" />
+                                : <div style={{ width: '100%', height: '100%', background: 'var(--bg-dark)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><i className="ti ti-brand-youtube" style={{ fontSize: 28, color: '#ff0000' }}></i></div>
+                              }
+                              <span className="vd-admin-play-ico"><i className="ti ti-player-play-filled"></i></span>
+                            </div>
+                            <div className="vd-admin-body">
+                              {editingSvId === v.id ? (
+                                <div className="vd-edit-form">
+                                  <select value={editSvForm.serviceSlug} onChange={e => setEditSvForm(f => ({ ...f, serviceSlug: e.target.value }))} className="vd-edit-input">
+                                    {dichVuServices.map(s => <option key={s.slug} value={s.slug}>{s.name}</option>)}
+                                  </select>
+                                  <input type="text" placeholder="Tiêu đề" value={editSvForm.title} onChange={e => setEditSvForm(f => ({ ...f, title: e.target.value }))} className="vd-edit-input" />
+                                  <input type="url" placeholder="Link YouTube mới (để trống nếu không đổi)" value={editSvForm.youtubeUrl} onChange={e => setEditSvForm(f => ({ ...f, youtubeUrl: e.target.value }))} className="vd-edit-input" />
+                                  <div className="vd-edit-actions">
+                                    <button className="btn btn-primary" style={{ fontSize: '0.8rem', padding: '6px 14px' }} onClick={() => saveSvEdit(v)} disabled={savingSv}>
+                                      {savingSv ? <i className="ti ti-loader-2 spin"></i> : <><i className="ti ti-check"></i> Lưu</>}
+                                    </button>
+                                    <button className="btn btn-outline" style={{ fontSize: '0.8rem', padding: '6px 14px' }} onClick={() => setEditingSvId(null)}>Hủy</button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <>
+                                  <div className="vd-admin-title">{v.title || 'Video không tiêu đề'}</div>
+                                  <div className="vd-admin-date"><i className="ti ti-calendar"></i> {new Date(v.created_at).toLocaleDateString('vi-VN')}</div>
+                                  <div className="tt-admin-actions">
+                                    <button className={`course-toggle${v.active ? ' on' : ''}`} onClick={() => toggleSvActive(v)}>
+                                      {v.active ? 'Đang hiện' : 'Đang ẩn'}
+                                    </button>
+                                    <button className="admin-edit-btn" onClick={() => startEditSv(v)} title="Chỉnh sửa">
+                                      <i className="ti ti-pencil"></i>
+                                    </button>
+                                    <button className="admin-del-btn" onClick={() => deleteServiceVideo(v)} disabled={deletingSv === v.id} title="Xóa">
+                                      {deletingSv === v.id ? <i className="ti ti-loader-2 spin"></i> : <i className="ti ti-trash"></i>}
+                                    </button>
+                                  </div>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </>
             )}
           </>
         )}
@@ -2257,6 +2821,15 @@ function HVCPForm({
             Hiển thị công khai
           </label>
         </div>
+        <div className="af-group">
+          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+            <input type="checkbox" checked={form.locked} onChange={e => setForm(f => ({ ...f, locked: e.target.checked }))} style={{ accentColor: '#c0392b' }} />
+            <span style={{ color: form.locked ? '#c0392b' : 'inherit' }}>
+              <i className="ti ti-lock" style={{ marginRight: '4px' }}></i>
+              Khóa công thức (ẩn chi tiết & ảnh với người dùng)
+            </span>
+          </label>
+        </div>
       </div>
       {error && <div className="lf-error" style={{ marginBottom: '12px' }}><i className="ti ti-alert-circle"></i> {error}</div>}
       <div style={{ display: 'flex', gap: '10px' }}>
@@ -2338,6 +2911,15 @@ function ChiaSeForm({
           <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
             <input type="checkbox" checked={form.active} onChange={e => setForm(f => ({ ...f, active: e.target.checked }))} />
             Hiển thị công khai
+          </label>
+        </div>
+        <div className="af-group">
+          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+            <input type="checkbox" checked={form.locked} onChange={e => setForm(f => ({ ...f, locked: e.target.checked }))} style={{ accentColor: '#c0392b' }} />
+            <span style={{ color: form.locked ? '#c0392b' : 'inherit' }}>
+              <i className="ti ti-lock" style={{ marginRight: '4px' }}></i>
+              Khóa công thức (ẩn chi tiết & ảnh với người dùng)
+            </span>
           </label>
         </div>
       </div>

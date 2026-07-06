@@ -80,9 +80,9 @@ export default function Navbar() {
 
   const isHome = pathname === '/';
   const isDaoTao = pathname === '/khoa-hoc' || pathname === '/dich-vu';
-  const isCongThuc = pathname === '/cong-thuc-2' || pathname === '/kho-cong-thuc';
+  const isCongThuc = pathname === '/cong-thuc' || pathname === '/kho-cong-thuc';
   const isSanPham = pathname === '/nguyen-lieu' || pathname === '/dung-cu';
-  const isHinhAnh = pathname.startsWith('/hinh-anh') || pathname === '/video';
+  const isHinhAnh = pathname.startsWith('/hinh-anh') || pathname === '/video' || pathname.startsWith('/thu-vien');
 
   return (
     <>
@@ -120,7 +120,7 @@ export default function Navbar() {
               <div className={`nav-dropdown-wrap${isCongThuc ? ' active' : ''}`}>
                 <button className="nav-link nav-dropdown-trigger">Công Thức</button>
                 <div className="nav-dropdown-menu">
-                  <Link href="/cong-thuc-2" className="nav-dd-item" onClick={close}>
+                  <Link href="/cong-thuc" className="nav-dd-item" onClick={close}>
                     <i className="ti ti-lock"></i> Nội Bộ
                   </Link>
                   <Link href="/kho-cong-thuc" className="nav-dd-item" onClick={close}>
@@ -153,7 +153,10 @@ export default function Navbar() {
                     <i className="ti ti-school"></i> Hình Ảnh Lớp Học
                   </Link>
                   <Link href="/video" className="nav-dd-item" onClick={close}>
-                    <i className="ti ti-video"></i> Làm Món Cùng Giảng Viên
+                    <i className="ti ti-video"></i> Tư Liệu Video
+                  </Link>
+                  <Link href="/thu-vien/dao-tao-setup" className="nav-dd-item" onClick={close}>
+                    <i className="ti ti-tools-kitchen-2"></i> Đào Tạo - Setup
                   </Link>
                 </div>
               </div>
@@ -187,7 +190,6 @@ export default function Navbar() {
                 </div>
               </div>
 
-              <Link href="/lien-he" className={`nav-link${pathname === '/lien-he' ? ' active' : ''}`}>Liên Hệ</Link>
             </div>
 
             {/* RIGHT ACTIONS */}
@@ -207,7 +209,7 @@ export default function Navbar() {
                   </button>
                 </div>
               ) : (
-                <Link href="/login" className="btn-login">
+                <Link href={`/login?redirect=${encodeURIComponent(pathname)}`} className="btn-login">
                   <i className="ti ti-lock" style={{ fontSize: '0.85rem' }}></i> Đăng Nhập
                 </Link>
               )}
@@ -256,7 +258,7 @@ export default function Navbar() {
             <i className="ti ti-chevron-down mob-chevron"></i>
           </button>
           <div className={`mob-children${expanded === 'cong-thuc' ? ' open' : ''}`}>
-            <Link href="/cong-thuc-2" className="mob-child" onClick={close}><i className="ti ti-lock"></i> Nội Bộ</Link>
+            <Link href="/cong-thuc" className="mob-child" onClick={close}><i className="ti ti-lock"></i> Nội Bộ</Link>
             <Link href="/kho-cong-thuc" className="mob-child" onClick={close}><i className="ti ti-gift"></i> Miễn Phí</Link>
           </div>
         </div>
@@ -280,7 +282,8 @@ export default function Navbar() {
           <div className={`mob-children${expanded === 'hinh-anh' ? ' open' : ''}`}>
             <Link href="/hinh-anh/trao-bang" className="mob-child" onClick={close}><i className="ti ti-certificate"></i> Trao Bằng Học Viên</Link>
             <Link href="/hinh-anh/lop-hoc" className="mob-child" onClick={close}><i className="ti ti-school"></i> Hình Ảnh Lớp Học</Link>
-            <Link href="/video" className="mob-child" onClick={close}><i className="ti ti-video"></i> Làm Món Cùng Giảng Viên</Link>
+            <Link href="/video" className="mob-child" onClick={close}><i className="ti ti-video"></i> Tư Liệu Video</Link>
+            <Link href="/thu-vien/dao-tao-setup" className="mob-child" onClick={close}><i className="ti ti-tools-kitchen-2"></i> Đào Tạo - Setup</Link>
           </div>
         </div>
 
@@ -304,8 +307,6 @@ export default function Navbar() {
           </div>
         </div>
 
-        <Link href="/lien-he" className={`mob-top-link${pathname === '/lien-he' ? ' active' : ''}`} onClick={close}>Liên Hệ</Link>
-
         <div className="mob-divider" />
 
         <Link href="/yeu-thich" className={`mob-top-link${pathname === '/yeu-thich' ? ' active' : ''}`} onClick={close}>
@@ -323,7 +324,7 @@ export default function Navbar() {
             </button>
           </>
         ) : (
-          <Link href="/login" onClick={close} className="mob-login-link">
+          <Link href={`/login?redirect=${encodeURIComponent(pathname)}`} onClick={close} className="mob-login-link">
             <i className="ti ti-lock"></i> Đăng Nhập
           </Link>
         )}

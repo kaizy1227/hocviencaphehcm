@@ -16,7 +16,7 @@ function phoneToEmail(phone: string): string {
 function LoginForm() {
   const router = useRouter();
   const params = useSearchParams();
-  const redirect = params.get('redirect') ?? '/cong-thuc';
+  const redirect = params.get('redirect') ?? '/';
 
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
