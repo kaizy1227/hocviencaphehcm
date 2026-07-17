@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 import { useEffect, useState, FormEvent, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -23,6 +23,7 @@ type Product = {
   id: string; stt: number; name: string; unit: string;
   price: number; image_url: string; category: string; active: boolean;
   phan_loai: 'thuong-mai' | 'thuong-hieu'; description: string | null;
+  cost_per_unit: number | null;
 };
 type Tool = {
   id: string; stt: number; name: string; unit: string;
@@ -59,6 +60,10 @@ type ServiceVideoRow = {
   thumbnail_url: string | null; service_slug: string;
   sort_order: number; active: boolean; created_at: string;
 };
+type ExternalIngredient = { id: string; name: string; quantity_per_pack: number; price_per_pack: number; cost_per_unit: number; unit: string; active: boolean; };
+type ExtIngForm = { name: string; quantity_per_pack: number; price_per_pack: number; unit: string; active: boolean; };
+const BLANK_EXT_ING: ExtIngForm = { name: '', quantity_per_pack: 1000, price_per_pack: 0, unit: 'g', active: true };
+type RecipeIngItem = { id?: string; source: 'internal' | 'external'; ingredient_id: string; name: string; quantity: number; unit: string; cost_per_unit: number; };
 type ChiaSeIngredient = { name: string; shopLink: string; };
 type ChiaSeRecipe = {
   id: string; name: string; short_name: string; category: string;
@@ -81,7 +86,7 @@ const BLANK_COURSE: Omit<Course, 'id' | 'sort_order'> = {
   name: '', category: 'tong-hop', price: '', duration: '', description: '', image: '', active: true, slug: '', detail: '',
 };
 const BLANK_PRODUCT: Omit<Product, 'id'> = {
-  stt: 0, name: '', unit: '', price: 0, image_url: '', category: 'Nguyên liệu', active: true, phan_loai: 'thuong-mai', description: '',
+  stt: 0, name: '', unit: '', price: 0, image_url: '', category: 'Nguyên liệu', active: true, phan_loai: 'thuong-mai', description: '', cost_per_unit: null,
 };
 const BLANK_TOOL: Omit<Tool, 'id'> = {
   stt: 0, name: '', unit: '', price: 0, image_url: '', category: 'Dụng cụ pha chế', active: true,
@@ -109,7 +114,8 @@ export default function AdminPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'traffic' | 'leads' | 'students' | 'content' | 'products' | 'tools' | 'recipes' | 'ct-hvcp' | 'kho-cong-thuc' | 'hinh-anh' | 'videos' | 'service-videos' | 'orders'>('dashboard');
+  const [isStaff, setIsStaff] = useState(false);
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'traffic' | 'leads' | 'students' | 'content' | 'products' | 'tools' | 'ext-ing' | 'recipes' | 'ct-hvcp' | 'kho-cong-thuc' | 'hinh-anh' | 'videos' | 'service-videos' | 'orders'>('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Students
@@ -184,6 +190,7 @@ export default function AdminPage() {
   const [showAddRecipe, setShowAddRecipe] = useState(false);
   const [recipeSearch, setRecipeSearch] = useState('');
   const [recipeKhoaFilter, setRecipeKhoaFilter] = useState('');
+  const [recipeNoCostOnly, setRecipeNoCostOnly] = useState(false);
   const [prodFilterQ, setProdFilterQ] = useState('');
   const [uploadingRecipeImg, setUploadingRecipeImg] = useState(false);
   const recipeImgRef = useRef<HTMLInputElement>(null);
@@ -199,6 +206,17 @@ export default function AdminPage() {
   const [chiaSeSearch, setChiaSeSearch] = useState('');
   const [uploadingChiaSeImg, setUploadingChiaSeImg] = useState(false);
   const chiaSeImgRef = useRef<HTMLInputElement>(null);
+
+  // External ingredients & recipe items (cost calculator)
+  const [externalIngredients, setExternalIngredients] = useState<ExternalIngredient[]>([]);
+  const [recipeIngItems, setRecipeIngItems] = useState<RecipeIngItem[]>([]);
+  const [extForm, setExtForm] = useState<ExtIngForm>(BLANK_EXT_ING);
+  const [extFormError, setExtFormError] = useState('');
+  const [savingExt, setSavingExt] = useState(false);
+  const [deletingExt, setDeletingExt] = useState<string | null>(null);
+  const [editingExt, setEditingExt] = useState<ExternalIngredient | null>(null);
+  const [showAddExt, setShowAddExt] = useState(false);
+  const [extSearch, setExtSearch] = useState('');
 
   // CT HVCP
   const [hvcp, setHvcp] = useState<CongThucHVCP[]>([]);
@@ -257,10 +275,22 @@ export default function AdminPage() {
         ]);
         if (!mounted) return;
         if (!session) { router.replace('/login?redirect=/admin'); return; }
-        const admin = session.user.app_metadata?.role === 'admin';
+        const role = session.user.app_metadata?.role;
+        const admin = role === 'admin';
+        const staff = role === 'staff';
         setIsAdmin(admin);
+        setIsStaff(staff);
         setLoading(false);
-        if (!admin) return;
+        if (!admin && !staff) return;
+        // Staff: chỉ nhóm Công thức & giá vốn + Dụng cụ
+        if (staff && !admin) {
+          setActiveTab('recipes');
+          void loadProducts();
+          void loadTools();
+          void loadRecipes();
+          void loadExternalIngredients();
+          return;
+        }
         void loadStudents();
         void loadLeads();
         void loadTraffic();
@@ -274,6 +304,7 @@ export default function AdminPage() {
         void loadVideos();
         void loadDichVuServices();
         void loadServiceVideos();
+        void loadExternalIngredients();
       } catch {
         if (!mounted) return;
         router.replace('/login?redirect=/admin');
@@ -350,6 +381,42 @@ export default function AdminPage() {
     const { data, error } = await createClient().from('cong_thuc_hvcp').select('*').order('sort_order').order('created_at');
     if (error) throw error;
     setHvcp(data ?? []);
+  }
+  async function loadExternalIngredients() {
+    const { data } = await createClient().from('external_ingredients').select('*').order('name');
+    setExternalIngredients(data ?? []);
+  }
+
+  // --- NGUYÊN LIỆU NGOÀI (CRUD) ---
+  function startEditExtIng(e: ExternalIngredient) {
+    setEditingExt(e);
+    setExtForm({ name: e.name, quantity_per_pack: e.quantity_per_pack, price_per_pack: e.price_per_pack, unit: e.unit, active: e.active });
+    setShowAddExt(false); setExtFormError('');
+  }
+  function cancelExtEdit() { setEditingExt(null); setShowAddExt(false); setExtForm(BLANK_EXT_ING); setExtFormError(''); }
+  async function saveExtIng(e: FormEvent) {
+    e.preventDefault();
+    if (!extForm.name.trim()) { setExtFormError('Vui lòng điền tên nguyên liệu.'); return; }
+    if (!extForm.quantity_per_pack || extForm.quantity_per_pack <= 0) { setExtFormError('Quy cách (định lượng) phải lớn hơn 0.'); return; }
+    setSavingExt(true); setExtFormError('');
+    // cost_per_unit là generated column — KHÔNG gửi trong payload
+    const payload = { name: extForm.name.trim(), quantity_per_pack: extForm.quantity_per_pack, price_per_pack: extForm.price_per_pack, unit: extForm.unit.trim() || 'g', active: extForm.active };
+    const { error } = editingExt
+      ? await createClient().from('external_ingredients').update(payload).eq('id', editingExt.id)
+      : await createClient().from('external_ingredients').insert(payload);
+    setSavingExt(false);
+    if (error) { setExtFormError('Lỗi: ' + error.message); return; }
+    cancelExtEdit(); await loadExternalIngredients();
+  }
+  async function deleteExtIng(id: string) {
+    if (!confirm('Xóa nguyên liệu ngoài này? Các công thức đã dùng vẫn giữ giá đã lưu.')) return;
+    setDeletingExt(id);
+    await createClient().from('external_ingredients').delete().eq('id', id);
+    setDeletingExt(null); await loadExternalIngredients();
+  }
+  async function toggleExtActive(e: ExternalIngredient) {
+    await createClient().from('external_ingredients').update({ active: !e.active }).eq('id', e.id);
+    await loadExternalIngredients();
   }
   async function loadOrders() {
     const { data, error } = await createClient().from('orders').select('*').order('created_at', { ascending: false });
@@ -628,7 +695,7 @@ export default function AdminPage() {
   // --- PRODUCTS ---
   function startEditProduct(p: Product) {
     setEditingProduct(p);
-    setProductForm({ stt: p.stt, name: p.name, unit: p.unit, price: p.price, image_url: p.image_url, category: p.category, active: p.active, phan_loai: p.phan_loai ?? 'thuong-mai', description: p.description ?? '' });
+    setProductForm({ stt: p.stt, name: p.name, unit: p.unit, price: p.price, image_url: p.image_url, category: p.category, active: p.active, phan_loai: p.phan_loai ?? 'thuong-mai', description: p.description ?? '', cost_per_unit: p.cost_per_unit ?? null });
     setShowAddProduct(false); setProductFormError('');
   }
   function cancelProductEdit() { setEditingProduct(null); setShowAddProduct(false); setProductForm(BLANK_PRODUCT); setProductFormError(''); }
@@ -649,7 +716,7 @@ export default function AdminPage() {
     e.preventDefault();
     if (!productForm.name.trim()) { setProductFormError('Vui lòng điền tên sản phẩm.'); return; }
     setSavingProduct(true); setProductFormError('');
-    const payload = { stt: productForm.stt, name: productForm.name.trim(), unit: productForm.unit.trim(), price: productForm.price, image_url: productForm.image_url.trim(), category: productForm.category.trim(), active: productForm.active, phan_loai: productForm.phan_loai, description: productForm.description?.trim() || null };
+    const payload = { stt: productForm.stt, name: productForm.name.trim(), unit: productForm.unit.trim(), price: productForm.price, image_url: productForm.image_url.trim(), category: productForm.category.trim(), active: productForm.active, phan_loai: productForm.phan_loai, description: productForm.description?.trim() || null, cost_per_unit: productForm.cost_per_unit ?? null };
     const { error } = editingProduct
       ? await createClient().from('products').update(payload).eq('id', editingProduct.id)
       : await createClient().from('products').insert(payload);
@@ -714,12 +781,14 @@ export default function AdminPage() {
   }
 
   // --- CÔNG THỨC 2 ---
-  function startEditRecipe(r: CongThuc) {
+  async function startEditRecipe(r: CongThuc) {
     setEditingRecipe(r);
     setRecipeForm({ name: r.name, category: r.category, photo_url: r.photo_url, instructions: r.instructions, total_cost: r.total_cost, recipe_text: r.recipe_text, linked_product_ids: r.linked_product_ids ?? [], courses: r.courses ?? [], sort_order: r.sort_order });
     setShowAddRecipe(false); setRecipeFormError(''); setProdFilterQ('');
+    const { data } = await createClient().from('recipe_ingredient_items').select('*').eq('recipe_id', r.id).order('created_at');
+    setRecipeIngItems(data ?? []);
   }
-  function cancelRecipeEdit() { setEditingRecipe(null); setShowAddRecipe(false); setRecipeForm(BLANK_RECIPE); setRecipeFormError(''); setProdFilterQ(''); }
+  function cancelRecipeEdit() { setEditingRecipe(null); setShowAddRecipe(false); setRecipeForm(BLANK_RECIPE); setRecipeFormError(''); setProdFilterQ(''); setRecipeIngItems([]); }
 
   async function compressImage(file: File, maxPx = 900, quality = 0.82): Promise<File> {
     return new Promise(resolve => {
@@ -764,20 +833,39 @@ export default function AdminPage() {
     e.preventDefault();
     if (!recipeForm.name.trim()) { setRecipeFormError('Vui lòng điền tên món.'); return; }
     setSavingRecipe(true); setRecipeFormError('');
+    const autoCost = recipeIngItems.length > 0
+      ? Math.round(recipeIngItems.reduce((s, i) => s + i.quantity * i.cost_per_unit, 0))
+      : (recipeForm.total_cost ? Number(recipeForm.total_cost) : null);
     const payload = {
       name: recipeForm.name.trim(), category: recipeForm.category.trim(),
       photo_url: recipeForm.photo_url.trim(), instructions: recipeForm.instructions.trim(),
-      total_cost: recipeForm.total_cost ? Number(recipeForm.total_cost) : null,
+      total_cost: autoCost,
       recipe_text: recipeForm.recipe_text.trim(),
       linked_product_ids: recipeForm.linked_product_ids,
       courses: recipeForm.courses,
       sort_order: recipeForm.sort_order,
     };
-    const { error } = editingRecipe
-      ? await createClient().from('cong_thuc').update({ ...payload, updated_at: new Date().toISOString() }).eq('id', editingRecipe.id)
-      : await createClient().from('cong_thuc').insert(payload);
+    let recipeId: string;
+    if (editingRecipe) {
+      const { error } = await createClient().from('cong_thuc').update({ ...payload, updated_at: new Date().toISOString() }).eq('id', editingRecipe.id);
+      if (error) { setSavingRecipe(false); setRecipeFormError('Lỗi: ' + error.message); return; }
+      recipeId = editingRecipe.id;
+    } else {
+      const { data, error } = await createClient().from('cong_thuc').insert(payload).select('id').single();
+      if (error) { setSavingRecipe(false); setRecipeFormError('Lỗi: ' + error.message); return; }
+      recipeId = data.id;
+    }
+    // Sync ingredient items: delete existing, re-insert
+    if (editingRecipe || recipeIngItems.length > 0) {
+      await createClient().from('recipe_ingredient_items').delete().eq('recipe_id', recipeId);
+      if (recipeIngItems.length > 0) {
+        const { error: ingErr } = await createClient().from('recipe_ingredient_items').insert(
+          recipeIngItems.map(({ id: _id, ...item }) => ({ ...item, recipe_id: recipeId }))
+        );
+        if (ingErr) { setSavingRecipe(false); setRecipeFormError('Lỗi lưu nguyên liệu: ' + ingErr.message); return; }
+      }
+    }
     setSavingRecipe(false);
-    if (error) { setRecipeFormError('Lỗi: ' + error.message); return; }
     cancelRecipeEdit(); await loadRecipes();
   }
 
@@ -970,11 +1058,13 @@ export default function AdminPage() {
     l.course.toLowerCase().includes(leadSearch.toLowerCase())
   );
   const newLeadsCount = leads.filter(l => l.status === 'new').length;
+  const recipesNoCostCount = recipes.filter(r => !r.total_cost).length;
   const filteredRecipes = recipes.filter(r => {
     const q = recipeSearch.toLowerCase();
     const matchSearch = !q || r.name.toLowerCase().includes(q) || r.category.toLowerCase().includes(q);
     const matchKhoa = !recipeKhoaFilter || (r.courses ?? []).includes(recipeKhoaFilter);
-    return matchSearch && matchKhoa;
+    const matchNoCost = !recipeNoCostOnly || !r.total_cost;
+    return matchSearch && matchKhoa && matchNoCost;
   });
   const filteredChiaSe = chiaSeList.filter(r =>
     r.name.toLowerCase().includes(chiaSeSearch.toLowerCase()) ||
@@ -1013,7 +1103,7 @@ export default function AdminPage() {
       <div className="admin-loading"><i className="ti ti-loader-2 spin"></i> Đang tải...</div>
     </main>
   );
-  if (!isAdmin) return (
+  if (!isAdmin && !isStaff) return (
     <main style={{ minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', paddingTop: 'var(--nav-h)' }}>
       <div style={{ textAlign: 'center' }}>
         <i className="ti ti-lock" style={{ fontSize: '3rem', color: 'var(--accent)', display: 'block', marginBottom: '16px' }}></i>
@@ -1066,7 +1156,7 @@ export default function AdminPage() {
   function navTo(tab: typeof activeTab) { setActiveTab(tab); setSidebarOpen(false); }
   const TAB_LABELS: Record<string, string> = {
     dashboard: 'Dashboard', traffic: 'Thống Kê Traffic', leads: 'Yêu Cầu Tư Vấn', students: 'Học Viên',
-    content: 'Khóa Học', products: 'Nguyên Liệu', tools: 'Dụng Cụ',
+    content: 'Khóa Học', products: 'Nguyên Liệu', tools: 'Dụng Cụ', 'ext-ing': 'Nguyên Liệu Ngoài',
     recipes: 'Công Thức', 'ct-hvcp': 'CT HVCP', 'kho-cong-thuc': 'CT Miễn Phí',
     'hinh-anh': 'Hình Ảnh', videos: 'Tư Liệu Truyền Thông', 'service-videos': 'Video Dịch Vụ', orders: 'Đơn Hàng',
   };
@@ -1086,6 +1176,7 @@ export default function AdminPage() {
           </button>
         </div>
         <nav className="admin-sb-nav">
+          {isAdmin && (<>
           <div className="admin-sb-group">Tổng quan</div>
           <button className={`admin-sb-item${activeTab === 'dashboard' ? ' active' : ''}`} onClick={() => navTo('dashboard')}>
             <i className="ti ti-layout-dashboard"></i> Dashboard
@@ -1111,9 +1202,6 @@ export default function AdminPage() {
           <button className={`admin-sb-item${activeTab === 'content' ? ' active' : ''}`} onClick={() => navTo('content')}>
             <i className="ti ti-book-2"></i> Khóa Học
           </button>
-          <button className={`admin-sb-item${activeTab === 'recipes' ? ' active' : ''}`} onClick={() => navTo('recipes')}>
-            <i className="ti ti-coffee"></i> Công Thức
-          </button>
           <button className={`admin-sb-item${activeTab === 'ct-hvcp' ? ' active' : ''}`} onClick={() => navTo('ct-hvcp')}>
             <i className="ti ti-building-store"></i> CT HVCP
             {hvcp.length > 0 && <span className="admin-sb-badge">{hvcp.length}</span>}
@@ -1123,13 +1211,24 @@ export default function AdminPage() {
             {chiaSeList.length > 0 && <span className="admin-sb-badge">{chiaSeList.length}</span>}
           </button>
           <div className="admin-sb-sep"></div>
-          <div className="admin-sb-group">Kho hàng</div>
+          </>)}
+          <div className="admin-sb-group">Công thức &amp; giá vốn</div>
+          <button className={`admin-sb-item${activeTab === 'recipes' ? ' active' : ''}`} onClick={() => navTo('recipes')}>
+            <i className="ti ti-coffee"></i> Công Thức
+          </button>
           <button className={`admin-sb-item${activeTab === 'products' ? ' active' : ''}`} onClick={() => navTo('products')}>
             <i className="ti ti-package"></i> Nguyên Liệu
           </button>
+          <button className={`admin-sb-item${activeTab === 'ext-ing' ? ' active' : ''}`} onClick={() => navTo('ext-ing')}>
+            <i className="ti ti-basket"></i> Nguyên Liệu Ngoài
+            {externalIngredients.length > 0 && <span className="admin-sb-badge">{externalIngredients.length}</span>}
+          </button>
+          <div className="admin-sb-sep"></div>
+          <div className="admin-sb-group">Kho hàng</div>
           <button className={`admin-sb-item${activeTab === 'tools' ? ' active' : ''}`} onClick={() => navTo('tools')}>
             <i className="ti ti-tool"></i> Dụng Cụ
           </button>
+          {isAdmin && (<>
           <div className="admin-sb-sep"></div>
           <div className="admin-sb-group">Media</div>
           <button className={`admin-sb-item${activeTab === 'hinh-anh' ? ' active' : ''}`} onClick={() => navTo('hinh-anh')}>
@@ -1143,6 +1242,7 @@ export default function AdminPage() {
             <i className="ti ti-brand-youtube"></i> Video Dịch Vụ
             {serviceVideos.length > 0 && <span className="admin-sb-badge">{serviceVideos.length}</span>}
           </button>
+          </>)}
         </nav>
       </aside>
 
@@ -1388,7 +1488,7 @@ export default function AdminPage() {
                 <p style={{ color: 'var(--text-3)', fontSize: '0.875rem', marginBottom: '20px' }}><strong>{grantModal.name}</strong> — {grantModal.phone}</p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '24px' }}>
                   {RECIPE_COURSES.map(c => (
-                    <label key={c} style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', padding: '12px', border: '1px solid var(--border)', borderRadius: 'var(--r)', background: grantAccess.includes(c) ? 'rgba(176,90,16,0.06)' : 'transparent' }}>
+                    <label key={c} style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', padding: '12px', border: '1px solid var(--border)', borderRadius: 'var(--r)', background: grantAccess.includes(c) ? 'rgba(73,182,229,0.06)' : 'transparent' }}>
                       <input type="checkbox" checked={grantAccess.includes(c)} onChange={e => setGrantAccess(prev => e.target.checked ? [...prev, c] : prev.filter(x => x !== c))} style={{ accentColor: 'var(--accent)', width: '16px', height: '16px' }} />
                       <span style={{ fontWeight: 500 }}>{c}</span>
                     </label>
@@ -1867,6 +1967,10 @@ export default function AdminPage() {
                       <input type="number" min={0} step={1000} placeholder="165000" value={productForm.price || ''} onChange={e => setProductForm(f => ({ ...f, price: +e.target.value }))} />
                     </div>
                     <div className="af-group">
+                      <label>Giá/đơn vị cost (VNĐ/g hoặc /ml) <span style={{ fontWeight: 400, color: 'var(--text-3)', fontSize: '0.8em' }}>— để trống nếu chưa tính</span></label>
+                      <input type="number" min={0} step={0.1} placeholder="vd: 150 (đ/g)" value={productForm.cost_per_unit ?? ''} onChange={e => setProductForm(f => ({ ...f, cost_per_unit: e.target.value ? +e.target.value : null }))} />
+                    </div>
+                    <div className="af-group">
                       <label>Danh mục</label>
                       <input type="text" placeholder="Nguyên liệu, Bột, Siro..." value={productForm.category} onChange={e => setProductForm(f => ({ ...f, category: e.target.value }))} />
                     </div>
@@ -1951,6 +2055,10 @@ export default function AdminPage() {
                       <div className="af-group">
                         <label>Giá bán (VNĐ)</label>
                         <input type="number" min={0} step={1000} placeholder="165000" value={productForm.price || ''} onChange={e => setProductForm(f => ({ ...f, price: +e.target.value }))} />
+                      </div>
+                      <div className="af-group">
+                        <label>Giá/đơn vị cost (VNĐ/g hoặc /ml) <span style={{ fontWeight: 400, color: 'var(--text-3)', fontSize: '0.8em' }}>— để trống nếu chưa tính</span></label>
+                        <input type="number" min={0} step={0.1} placeholder="vd: 150 (đ/g)" value={productForm.cost_per_unit ?? ''} onChange={e => setProductForm(f => ({ ...f, cost_per_unit: e.target.value ? +e.target.value : null }))} />
                       </div>
                       <div className="af-group">
                         <label>Danh mục</label>
@@ -2099,6 +2207,15 @@ export default function AdminPage() {
                 {CT_COURSES.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
               {recipeKhoaFilter && <button onClick={() => setRecipeKhoaFilter('')} style={{ fontSize: '0.8rem', color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer' }}><i className="ti ti-x"></i> Xóa lọc</button>}
+              {recipesNoCostCount > 0 && (
+                <button
+                  onClick={() => setRecipeNoCostOnly(v => !v)}
+                  title="Lọc các món chưa nhập định lượng nguyên liệu"
+                  style={{ fontSize: '0.82rem', fontWeight: 600, padding: '7px 12px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', border: `1.5px solid ${recipeNoCostOnly ? '#c0392b' : 'var(--border)'}`, background: recipeNoCostOnly ? '#c0392b' : '#fff5f4', color: recipeNoCostOnly ? '#fff' : '#c0392b' }}
+                >
+                  <i className="ti ti-alert-triangle"></i> {recipesNoCostCount} món chưa có cost
+                </button>
+              )}
               <button className="btn btn-primary" onClick={() => { setShowAddRecipe(v => !v); setEditingRecipe(null); setRecipeForm(BLANK_RECIPE); }}>
                 <i className={`ti ti-${showAddRecipe ? 'x' : 'plus'}`}></i> {showAddRecipe ? 'Đóng' : 'Thêm Công Thức'}
               </button>
@@ -2117,6 +2234,9 @@ export default function AdminPage() {
                   filteredProducts={filteredProductsForRecipe} toggleLinkedProduct={toggleLinkedProduct}
                   onImageFile={handleRecipeImageUpload}
                   courses={CT_COURSES}
+                  ingredientItems={recipeIngItems} setIngredientItems={setRecipeIngItems}
+                  externalIngredients={externalIngredients}
+                  onGotoExtIng={() => { cancelRecipeEdit(); setActiveTab('ext-ing'); }}
                 />
               </div>
             )}
@@ -2138,6 +2258,9 @@ export default function AdminPage() {
                     filteredProducts={filteredProductsForRecipe} toggleLinkedProduct={toggleLinkedProduct}
                     onImageFile={handleRecipeImageUpload}
                     courses={CT_COURSES}
+                    ingredientItems={recipeIngItems} setIngredientItems={setRecipeIngItems}
+                    externalIngredients={externalIngredients}
+                    onGotoExtIng={() => { cancelRecipeEdit(); setActiveTab('ext-ing'); }}
                   />
                 </div>
               </div>
@@ -2168,7 +2291,7 @@ export default function AdminPage() {
                             </div>
                           : <span style={{ color: 'var(--muted)', fontSize: '0.8rem' }}>—</span>}
                       </td>
-                      <td style={{ whiteSpace: 'nowrap' }}>{r.total_cost ? r.total_cost.toLocaleString('vi-VN') + ' đ' : '—'}</td>
+                      <td style={{ whiteSpace: 'nowrap' }}>{r.total_cost ? r.total_cost.toLocaleString('vi-VN') + ' đ' : <span style={{ color: '#c0392b', fontSize: '0.78rem', fontWeight: 600 }} title="Chưa nhập định lượng nguyên liệu"><i className="ti ti-alert-triangle"></i> Chưa có cost</span>}</td>
                       <td style={{ fontSize: '0.8rem', color: 'var(--text-3)' }}>{r.linked_product_ids?.length ?? 0} SP</td>
                       <td style={{ display: 'flex', gap: '4px' }}>
                         <button className="admin-edit-btn" onClick={() => startEditRecipe(r)} title="Sửa"><i className="ti ti-pencil"></i></button>
@@ -2183,6 +2306,99 @@ export default function AdminPage() {
             </div>
           </>
         )}
+
+        {/* ======= NGUYÊN LIỆU NGOÀI TAB ======= */}
+        {activeTab === 'ext-ing' && (() => {
+          const q = extSearch.toLowerCase();
+          const filteredExt = externalIngredients.filter(e => !q || e.name.toLowerCase().includes(q));
+          const extFormJsx = (submitLabel: string) => (
+            <form className="admin-form" onSubmit={saveExtIng}>
+              <div className="admin-form-grid">
+                <div className="af-group af-full"><label>Tên nguyên liệu *</label><input type="text" placeholder="VD: Chanh leo" value={extForm.name} onChange={e => setExtForm(f => ({ ...f, name: e.target.value }))} required /></div>
+                <div className="af-group"><label>Quy cách / Định lượng gói *</label><input type="number" min={0} step="any" placeholder="1000" value={extForm.quantity_per_pack || ''} onChange={e => setExtForm(f => ({ ...f, quantity_per_pack: +e.target.value }))} required /></div>
+                <div className="af-group"><label>Đơn vị</label>
+                  <select value={extForm.unit} onChange={e => setExtForm(f => ({ ...f, unit: e.target.value }))}>
+                    {['g', 'ml', 'cái', 'lát', 'gói', 'hộp', 'lá'].map(u => <option key={u} value={u}>{u}</option>)}
+                  </select>
+                </div>
+                <div className="af-group"><label>Giá cả gói (VNĐ) *</label><input type="number" min={0} step="any" placeholder="70000" value={extForm.price_per_pack || ''} onChange={e => setExtForm(f => ({ ...f, price_per_pack: +e.target.value }))} required /></div>
+                <div className="af-group">
+                  <label>Đơn giá / đơn vị (tự tính)</label>
+                  <div style={{ padding: '8px 12px', background: 'var(--bg-alt)', borderRadius: 'var(--r)', border: '1.5px solid var(--border)', fontWeight: 600, color: 'var(--accent)' }}>
+                    {extForm.quantity_per_pack > 0 ? (Math.round((extForm.price_per_pack / extForm.quantity_per_pack) * 10000) / 10000).toLocaleString('vi-VN') + ' đ/' + extForm.unit : '—'}
+                  </div>
+                </div>
+                <div className="af-group"><label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}><input type="checkbox" checked={extForm.active} onChange={e => setExtForm(f => ({ ...f, active: e.target.checked }))} />Đang dùng (hiện trong công thức)</label></div>
+              </div>
+              {extFormError && <div className="lf-error" style={{ marginBottom: '12px' }}><i className="ti ti-alert-circle"></i> {extFormError}</div>}
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button type="submit" className="btn btn-primary" disabled={savingExt}>{savingExt ? <><i className="ti ti-loader-2 spin"></i> Đang lưu...</> : <><i className="ti ti-check"></i> {submitLabel}</>}</button>
+                <button type="button" className="btn btn-outline" onClick={cancelExtEdit}>Hủy</button>
+              </div>
+            </form>
+          );
+          return (
+            <>
+              <div style={{ display: 'flex', gap: '12px', marginBottom: '16px', flexWrap: 'wrap', alignItems: 'center' }}>
+                <div className="admin-search-wrap" style={{ flex: 1, minWidth: '200px' }}>
+                  <i className="ti ti-search"></i>
+                  <input className="admin-search" type="text" placeholder="Tìm nguyên liệu ngoài..." value={extSearch} onChange={e => setExtSearch(e.target.value)} />
+                  {extSearch && <button onClick={() => setExtSearch('')} className="ct-search-clear"><i className="ti ti-x"></i></button>}
+                </div>
+                <button className="btn btn-primary" onClick={() => { setShowAddExt(v => !v); setEditingExt(null); setExtForm(BLANK_EXT_ING); setExtFormError(''); }}>
+                  <i className={`ti ti-${showAddExt ? 'x' : 'plus'}`}></i> {showAddExt ? 'Đóng' : 'Thêm Nguyên Liệu Ngoài'}
+                </button>
+              </div>
+
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-3)', marginBottom: '16px' }}>
+                <i className="ti ti-info-circle"></i> Đơn giá/đơn vị <strong>tự tính = Giá cả gói ÷ Quy cách</strong>. Đây là danh sách nguyên liệu KHÔNG phải hàng HVCP, dùng để tính cost công thức.
+              </p>
+
+              {showAddExt && (
+                <div className="admin-add-card" style={{ marginBottom: '24px' }}>
+                  <h3 className="admin-section-title">Thêm Nguyên Liệu Ngoài Mới</h3>
+                  {extFormJsx('Thêm Nguyên Liệu')}
+                </div>
+              )}
+
+              {editingExt && (
+                <div className="admin-modal-backdrop" onClick={e => { if (e.target === e.currentTarget) cancelExtEdit(); }}>
+                  <div className="admin-modal-card">
+                    <div className="admin-modal-head">
+                      <h3>Sửa: {editingExt.name}</h3>
+                      <button type="button" className="admin-modal-close" onClick={cancelExtEdit}><i className="ti ti-x"></i></button>
+                    </div>
+                    {extFormJsx('Cập Nhật')}
+                  </div>
+                </div>
+              )}
+
+              <div className="admin-table-wrap">
+                <table className="admin-table">
+                  <thead><tr><th>#</th><th>Tên Nguyên Liệu</th><th>Quy Cách</th><th>Giá Cả Gói</th><th>Đơn Giá/ĐV</th><th>Dùng</th><th></th></tr></thead>
+                  <tbody>
+                    {filteredExt.length === 0 ? (
+                      <tr><td colSpan={7} className="admin-empty">{externalIngredients.length === 0 ? 'Chưa có nguyên liệu ngoài — chạy SQL external_ingredients_create.sql hoặc nhấn "Thêm"' : 'Không tìm thấy'}</td></tr>
+                    ) : filteredExt.map((e, i) => (
+                      <tr key={e.id} style={{ opacity: e.active ? 1 : 0.45 }}>
+                        <td className="admin-num">{i + 1}</td>
+                        <td className="admin-name">{e.name}</td>
+                        <td className="admin-date">{e.quantity_per_pack.toLocaleString('vi-VN')} {e.unit}</td>
+                        <td style={{ whiteSpace: 'nowrap' }}>{e.price_per_pack.toLocaleString('vi-VN')} đ</td>
+                        <td style={{ whiteSpace: 'nowrap', fontWeight: 600, color: 'var(--accent)' }}>{(Math.round(e.cost_per_unit * 10000) / 10000).toLocaleString('vi-VN')} đ/{e.unit}</td>
+                        <td><button className={`course-toggle${e.active ? ' on' : ''}`} onClick={() => toggleExtActive(e)}><i className={`ti ti-${e.active ? 'eye' : 'eye-off'}`}></i></button></td>
+                        <td style={{ display: 'flex', gap: '4px' }}>
+                          <button className="admin-edit-btn" onClick={() => startEditExtIng(e)} title="Sửa"><i className="ti ti-pencil"></i></button>
+                          <button className="admin-del-btn" onClick={() => deleteExtIng(e.id)} disabled={deletingExt === e.id} title="Xóa">{deletingExt === e.id ? <i className="ti ti-loader-2 spin"></i> : <i className="ti ti-trash"></i>}</button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          );
+        })()}
 
         {/* ======= CT HVCP TAB ======= */}
         {activeTab === 'ct-hvcp' && (
@@ -2398,7 +2614,7 @@ export default function AdminPage() {
               </div>
             )}
 
-            <div style={{ padding: '14px 18px', background: 'rgba(176,90,16,0.06)', border: '1px solid rgba(176,90,16,0.2)', borderRadius: 'var(--r)', fontSize: '0.85rem', color: 'var(--text-2)' }}>
+            <div style={{ padding: '14px 18px', background: 'rgba(73,182,229,0.06)', border: '1px solid rgba(73,182,229,0.2)', borderRadius: 'var(--r)', fontSize: '0.85rem', color: 'var(--text-2)' }}>
               <strong>⚠️ Lưu ý quota Lark API:</strong> Mỗi lần sync Trao Bằng tốn ~21 lượt, Lớp Học tốn nhiều hơn tùy số ảnh. Giới hạn 10.000 lượt/tháng. Chỉ sync khi cần thiết.
             </div>
           </div>
@@ -2707,7 +2923,7 @@ export default function AdminPage() {
                         </tr>
                         {expandedOrder === o.id && (
                           <tr key={`${o.id}-detail`}>
-                            <td colSpan={8} style={{ padding: '0 16px 16px', background: 'rgba(176,90,16,0.03)' }}>
+                            <td colSpan={8} style={{ padding: '0 16px 16px', background: 'rgba(73,182,229,0.03)' }}>
                               <div className="order-detail-wrap">
                                 {o.items.map((item, idx) => (
                                   <div key={idx} className="order-detail-item">
@@ -2792,7 +3008,7 @@ function HVCPForm({
             {filteredProducts.length === 0 ? (
               <p style={{ padding: '12px 16px', color: 'var(--text-3)', fontSize: '0.875rem' }}>Không tìm thấy</p>
             ) : filteredProducts.map((p: any) => (
-              <label key={p.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px', cursor: 'pointer', background: form.linked_product_ids.includes(p.id) ? 'rgba(176,90,16,0.06)' : 'transparent', borderBottom: '1px solid var(--border)' }}>
+              <label key={p.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px', cursor: 'pointer', background: form.linked_product_ids.includes(p.id) ? 'rgba(73,182,229,0.06)' : 'transparent', borderBottom: '1px solid var(--border)' }}>
                 <input type="checkbox" checked={form.linked_product_ids.includes(p.id)} onChange={() => toggleLinkedProduct(p.id)} style={{ accentColor: 'var(--accent)', flexShrink: 0 }} />
                 {p.image_url && <img src={p.image_url} alt="" style={{ width: '32px', height: '32px', objectFit: 'cover', borderRadius: '4px', flexShrink: 0 }} />}
                 <span style={{ fontSize: '0.875rem' }}>{p.name}</span>
@@ -2938,6 +3154,7 @@ type RecipeFormData = { name: string; category: string; photo_url: string; instr
 function RecipeForm({
   form, setForm, error, saving, uploadingImg, fileRef, onSubmit, onCancel, submitLabel,
   products, prodFilterQ, setProdFilterQ, filteredProducts, toggleLinkedProduct, onImageFile, courses,
+  ingredientItems, setIngredientItems, externalIngredients, onGotoExtIng,
 }: {
   form: RecipeFormData; setForm: React.Dispatch<React.SetStateAction<RecipeFormData>>;
   error: string; saving: boolean; uploadingImg: boolean;
@@ -2946,15 +3163,77 @@ function RecipeForm({
   products: any[]; prodFilterQ: string; setProdFilterQ: (v: string) => void;
   filteredProducts: any[]; toggleLinkedProduct: (id: string) => void;
   onImageFile: (f: File) => void; courses: string[];
+  ingredientItems: RecipeIngItem[]; setIngredientItems: React.Dispatch<React.SetStateAction<RecipeIngItem[]>>;
+  externalIngredients: ExternalIngredient[]; onGotoExtIng: () => void;
 }) {
+  const [addSrc, setAddSrc] = useState<'internal' | 'external'>('external');
+  const [addSearch, setAddSearch] = useState('');
+  const [addIngId, setAddIngId] = useState('');
+  const [addQty, setAddQty] = useState('');
+  const [addPrice, setAddPrice] = useState(''); // đơn giá áp dụng (ghi đè)
+
+  // Tự tính giá/đơn vị của nguyên liệu nội bộ = giá bán / quy cách (parse quy cách -> g hoặc ml)
+  function internalUnitCost(p: any): { cost: number; unit: string } | null {
+    if (p.cost_per_unit != null) return { cost: Number(p.cost_per_unit), unit: /ml|lít|lit|\bl\b/i.test(p.unit || '') ? 'ml' : 'g' };
+    const m = String(p.unit || '').match(/([\d.,]+)\s*(kg|ml|l|g)\b/i);
+    if (!m || !p.price) return null;
+    const num = parseFloat(m[1].replace(',', '.'));
+    if (!num) return null;
+    const u = m[2].toLowerCase();
+    const base = (u === 'kg' || u === 'l') ? num * 1000 : num;   // kg->g, l->ml
+    const baseUnit = (u === 'kg' || u === 'g') ? 'g' : 'ml';
+    return { cost: Number(p.price) / base, unit: baseUnit };
+  }
+
+  const q = addSearch.toLowerCase();
+  const addPool = addSrc === 'external'
+    ? externalIngredients.filter(i => i.active && (!q || i.name.toLowerCase().includes(q)))
+    : (products as any[]).filter((p: any) => internalUnitCost(p) && (!q || p.name.toLowerCase().includes(q)));
+
+  const selectedAdd = addSrc === 'external'
+    ? externalIngredients.find(i => i.id === addIngId)
+    : (products as any[]).find((p: any) => p.id === addIngId);
+
+  const selectedInfo = selectedAdd
+    ? (addSrc === 'external'
+        ? { cost: Number((selectedAdd as ExternalIngredient).cost_per_unit), unit: (selectedAdd as ExternalIngredient).unit }
+        : internalUnitCost(selectedAdd))
+    : null;
+
+  // Đơn giá áp dụng: dùng ô ghi đè nếu có, ngược lại giá tự tính
+  const appliedPrice = addPrice !== '' ? Number(addPrice) : (selectedInfo?.cost ?? 0);
+
+  const autoCost = ingredientItems.length > 0
+    ? Math.round(ingredientItems.reduce((s, i) => s + i.quantity * i.cost_per_unit, 0))
+    : null;
+
+  function handleAddItem() {
+    if (!addIngId || !addQty || Number(addQty) <= 0 || !selectedAdd || !selectedInfo) return;
+    const newItem: RecipeIngItem = {
+      source: addSrc,
+      ingredient_id: addIngId,
+      name: selectedAdd.name,
+      quantity: Number(addQty),
+      unit: selectedInfo.unit,
+      cost_per_unit: appliedPrice,
+    };
+    setIngredientItems(prev => [...prev, newItem]);
+    setAddIngId(''); setAddQty(''); setAddSearch(''); setAddPrice('');
+  }
+
   return (
     <form className="admin-form" onSubmit={onSubmit}>
       <div className="admin-form-grid">
         {/* Tên + Phân loại */}
         <div className="af-group af-full"><label>Tên món *</label><input type="text" placeholder="VD: MATCHA ĐẬU ĐỎ" value={form.name} onChange={e => setForm((f: RecipeFormData) => ({ ...f, name: e.target.value }))} required /></div>
         <div className="af-group"><label>Phân loại</label><input type="text" placeholder="VD: Kombucha Soda" value={form.category} onChange={e => setForm((f: RecipeFormData) => ({ ...f, category: e.target.value }))} /></div>
-        <div className="af-group"><label>Tổng cost (VNĐ)</label><input type="number" placeholder="8500" value={form.total_cost ?? ''} onChange={e => setForm((f: RecipeFormData) => ({ ...f, total_cost: e.target.value ? Number(e.target.value) : null }))} /></div>
         <div className="af-group"><label>Thứ tự hiển thị</label><input type="number" value={form.sort_order} onChange={e => setForm((f: RecipeFormData) => ({ ...f, sort_order: Number(e.target.value) }))} /></div>
+        <div className="af-group">
+          <label>Tổng cost</label>
+          <div style={{ padding: '8px 12px', background: 'var(--bg-alt)', borderRadius: 'var(--r)', border: '1.5px solid var(--border)', fontWeight: 600, color: autoCost ? 'var(--accent)' : 'var(--text-3)', fontSize: '0.95rem' }}>
+            {autoCost ? autoCost.toLocaleString('vi-VN') + ' đ (tự tính)' : form.total_cost ? form.total_cost.toLocaleString('vi-VN') + ' đ (cũ)' : '— (chưa có)'}
+          </div>
+        </div>
 
         {/* Ảnh */}
         <div className="af-group af-full">
@@ -2977,8 +3256,103 @@ function RecipeForm({
         {/* Hướng dẫn */}
         <div className="af-group af-full"><label>Hướng dẫn pha chế</label><textarea rows={5} placeholder="B1: ...&#10;B2: ..." value={form.instructions} onChange={e => setForm((f: RecipeFormData) => ({ ...f, instructions: e.target.value }))} /></div>
 
-        {/* Công thức */}
-        <div className="af-group af-full"><label>Công thức (nguyên liệu + định lượng)</label><textarea rows={6} placeholder="1. Sữa tươi HAPPY BARN: 120 ml&#10;2. Bột matcha Bạch Dương: 3 gram" value={form.recipe_text} onChange={e => setForm((f: RecipeFormData) => ({ ...f, recipe_text: e.target.value }))} /></div>
+        {/* Công thức text (hiển thị công khai) */}
+        <div className="af-group af-full"><label>Công thức (nguyên liệu + định lượng) — hiển thị công khai</label><textarea rows={6} placeholder="1. Sữa tươi HAPPY BARN: 120 ml&#10;2. Bột matcha Bạch Dương: 3 gram" value={form.recipe_text} onChange={e => setForm((f: RecipeFormData) => ({ ...f, recipe_text: e.target.value }))} /></div>
+
+        {/* ===== COST CALCULATOR ===== */}
+        <div className="af-group af-full">
+          <label style={{ fontWeight: 700, color: 'var(--accent)', fontSize: '0.9rem' }}>
+            <i className="ti ti-calculator" style={{ marginRight: 6 }}></i>Định lượng nguyên liệu (tính cost tự động)
+          </label>
+
+          {/* Danh sách đã thêm */}
+          {ingredientItems.length > 0 && (
+            <div style={{ border: '1px solid var(--border)', borderRadius: 'var(--r)', overflow: 'hidden', marginBottom: '10px' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem' }}>
+                <thead>
+                  <tr style={{ background: 'var(--bg-alt)', borderBottom: '1px solid var(--border)' }}>
+                    <th style={{ padding: '6px 10px', textAlign: 'left', fontWeight: 600 }}>Nguyên liệu</th>
+                    <th style={{ padding: '6px 10px', textAlign: 'right', fontWeight: 600 }}>SL</th>
+                    <th style={{ padding: '6px 10px', textAlign: 'left', fontWeight: 600 }}>Đơn vị</th>
+                    <th style={{ padding: '6px 10px', textAlign: 'right', fontWeight: 600 }}>Cost</th>
+                    <th style={{ padding: '6px 10px', textAlign: 'center', fontWeight: 600 }}></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {ingredientItems.map((item, idx) => (
+                    <tr key={idx} style={{ borderBottom: '1px solid var(--border)', background: idx % 2 === 0 ? 'transparent' : 'rgba(0,0,0,0.015)' }}>
+                      <td style={{ padding: '7px 10px' }}>
+                        <span style={{ fontSize: '0.7rem', background: item.source === 'internal' ? '#d1ecf1' : '#fff3cd', color: item.source === 'internal' ? '#0c5460' : '#856404', borderRadius: '3px', padding: '1px 5px', marginRight: 6 }}>{item.source === 'internal' ? 'HVCP' : 'Ngoài'}</span>
+                        {item.name}
+                      </td>
+                      <td style={{ padding: '7px 10px', textAlign: 'right' }}>{item.quantity}</td>
+                      <td style={{ padding: '7px 10px', color: 'var(--text-3)' }}>{item.unit}</td>
+                      <td style={{ padding: '7px 10px', textAlign: 'right', fontWeight: 600, color: 'var(--accent)' }}>{Math.round(item.quantity * item.cost_per_unit).toLocaleString('vi-VN')} đ</td>
+                      <td style={{ padding: '7px 10px', textAlign: 'center' }}>
+                        <button type="button" onClick={() => setIngredientItems(prev => prev.filter((_, i) => i !== idx))} style={{ background: 'none', border: 'none', color: '#c0392b', cursor: 'pointer', fontSize: '1rem', padding: 0 }}><i className="ti ti-trash"></i></button>
+                      </td>
+                    </tr>
+                  ))}
+                  <tr style={{ background: 'var(--bg-alt)', borderTop: '2px solid var(--border)' }}>
+                    <td colSpan={3} style={{ padding: '8px 10px', fontWeight: 700 }}>Tổng cost</td>
+                    <td style={{ padding: '8px 10px', textAlign: 'right', fontWeight: 700, color: 'var(--accent)', fontSize: '1rem' }}>{autoCost?.toLocaleString('vi-VN')} đ</td>
+                    <td></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* Form thêm nguyên liệu */}
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'flex-end', padding: '10px', background: 'var(--bg-alt)', borderRadius: 'var(--r)', border: '1px dashed var(--border)' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-3)', fontWeight: 600 }}>Nguồn</span>
+              <select value={addSrc} onChange={e => { setAddSrc(e.target.value as 'internal' | 'external'); setAddIngId(''); setAddSearch(''); setAddPrice(''); }} style={{ padding: '7px 10px', border: '1.5px solid var(--border)', borderRadius: '6px', fontSize: '0.82rem', background: 'var(--white)', cursor: 'pointer' }}>
+                <option value="external">Ngoài (48 SP)</option>
+                <option value="internal">Nguyên liệu HVCP</option>
+              </select>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1, minWidth: '150px' }}>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-3)', fontWeight: 600 }}>Tìm nguyên liệu</span>
+              <input type="text" placeholder="Gõ tên..." value={addSearch} onChange={e => { setAddSearch(e.target.value); setAddIngId(''); }} style={{ padding: '7px 10px', border: '1.5px solid var(--border)', borderRadius: '6px', fontSize: '0.82rem' }} />
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1, minWidth: '180px' }}>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-3)', fontWeight: 600 }}>Chọn ({addPool.length})</span>
+              <select value={addIngId} onChange={e => { setAddIngId(e.target.value); setAddPrice(''); }} style={{ padding: '7px 10px', border: '1.5px solid var(--border)', borderRadius: '6px', fontSize: '0.82rem', background: 'var(--white)', cursor: 'pointer' }}>
+                <option value="">-- Chọn --</option>
+                {addPool.map((i: any) => {
+                  const info = addSrc === 'external' ? { cost: Number(i.cost_per_unit), unit: i.unit } : internalUnitCost(i);
+                  return <option key={i.id} value={i.id}>{i.name} — {info ? Math.round(info.cost * 100) / 100 : '?'}đ/{info?.unit}</option>;
+                })}
+              </select>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-3)', fontWeight: 600 }}>Số lượng ({selectedInfo?.unit ?? '?'})</span>
+              <input type="number" min="0.1" step="0.1" placeholder="0" value={addQty} onChange={e => setAddQty(e.target.value)} style={{ padding: '7px 10px', border: '1.5px solid var(--border)', borderRadius: '6px', fontSize: '0.82rem', width: '80px' }} />
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-3)', fontWeight: 600 }}>Đơn giá (đ/{selectedInfo?.unit ?? 'đv'})</span>
+              <input type="number" min="0" step="0.01" placeholder={selectedInfo ? String(Math.round(selectedInfo.cost * 100) / 100) : '0'} value={addPrice} onChange={e => setAddPrice(e.target.value)} title="Để trống = giá tự tính. Sửa để ghi đè (vd trà pha)" style={{ padding: '7px 10px', border: '1.5px solid var(--border)', borderRadius: '6px', fontSize: '0.82rem', width: '90px' }} />
+            </div>
+            {addIngId && addQty && Number(addQty) > 0 && (
+              <div style={{ fontSize: '0.8rem', color: 'var(--accent)', fontWeight: 600, alignSelf: 'flex-end', paddingBottom: '8px' }}>
+                = {Math.round(Number(addQty) * appliedPrice).toLocaleString('vi-VN')} đ
+              </div>
+            )}
+            <button type="button" onClick={handleAddItem} disabled={!addIngId || !addQty || Number(addQty) <= 0} className="btn btn-primary" style={{ alignSelf: 'flex-end' }}>
+              <i className="ti ti-plus"></i> Thêm
+            </button>
+          </div>
+          <p style={{ fontSize: '0.75rem', color: 'var(--text-3)', marginTop: '6px' }}>
+            <i className="ti ti-info-circle"></i> Đơn giá nguyên liệu HVCP <strong>tự tính = giá bán ÷ quy cách</strong> (vd Siro 120.000đ ÷ Chai 750ml = 160đ/ml). Sửa ô "Đơn giá" để ghi đè khi cần (vd trà pha: 365đ/g lá → ~12đ/ml).
+          </p>
+          <p style={{ fontSize: '0.78rem', marginTop: '4px' }}>
+            <i className="ti ti-basket" style={{ color: 'var(--accent)' }}></i> Không thấy nguyên liệu ngoài cần dùng?{' '}
+            <button type="button" onClick={onGotoExtIng} style={{ background: 'none', border: 'none', padding: 0, color: 'var(--accent)', fontWeight: 600, cursor: 'pointer', textDecoration: 'underline' }}>
+              Mở tab Nguyên Liệu Ngoài để thêm →
+            </button>
+          </p>
+        </div>
 
         {/* Khóa học */}
         <div className="af-group af-full">
@@ -2993,15 +3367,15 @@ function RecipeForm({
           </div>
         </div>
 
-        {/* Nguyên liệu (multi-select) */}
+        {/* Nguyên liệu nội bộ (multi-select tag) */}
         <div className="af-group af-full">
-          <label>Nguyên liệu sử dụng ({form.linked_product_ids.length} đã chọn)</label>
+          <label>Nguyên liệu HVCP liên kết ({form.linked_product_ids.length} đã chọn)</label>
           <input type="text" placeholder="Tìm nguyên liệu..." value={prodFilterQ} onChange={e => setProdFilterQ(e.target.value)} style={{ marginBottom: '8px' }} />
           <div style={{ border: '1px solid var(--border)', borderRadius: 'var(--r)', maxHeight: '220px', overflowY: 'auto', padding: '4px 0' }}>
             {filteredProducts.length === 0 ? (
               <p style={{ padding: '12px 16px', color: 'var(--text-3)', fontSize: '0.875rem' }}>Không tìm thấy</p>
-            ) : filteredProducts.map(p => (
-              <label key={p.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px', cursor: 'pointer', background: form.linked_product_ids.includes(p.id) ? 'rgba(176,90,16,0.06)' : 'transparent', borderBottom: '1px solid var(--border)' }}>
+            ) : filteredProducts.map((p: any) => (
+              <label key={p.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px', cursor: 'pointer', background: form.linked_product_ids.includes(p.id) ? 'rgba(73,182,229,0.06)' : 'transparent', borderBottom: '1px solid var(--border)' }}>
                 <input type="checkbox" checked={form.linked_product_ids.includes(p.id)} onChange={() => toggleLinkedProduct(p.id)} style={{ accentColor: 'var(--accent)', flexShrink: 0 }} />
                 {p.image_url && <img src={p.image_url} alt="" style={{ width: '32px', height: '32px', objectFit: 'cover', borderRadius: '4px', flexShrink: 0 }} />}
                 <span style={{ fontSize: '0.875rem' }}>{p.name}</span>
@@ -3012,7 +3386,7 @@ function RecipeForm({
           {form.linked_product_ids.length > 0 && (
             <div style={{ marginTop: '8px', display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
               {form.linked_product_ids.map(id => {
-                const p = products.find((x: any) => x.id === id);
+                const p = (products as any[]).find((x: any) => x.id === id);
                 return p ? (
                   <span key={id} style={{ background: 'var(--accent)', color: '#fff', padding: '2px 8px', borderRadius: '999px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
                     {p.name}
@@ -3033,3 +3407,4 @@ function RecipeForm({
     </form>
   );
 }
+

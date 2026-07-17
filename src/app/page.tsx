@@ -317,8 +317,16 @@ export default function HomePage() {
               ☕
               <img className="ph-img" src="/images/about.jpg" alt="Về Học Viện Cà Phê" onError={e => { e.currentTarget.remove(); }} />
               <div className="about-badge">
-                <span style={{fontSize:'1.5rem'}}>📍</span>
-                <div><div className="about-badge-t">Tân Bình, TP.HCM</div><div className="about-badge-s">T2–T7 · 8h30–17h30</div></div>
+                <div className="about-badge-locs">
+                  <a className="about-badge-loc" href="https://maps.app.goo.gl/Y6ED3sRDtYymYhti8" target="_blank" rel="noopener noreferrer">
+                    <span className="about-badge-pin">📍</span>
+                    <div><div className="about-badge-t">Tân Bình, TP.HCM</div><div className="about-badge-s">26/23 Nguyễn Minh Hoàng · T2–T7 · 8h30–17h30</div></div>
+                  </a>
+                  <a className="about-badge-loc" href="https://maps.app.goo.gl/VyzD2QrmMUzXtkvN8" target="_blank" rel="noopener noreferrer">
+                    <span className="about-badge-pin">📍</span>
+                    <div><div className="about-badge-t">Cầu Giấy, Hà Nội</div><div className="about-badge-s">8 Dương Đình Nghệ · T2–T7 · 8h30–17h30</div></div>
+                  </a>
+                </div>
               </div>
             </div>
             <div>

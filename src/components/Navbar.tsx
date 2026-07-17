@@ -13,6 +13,7 @@ export default function Navbar() {
   const [phone, setPhone] = useState<string | null>(null);
   const [displayName, setDisplayName] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isStaff, setIsStaff] = useState(false);
   const [articles, setArticles] = useState<{ title: string; url: string; image: string; date: string }[]>([]);
   const pathname = usePathname();
   const router = useRouter();
@@ -37,6 +38,7 @@ export default function Navbar() {
           const phone = session.user.email.replace('@hocviencaphehcm.vn', '');
           setPhone(phone);
           setIsAdmin(session.user.app_metadata?.role === 'admin');
+          setIsStaff(session.user.app_metadata?.role === 'staff');
           // Use the SAME client — never create a new one inside callbacks
           const { data: profile } = await supabase.from('profiles').select('name').eq('id', session.user.id).single();
           setDisplayName(profile?.name?.trim() || phone);
@@ -47,11 +49,12 @@ export default function Navbar() {
     // onAuthStateChange: NO DB calls, NO new createClient() — just sync state from session
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_OUT' || !session) {
-        setPhone(null); setIsAdmin(false); setDisplayName(null);
+        setPhone(null); setIsAdmin(false); setIsStaff(false); setDisplayName(null);
       } else if (session.user?.email) {
         const p = session.user.email.replace('@hocviencaphehcm.vn', '');
         setPhone(p);
         setIsAdmin(session.user.app_metadata?.role === 'admin');
+        setIsStaff(session.user.app_metadata?.role === 'staff');
         // Keep existing displayName; fall back to phone only if not yet set
         setDisplayName(prev => prev || p);
       }
@@ -69,7 +72,7 @@ export default function Navbar() {
 
   async function logout() {
     try { await createClient().auth.signOut(); } catch { /* ignore network errors */ }
-    setPhone(null); setIsAdmin(false); setDisplayName(null);
+    setPhone(null); setIsAdmin(false); setIsStaff(false); setDisplayName(null);
     router.push('/'); router.refresh();
   }
 
@@ -196,9 +199,9 @@ export default function Navbar() {
             <div className="nav-actions">
               {phone ? (
                 <div className="nav-user">
-                  {isAdmin && (
+                  {(isAdmin || isStaff) && (
                     <Link href="/admin" className={`nav-link nav-admin${pathname === '/admin' ? ' active' : ''}`}>
-                      <i className="ti ti-settings"></i> Admin
+                      <i className="ti ti-settings"></i> {isAdmin ? 'Admin' : 'Quản Lý'}
                     </Link>
                   )}
                   <Link href="/tai-khoan" className={`nav-link${pathname === '/tai-khoan' ? ' active' : ''}`}>
@@ -315,7 +318,7 @@ export default function Navbar() {
 
         {phone ? (
           <>
-            {isAdmin && <Link href="/admin" onClick={close} className="mob-top-link">⚙ Quản Lý Admin</Link>}
+            {(isAdmin || isStaff) && <Link href="/admin" onClick={close} className="mob-top-link">⚙ {isAdmin ? 'Quản Lý Admin' : 'Quản Lý Công Thức'}</Link>}
             <Link href="/tai-khoan" onClick={close} className={`mob-top-link${pathname === '/tai-khoan' ? ' active' : ''}`}>
               <i className="ti ti-user-circle"></i> Tài Khoản ({displayName})
             </Link>

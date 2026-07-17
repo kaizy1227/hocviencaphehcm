@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -203,9 +203,8 @@ export default function KhoCongThucPage() {
                   <Link href={`/kho-cong-thuc/${slug}`} key={r.id} className="ct-card" style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
                     <div className="ct-card-img">
                       {r.photo_url
-                        ? <img src={r.photo_url} alt={showLock ? '' : r.name} loading="lazy"
-                            style={showLock ? { filter: 'blur(10px)', transform: 'scale(1.12)' } : {}}
-                            onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
+                        ? <Image src={r.photo_url} alt={showLock ? '' : r.name} fill sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 240px"
+                            style={{ objectFit: 'cover', ...(showLock ? { filter: 'blur(10px)', transform: 'scale(1.12)' } : {}) }} loading="lazy" />
                         : <div className="ct2-no-img"><i className="ti ti-coffee"></i></div>
                       }
                       {showLock
@@ -318,8 +317,8 @@ export default function KhoCongThucPage() {
 
       <style>{`
         .kct-unlock-wrap { background: var(--bg); padding: 24px 0 4px; }
-        .kct-unlock-banner-link { display: block; border-radius: var(--r-lg); overflow: hidden; box-shadow: 0 10px 28px rgba(176,90,16,.25); transition: transform .2s, box-shadow .2s; }
-        .kct-unlock-banner-link:hover { transform: translateY(-2px); box-shadow: 0 14px 34px rgba(176,90,16,.32); }
+        .kct-unlock-banner-link { display: block; border-radius: var(--r-lg); overflow: hidden; box-shadow: 0 10px 28px rgba(73,182,229,.25); transition: transform .2s, box-shadow .2s; }
+        .kct-unlock-banner-link:hover { transform: translateY(-2px); box-shadow: 0 14px 34px rgba(73,182,229,.32); }
         .kct-unlock-img { width: 100%; height: auto; display: block; }
         .kct-type-tabs { background: var(--white); border-bottom: 1px solid var(--border); position: sticky; top: var(--nav-h); z-index: 92; }
         .kct-type-tabs .container { display: flex; overflow-x: auto; scrollbar-width: none; }
@@ -328,7 +327,7 @@ export default function KhoCongThucPage() {
         .kct-tab-btn:hover { color: var(--accent); }
         .kct-tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
         .kct-tab-badge { font-size: .65rem; font-weight: 700; background: var(--bg-alt); color: var(--muted); padding: 2px 7px; border-radius: 100px; }
-        .kct-tab-btn.active .kct-tab-badge { background: rgba(176,90,16,.12); color: var(--accent); }
+        .kct-tab-btn.active .kct-tab-badge { background: rgba(73,182,229,.12); color: var(--accent); }
         .kct-controls-sticky .ct-controls-wrap, .kct-controls-sticky { top: calc(var(--nav-h) + 49px) !important; }
         .kct-count { font-size: .78rem; font-weight: 600; color: var(--muted); margin-bottom: 20px; text-transform: uppercase; letter-spacing: .06em; }
         .kct-tag-internal, .kct-tag-external { position: absolute; top: 8px; left: 8px; font-size: .6rem; font-weight: 700; padding: 3px 8px; border-radius: 100px; display: flex; align-items: center; gap: 3px; }
@@ -349,3 +348,4 @@ export default function KhoCongThucPage() {
     </>
   );
 }
+

@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
 
 type TraoBang = { id: string; name: string; date: string; course: string; photo_url: string; };
@@ -74,9 +75,12 @@ export default function TraoBangPage() {
                     style={{ cursor: s.photo_url ? 'zoom-in' : 'default' }}
                   >
                     {s.photo_url ? (
-                      <img
+                      <Image
                         src={s.photo_url}
                         alt={s.name}
+                        fill
+                        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 240px"
+                        style={{ objectFit: 'cover', objectPosition: 'top' }}
                         loading="lazy"
                         onError={e => {
                           const el = e.currentTarget as HTMLImageElement;

@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
 import { useCart } from '@/context/CartContext';
 
@@ -11,6 +12,10 @@ type CongThuc = {
 };
 type Product = {
   id: string; name: string; unit: string; price: number; image_url: string;
+};
+type RecipeIngItem = {
+  id: string; source: 'internal' | 'external'; name: string;
+  quantity: number; unit: string; cost_per_unit: number;
 };
 
 const PER_PAGE = 24;
@@ -29,6 +34,8 @@ export default function CongThucPage() {
   const [courseAccess, setCourseAccess] = useState<string[] | null>(null);
   const [allProducts, setAllProducts]   = useState<Product[]>([]);
   const [addedIds, setAddedIds]         = useState<Set<string>>(new Set());
+  const [recipeItems, setRecipeItems]   = useState<RecipeIngItem[]>([]);
+  const [itemsLoading, setItemsLoading] = useState(false);
 
   const { addItem, openCart } = useCart();
 
@@ -91,8 +98,17 @@ export default function CongThucPage() {
     (recipe.courses ?? []).some(c => courseAccess?.includes(c) ?? false);
   const noAccess = isLoggedIn === true && !isAdmin && courseAccess !== null && courseAccess.length === 0;
 
-  const openModal  = (r: CongThuc) => { setSelected(r); setModalOpen(true); setAddedIds(new Set()); };
-  const closeModal = () => { setModalOpen(false); setSelected(null); };
+  const openModal  = (r: CongThuc) => {
+    setSelected(r); setModalOpen(true); setAddedIds(new Set()); setRecipeItems([]);
+    if (canView(r)) {
+      setItemsLoading(true);
+      void createClient().from('recipe_ingredient_items')
+        .select('id,source,name,quantity,unit,cost_per_unit')
+        .eq('recipe_id', r.id).order('created_at')
+        .then(({ data }) => { setRecipeItems(data ?? []); setItemsLoading(false); });
+    }
+  };
+  const closeModal = () => { setModalOpen(false); setSelected(null); setRecipeItems([]); };
 
   const fmtCost = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + ' VNĐ';
   const splitLines = (text: string) => text.split(/\n/).map(l => l.trim()).filter(Boolean);
@@ -205,7 +221,7 @@ export default function CongThucPage() {
                   <div key={r.id} className="ct-card" onClick={() => openModal(r)}>
                     <div className="ct-card-img">
                       {r.photo_url
-                        ? <img src={r.photo_url} alt={r.name} loading="lazy" onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
+                        ? <Image src={r.photo_url} alt={r.name} fill sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 240px" style={{ objectFit: 'cover' }} loading="lazy" />
                         : <div className="ct2-no-img"><i className="ti ti-coffee"></i></div>
                       }
                       <div className="ct-card-lock"><i className="ti ti-lock"></i></div>
@@ -273,7 +289,7 @@ export default function CongThucPage() {
 
             <div className="ct-modal-img">
               {selected.photo_url
-                ? <img src={selected.photo_url} alt={selected.name} />
+                ? <Image src={selected.photo_url} alt={selected.name} fill sizes="(max-width: 768px) 100vw, 700px" style={{ objectFit: 'cover' }} />
                 : <div className="ct2-modal-no-img"><i className="ti ti-coffee"></i></div>
               }
               {isLoggedIn === false ? (
@@ -327,16 +343,50 @@ export default function CongThucPage() {
                     </div>
                   )}
 
-                  {selected.recipe_text && (
+                  {recipeItems.length > 0 ? (
+                    <div className="ct-modal-section">
+                      <h4><i className="ti ti-list"></i> Công thức &amp; định lượng</h4>
+                      <div className="ct-cost-table-wrap">
+                        <table className="ct-cost-table">
+                          <thead>
+                            <tr>
+                              <th>Nguyên liệu</th>
+                              <th className="num">Định lượng</th>
+                              <th className="num">Cost</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {recipeItems.map(item => (
+                              <tr key={item.id}>
+                                <td>
+                                  <span className={`ct-src-tag ${item.source}`}>{item.source === 'internal' ? 'HVCP' : 'Ngoài'}</span>
+                                  {item.name}
+                                </td>
+                                <td className="num">{item.quantity} {item.unit}</td>
+                                <td className="num cost">{fmtCost(Math.round(item.quantity * item.cost_per_unit))}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                          <tfoot>
+                            <tr>
+                              <td colSpan={2}>Tổng cost</td>
+                              <td className="num total">{fmtCost(Math.round(recipeItems.reduce((s, i) => s + i.quantity * i.cost_per_unit, 0)))}</td>
+                            </tr>
+                          </tfoot>
+                        </table>
+                      </div>
+                    </div>
+                  ) : selected.recipe_text ? (
                     <div className="ct-modal-section">
                       <h4><i className="ti ti-list"></i> Công thức</h4>
+                      {itemsLoading && <p style={{ fontSize: '0.8rem', color: 'var(--muted)', margin: '0 0 8px' }}><i className="ti ti-loader-2 spin"></i> Đang tải định lượng...</p>}
                       <ul className="ct-ing-list">
                         {splitLines(selected.recipe_text).map((line, i) => (
                           <li key={i}>{line}</li>
                         ))}
                       </ul>
                     </div>
-                  )}
+                  ) : null}
 
                   {linkedProducts.length > 0 && (
                     <div className="ct-modal-section ct-linked-products">
@@ -346,7 +396,7 @@ export default function CongThucPage() {
                           <div key={p.id} className="ct-prod-item">
                             <div className="ct-prod-img">
                               {p.image_url
-                                ? <img src={p.image_url} alt={p.name} loading="lazy" />
+                                ? <Image src={p.image_url} alt={p.name} width={48} height={48} style={{ objectFit: 'cover' }} loading="lazy" />
                                 : <div className="ct-prod-img-ph"><i className="ti ti-package"></i></div>}
                             </div>
                             <div className="ct-prod-info">
@@ -389,6 +439,18 @@ export default function CongThucPage() {
         @keyframes ct2shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
         .ct2-no-img { width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:3rem; color:var(--muted); background:var(--bg-alt); }
         .ct2-modal-no-img { width:100%; height:220px; display:flex; align-items:center; justify-content:center; font-size:4rem; color:var(--muted); background:var(--bg-alt); }
+        .ct-cost-table-wrap { border:1px solid var(--border); border-radius:var(--r); overflow:hidden; }
+        .ct-cost-table { width:100%; border-collapse:collapse; font-size:0.9rem; }
+        .ct-cost-table th { background:var(--bg-alt); text-align:left; padding:9px 12px; font-weight:600; font-size:0.82rem; color:var(--text-2); border-bottom:1px solid var(--border); }
+        .ct-cost-table th.num, .ct-cost-table td.num { text-align:right; white-space:nowrap; }
+        .ct-cost-table td { padding:9px 12px; border-bottom:1px solid var(--border); vertical-align:middle; }
+        .ct-cost-table tbody tr:last-child td { border-bottom:none; }
+        .ct-cost-table td.cost { font-weight:600; color:var(--accent); }
+        .ct-cost-table tfoot td { background:var(--bg-alt); font-weight:700; border-top:2px solid var(--border); padding:11px 12px; }
+        .ct-cost-table tfoot td.total { color:var(--accent); font-size:1rem; }
+        .ct-src-tag { display:inline-block; font-size:0.68rem; font-weight:600; border-radius:3px; padding:1px 6px; margin-right:7px; vertical-align:middle; }
+        .ct-src-tag.internal { background:#d1ecf1; color:#0c5460; }
+        .ct-src-tag.external { background:#fff3cd; color:#856404; }
       `}</style>
     </>
   );

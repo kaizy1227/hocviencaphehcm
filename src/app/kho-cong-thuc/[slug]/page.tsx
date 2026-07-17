@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useCart } from '@/context/CartContext';
@@ -283,7 +284,7 @@ export default function CongThucDetailPage() {
                           <div key={p.id} className="ct-prod-item">
                             <div className="ct-prod-img">
                               {p.image_url
-                                ? <img src={p.image_url} alt={p.name} loading="lazy" />
+                                ? <Image src={p.image_url} alt={p.name} width={48} height={48} style={{ objectFit: 'cover' }} loading="lazy" />
                                 : <div className="ct-prod-img-ph"><i className="ti ti-package"></i></div>}
                             </div>
                             <div className="ct-prod-info">
@@ -380,7 +381,7 @@ export default function CongThucDetailPage() {
         .kct-platform-link { flex-shrink: 0; display: inline-flex; align-items: center; gap: 4px; font-size: .72rem; font-weight: 600; padding: 5px 11px; border-radius: 8px; border: 1.5px solid; text-decoration: none; transition: all .2s; white-space: nowrap; }
         .kct-platform-shopee { color: #EE4D2D; border-color: rgba(238,77,45,.3); background: rgba(238,77,45,.04); }
         .kct-platform-shopee:hover { background: rgba(238,77,45,.12); }
-        .kct-order-note { margin-top: 20px; padding: 14px 16px; background: #FFF5ED; border-radius: 12px; border: 1px solid rgba(176,90,16,.15); }
+        .kct-order-note { margin-top: 20px; padding: 14px 16px; background: #EEF8FD; border-radius: 12px; border: 1px solid rgba(73,182,229,.15); }
         .kct-order-note p { font-size: .8rem; color: var(--text-3); line-height: 1.6; margin-bottom: 4px; }
         .kct-order-note p:first-child { color: var(--accent); font-weight: 600; margin-bottom: 4px; }
         .kct-contact-btns { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }

@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
 
 type LopHoc = { id: string; date: string; course: string; class_name: string; student_names: string; photos: string[]; };
@@ -97,9 +98,12 @@ export default function LopHocPage() {
                 >
                   {/* Preview image */}
                   <div className="lh-card-cover">
-                    <img
+                    <Image
                       src={session.photos[0]}
                       alt={`${session.course} ${session.date}`}
+                      fill
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 380px"
+                      style={{ objectFit: 'cover' }}
                       loading="lazy"
                     />
                     {session.photos.length > 1 && (
@@ -199,10 +203,12 @@ export default function LopHocPage() {
           {lb.photos.length > 1 && (
             <div className="tb-lb-thumbs" onClick={e => e.stopPropagation()}>
               {lb.photos.map((url, i) => (
-                <img
+                <Image
                   key={i}
                   src={url}
                   alt=""
+                  width={56}
+                  height={42}
                   className={`tb-lb-thumb${i === lb.index ? ' active' : ''}`}
                   onClick={e => { e.stopPropagation(); setLb(prev => prev && { ...prev, index: i }); }}
                 />
