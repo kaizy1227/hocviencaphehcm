@@ -572,7 +572,7 @@ export async function fetchLarkClassSchedule(): Promise<LarkScheduleEntry[]> {
 // ─── Thống kê Khách hàng (Base "Quản lý công việc" — Bên ngoài) ───────────────
 // Đếm khóa học / dịch vụ đã chốt. KHÔNG resolve ảnh → mỗi page = 1 lượt.
 // 1.838 bản ghi ≈ 19 page + 1 token ≈ 20 lượt/lần. Chạy 1 lần/sáng qua cron.
-const KHACH_HANG_APP_TOKEN = 'Rg8DbDE0SaZsEls6vkylfx2ngrf';
+const KHACH_HANG_APP_TOKEN = 'Rg8DbDEOSaZsEls6vkylfx2ngrf';
 const KHACH_HANG_TABLE     = 'tbl9RhlOHmdqjTa3';
 
 export interface KhachHangStats {
