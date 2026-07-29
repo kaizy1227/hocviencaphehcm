@@ -642,6 +642,8 @@ export async function fetchLarkKhachHangStats(): Promise<KhachHangStats> {
 
   let khoaChotTotal = 0, khoaChotMonth = 0, dichVuChotTotal = 0, dichVuChotMonth = 0;
   const dichVuBreakdown: Record<string, number> = {};
+  const _debugDates: any[] = [];
+  const _debugDichVu: any[] = [];
 
   let pageToken = '';
   do {
@@ -659,6 +661,8 @@ export async function fetchLarkKhachHangStats(): Promise<KhachHangStats> {
       const hasDichVu = fieldNonEmpty(dichVuRaw);
       const dateMs = extractDateMs(f['Chứng từ thanh toán']);
       const thisMonth = inThisMonth(dateMs);
+      if (_debugDates.length < 3) _debugDates.push(f['Chứng từ thanh toán']);
+      if (_debugDichVu.length < 3) _debugDichVu.push(f['Dịch vụ đã chốt']);
 
       if (isKhoaChot) { khoaChotTotal++; if (thisMonth) khoaChotMonth++; }
       if (hasDichVu) {
@@ -674,5 +678,5 @@ export async function fetchLarkKhachHangStats(): Promise<KhachHangStats> {
     pageToken = json.data?.has_more ? (json.data.page_token ?? '') : '';
   } while (pageToken);
 
-  return { khoaChotTotal, khoaChotMonth, dichVuChotTotal, dichVuChotMonth, dichVuBreakdown };
+  return { khoaChotTotal, khoaChotMonth, dichVuChotTotal, dichVuChotMonth, dichVuBreakdown, _debugDates, _debugDichVu };
 }
