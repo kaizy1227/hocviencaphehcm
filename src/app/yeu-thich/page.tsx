@@ -1,4 +1,5 @@
 'use client';
+import Image from 'next/image';
 import { useWishlist } from '@/context/WishlistContext';
 import { useCart } from '@/context/CartContext';
 import Link from 'next/link';
@@ -78,7 +79,7 @@ function WishCard({ item, added, onAdd, onRemove }: WishCardProps) {
     <div className="yt-card">
       <div className="yt-card-img">
         {item.image_url
-          ? <img src={item.image_url} alt={item.name} loading="lazy" />
+          ? <Image src={item.image_url} alt={item.name} width={200} height={200} style={{ objectFit: 'contain', width: '100%', height: '100%' }} />
           : <div className="yt-card-img-ph"><i className="ti ti-package"></i></div>}
         <button className="yt-remove-btn" onClick={() => onRemove(item)} aria-label="Xóa khỏi yêu thích" title="Bỏ yêu thích">
           <i className="ti ti-x"></i>

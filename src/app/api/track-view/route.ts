@@ -1,6 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
+// IPs in this comma-separated env var are never counted
+const EXCLUDED_IPS = (process.env.EXCLUDED_IPS ?? '')
+  .split(',')
+  .map(s => s.trim())
+  .filter(Boolean);
+
+function getClientIp(req: NextRequest): string {
+  const xff = req.headers.get('x-forwarded-for');
+  if (xff) return xff.split(',')[0].trim();
+  return req.headers.get('x-real-ip') ?? '';
+}
+
 function detectSource(referrer: string, host: string): string {
   if (!referrer) return 'direct';
   let ref: URL;
@@ -18,6 +30,12 @@ function detectSource(referrer: string, host: string): string {
 }
 
 export async function POST(req: NextRequest) {
+  // Skip internal traffic
+  const clientIp = getClientIp(req);
+  if (EXCLUDED_IPS.length > 0 && clientIp && EXCLUDED_IPS.includes(clientIp)) {
+    return NextResponse.json({ ok: true, skipped: true });
+  }
+
   const body = await req.json().catch(() => null);
   const path = typeof body?.path === 'string' ? body.path.slice(0, 300) : null;
   if (!path) return NextResponse.json({ error: 'missing path' }, { status: 400 });

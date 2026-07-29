@@ -3,7 +3,10 @@
 
 /* HERO */
 .hero {
-  background: var(--bg);
+  background:
+    radial-gradient(circle at 12% 22%, rgba(73,182,229,0.13), transparent 36%),
+    radial-gradient(circle at 88% 78%, rgba(73,182,229,0.09), transparent 34%),
+    var(--bg);
   padding: calc(var(--nav-h,64px) + 56px) 0 64px;
   position: relative; overflow: hidden;
 }
@@ -27,10 +30,11 @@
   margin-bottom: 14px;
 }
 .heroH1 {
-  font-size: clamp(2.2rem, 5vw, 3.4rem);
+  font-size: clamp(2.25rem, 5.5vw, 4.5rem);
   font-weight: 900; line-height: 1.08; letter-spacing: -0.025em;
   color: var(--navy); margin: 0 0 18px;
 }
+.heroH1 em { font-style: normal; color: var(--caramel-dark); }
 .heroLead {
   font-size: 1.02rem; line-height: 1.75; color: var(--muted);
   max-width: 50ch; margin: 0 0 28px;
@@ -168,29 +172,62 @@
 }
 
 /* PROCESS STEPS */
+.processSection {
+  padding: clamp(56px,7vw,96px) 0;
+  background: var(--navy);
+}
+.processHead {
+  max-width: 640px; margin-bottom: 56px;
+}
+.processSection .eyebrow { color: rgba(73,182,229,.85); }
+.processSection .sectionTitle { color: #fff; }
+.processSection .sectionLead { color: rgba(255,255,255,.6); }
+
 .processGrid {
   display: grid;
   grid-template-columns: repeat(4,1fr);
-  gap: 32px;
-  counter-reset: process;
+  gap: 0;
 }
 .processStep {
-  position: relative; min-height: 200px;
-  padding-top: 24px;
-  border-top: 2px solid var(--navy);
-  counter-increment: process;
+  padding: 0 28px 0 0;
+  position: relative;
 }
-.processStep::before {
-  content: '0' counter(process);
-  display: block; margin-bottom: 36px;
-  font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em;
-  color: var(--muted);
+.processStep:last-child { padding-right: 0; }
+
+.processTop {
+  display: flex; align-items: center;
+  margin-bottom: 28px;
 }
-.processStep h3 {
+.processNum {
+  flex-shrink: 0;
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  background: rgba(73,182,229,.18);
+  border: 1.5px solid rgba(73,182,229,.45);
+  color: #49B6E5;
+  font-size: .82rem; font-weight: 800; letter-spacing: .06em;
+  display: grid; place-items: center;
+}
+.processLine {
+  flex: 1; height: 1px;
+  background: linear-gradient(to right, rgba(73,182,229,.4), rgba(73,182,229,.1));
+  margin-left: 12px;
+}
+
+.processIcon {
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  background: rgba(255,255,255,.07);
+  border: 1px solid rgba(255,255,255,.1);
+  display: grid; place-items: center;
+  margin-bottom: 18px;
+  font-size: 1.25rem; color: #fff;
+}
+.processTitle {
   font-size: 1.05rem; font-weight: 800;
-  color: var(--navy); margin: 0 0 8px;
+  color: #fff; margin: 0 0 10px;
 }
-.processStep p { margin: 0; color: var(--muted); font-size: 0.87rem; line-height: 1.65; }
+.processDesc { margin: 0; color: rgba(255,255,255,.55); font-size: .875rem; line-height: 1.7; }
 
 /* PROOF SECTION */
 .proof {
@@ -293,7 +330,10 @@
 @media (max-width: 860px) {
   .heroInner { grid-template-columns: 1fr; }
   .heroVisual, .heroVisual img { min-height: 380px; }
-  .processGrid { grid-template-columns: repeat(2,1fr); }
+  .processGrid { grid-template-columns: repeat(2,1fr); gap: 36px 0; }
+  .processStep { padding-right: 0; }
+  .processStep:nth-child(odd) { padding-right: 24px; }
+  .processLine { display: none; }
   .proofGrid { grid-template-columns: 1fr; }
   .consultGrid { grid-template-columns: 1fr; }
   .contactPanel { grid-template-columns: 1fr 1fr; }
@@ -306,9 +346,10 @@
   .serviceMedia { aspect-ratio: 16/10; }
   .serviceAction { grid-column: auto; padding: 14px 4px 4px; border-left: 0; border-top: 1px solid var(--border); flex-direction: row; justify-content: space-between; align-items: center; }
   .servicePrice { margin: 0; text-align: left; }
-  .processGrid { grid-template-columns: 1fr; gap: 0; }
-  .processStep { min-height: 0; padding-block: 20px; }
-  .processStep::before { margin-bottom: 16px; }
+  .processGrid { grid-template-columns: 1fr; gap: 28px; }
+  .processStep { padding-right: 0; }
+  .processStep:nth-child(odd) { padding-right: 0; }
+  .processLine { display: none; }
   .formGrid { grid-template-columns: 1fr; }
   .fieldFull, .formSubmit { grid-column: auto; }
   .formSubmit { flex-direction: column-reverse; align-items: stretch; }

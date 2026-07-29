@@ -3,7 +3,10 @@
 
 /* HERO */
 .hero {
-  background: var(--bg);
+  background:
+    radial-gradient(circle at 12% 22%, rgba(73,182,229,0.13), transparent 36%),
+    radial-gradient(circle at 88% 78%, rgba(73,182,229,0.09), transparent 34%),
+    var(--bg);
   padding: calc(var(--nav-h,64px) + 56px) 0 64px;
   position: relative; overflow: hidden;
 }
@@ -27,7 +30,7 @@
   margin-bottom: 14px;
 }
 .heroH1 {
-  font-size: clamp(2.2rem, 5vw, 3.6rem);
+  font-size: clamp(2.25rem, 5.5vw, 4.5rem);
   font-weight: 900; line-height: 1.08; letter-spacing: -0.025em;
   color: var(--navy); margin: 0 0 18px;
 }
@@ -63,10 +66,12 @@
 
 /* FILTER PANEL */
 .filterWrap {
+  position: sticky; top: calc(var(--nav-h, 64px) + 12px); z-index: 30;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 16px;
   padding: 16px;
+  margin-bottom: 40px;
   box-shadow: 0 8px 32px rgba(23,50,77,0.08);
   display: flex; flex-direction: column; gap: 12px;
 }
@@ -122,6 +127,26 @@
   box-shadow: 0 16px 40px rgba(143,93,24,0.10);
   border-color: rgba(143,93,24,0.25);
 }
+.courseCardFeatured {
+  border: 2px solid #d29416;
+  background: linear-gradient(180deg, #fcefcf 0%, #fdf6e6 60%);
+  box-shadow: 0 0 0 4px rgba(210,148,22,.12), 0 14px 36px rgba(143,93,24,.16);
+  position: relative;
+}
+.courseCardFeatured:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 0 0 4px rgba(210,148,22,.2), 0 22px 52px rgba(143,93,24,.22);
+  border-color: #b8790c;
+}
+.courseCardFeatured .courseBody { position: relative; z-index: 1; }
+.featuredTag {
+  display: inline-flex; align-items: center; gap: 5px; align-self: flex-start;
+  margin-bottom: 9px; padding: 4px 11px; border-radius: 999px;
+  background: linear-gradient(90deg, #d29416, #b8790c); color: #fff;
+  font-size: .68rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase;
+  box-shadow: 0 3px 10px rgba(184,121,12,.3);
+}
+.featuredTag i { font-size: .82rem; }
 .courseMedia { position: relative; aspect-ratio: 16/10; overflow: hidden; background: var(--bg); }
 .courseMedia img { width: 100%; height: 100%; object-fit: cover; transition: transform .35s ease; display: block; }
 .courseCard:hover .courseMedia img { transform: scale(1.04); }
@@ -211,7 +236,42 @@
   .featGrid { grid-template-columns: 1fr; gap: 24px; }
 }
 @media (max-width: 640px) {
-  .courseGrid { grid-template-columns: 1fr; }
-  .filterRow { flex-direction: column; align-items: stretch; }
+  .courseGrid { grid-template-columns: 1fr; gap: 12px; }
   .heroCta { flex-direction: column; }
+
+  /* ── Thanh lọc dính + chip cuộn ngang ── */
+  .filterWrap {
+    position: sticky; top: var(--nav-h, 64px); z-index: 30;
+    border-radius: 12px; padding: 10px; margin-bottom: 22px; gap: 9px;
+    box-shadow: 0 6px 18px rgba(23,50,77,0.12);
+  }
+  .filterRow { flex-direction: column; align-items: stretch; gap: 9px; min-width: 0; }
+  .searchInput { min-height: 40px; }
+  .filterTabs {
+    flex-wrap: nowrap; overflow-x: auto; gap: 7px;
+    width: 100%; max-width: 100%; min-width: 0;
+    margin: 0 -10px; padding: 2px 10px 4px;
+    scrollbar-width: none; -webkit-overflow-scrolling: touch;
+  }
+  .filterTabs::-webkit-scrollbar { display: none; }
+  .filterBtn { flex-shrink: 0; white-space: nowrap; min-height: 36px; padding: 7px 14px; font-size: .8rem; }
+
+  /* ── Card dạng hàng ngang gọn ── */
+  .courseCard { flex-direction: row; align-items: stretch; }
+  .courseMedia { width: 116px; flex-shrink: 0; aspect-ratio: auto; }
+  .courseMedia img { height: 100%; object-fit: cover; }
+  .courseBody { padding: 11px 13px; gap: 5px; min-width: 0; }
+  .courseBody h3 { font-size: .96rem; margin: 0; line-height: 1.28; }
+  .courseBody p {
+    font-size: .76rem; line-height: 1.4; margin: 0;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  }
+  .courseMeta { gap: 10px; font-size: .68rem; margin: 2px 0 0; }
+  .courseMeta span:nth-child(2) { display: none; }
+  .courseFoot { margin-top: 4px; padding-top: 8px; }
+  .coursePrice { font-size: .95rem; }
+  .courseBadge { font-size: .58rem; padding: 2px 7px; }
+
+  /* Featured vẫn hàng ngang nhưng viền vàng nổi bật (đã có .courseCardFeatured) */
+  .courseCardFeatured .courseMedia { width: 132px; }
 }

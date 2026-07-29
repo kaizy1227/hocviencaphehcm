@@ -14,7 +14,9 @@ type ServiceItem = {
 function resolveImg(img: string | null): string {
   if (!img) return '';
   if (img.startsWith('http')) return img;
-  return `/images/services/${img}`;
+  // PNG/JPG đã convert sang WebP — thay đuôi tự động
+  const webp = img.replace(/\.(png|jpe?g)$/i, '.webp');
+  return `/images/services/${webp}`;
 }
 
 const SERVICE_META: Record<string, { index: string; tags: string[] }> = {
@@ -32,10 +34,10 @@ const SERVICES_DEFAULT: ServiceItem[] = SERVICES.map(sv => ({
 }));
 
 const PROCESS_STEPS = [
-  { title: 'Hiểu bài toán',         desc: 'Trao đổi mô hình, mặt bằng, ngân sách và mục tiêu kinh doanh.' },
-  { title: 'Chốt phạm vi',          desc: 'Xác định đầu việc, thời gian thực hiện và kết quả bàn giao.' },
-  { title: 'Triển khai thực tế',    desc: 'Làm menu, đào tạo hoặc thiết lập quy trình theo gói đã chọn.' },
-  { title: 'Đồng hành sau bàn giao',desc: 'Tiếp nhận vướng mắc khi áp dụng vào hoạt động thật của quán.' },
+  { icon: 'ti-message-dots',    title: 'Hiểu bài toán',         desc: 'Trao đổi mô hình, mặt bằng, ngân sách và mục tiêu kinh doanh của quán.' },
+  { icon: 'ti-clipboard-check', title: 'Chốt phạm vi',          desc: 'Xác định rõ đầu việc, thời gian và kết quả bàn giao — để không có bất ngờ về sau.' },
+  { icon: 'ti-rocket',          title: 'Triển khai thực tế',    desc: 'Làm menu, đào tạo hoặc thiết lập quy trình theo đúng gói dịch vụ đã chọn.' },
+  { icon: 'ti-heart-handshake', title: 'Đồng hành sau bàn giao',desc: 'Tiếp nhận và hỗ trợ vướng mắc khi bạn áp dụng vào hoạt động thật của quán.' },
 ];
 
 const PROOF_ROWS = [
@@ -64,13 +66,22 @@ export default function DichVuPage() {
     });
   }, []);
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    const name  = formName.trim();
     const phone = formPhone.replace(/\s/g, '');
-    if (!formName.trim() || !/^(0|\+84)[0-9]{9,10}$/.test(phone) || !formService) {
+    const course = formService;
+    const ghi_chu = formNote.trim() || null;
+    if (!name || !/^(0|\+84)[0-9]{9,10}$/.test(phone) || !course) {
       setFormStatus({ msg: 'Vui lòng nhập họ tên, số điện thoại hợp lệ và dịch vụ quan tâm.', ok: false });
       return;
     }
+    const { error } = await createClient().from('leads').insert({ name, phone, course, ghi_chu });
+    if (error) {
+      setFormStatus({ msg: 'Có lỗi xảy ra, vui lòng thử lại hoặc liên hệ Zalo.', ok: false });
+      return;
+    }
+    void fetch('/api/notify-lark', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, phone, course, ghi_chu }) });
     setFormStatus({ msg: 'Đã ghi nhận. Đội ngũ sẽ liên hệ trong giờ làm việc.', ok: true });
     setFormName(''); setFormPhone(''); setFormService(''); setFormNote('');
   }
@@ -83,7 +94,7 @@ export default function DichVuPage() {
           <div className={s.heroInner}>
             <div>
               <span className={s.eyebrow}>Dịch vụ kinh doanh · Đồng hành thực tế</span>
-              <h1 className={s.heroH1}>Mở quán có lộ trình,<br />vận hành có nền tảng.</h1>
+              <h1 className={s.heroH1}>Mở Quán Đúng Cách.<br /><em>Từ Ngày Đầu Tiên.</em></h1>
               <p className={s.heroLead}>Từ định hình mô hình, xây menu đến đào tạo đội ngũ, mỗi gói dịch vụ đều bắt đầu từ bài toán thật của quán bạn.</p>
               <div className={s.heroCta}>
                 <a href="#goi-dich-vu" className="btn btn-primary"><i className="ti ti-briefcase"></i> Xem các gói dịch vụ</a>
@@ -98,41 +109,12 @@ export default function DichVuPage() {
               <img src="/images/gallery/Life-styles-with-person/~12930.webp" alt="Giảng viên trao đổi quy trình vận hành với học viên" />
               <figcaption className={s.heroCaption}>
                 <strong>Không áp một công thức cho mọi quán</strong>
-                <span>Giải pháp được điều chỉnh theo mô hình, ngân sách và năng lực vận hành thực tế.</span>
+                <span>Mỗi gói dịch vụ đều được điều chỉnh theo mô hình và ngân sách cụ thể của quán bạn.</span>
               </figcaption>
             </figure>
           </div>
         </div>
       </section>
-
-      {/* QUICK CONTACT RAIL */}
-      <div className={s.contactRail}>
-        <div className="container">
-          <div className={s.contactPanel}>
-            <a className={s.contactItem} href="#tu-van">
-              <span className={s.contactIcon}><i className="ti ti-file-text"></i></span>
-              <span>
-                <strong>Nhận gợi ý gói phù hợp</strong>
-                <span>Điền nhu cầu, đội ngũ sẽ phản hồi trong giờ làm việc</span>
-              </span>
-            </a>
-            <a className={s.contactItem} href="tel:0834790555">
-              <span className={s.contactIcon}><i className="ti ti-phone"></i></span>
-              <span>
-                <strong>0834 790 555</strong>
-                <span>Gọi trực tiếp</span>
-              </span>
-            </a>
-            <a className={s.contactItem} href="https://zalo.me/0834790555" target="_blank" rel="noopener">
-              <span className={s.contactIcon}><i className="ti ti-message-circle"></i></span>
-              <span>
-                <strong>Trao đổi qua Zalo</strong>
-                <span>Gửi thông tin quán</span>
-              </span>
-            </a>
-          </div>
-        </div>
-      </div>
 
       {/* SERVICE LIST */}
       <section className="section" id="goi-dich-vu">
@@ -177,18 +159,23 @@ export default function DichVuPage() {
       </section>
 
       {/* PROCESS */}
-      <section className="section" style={{ borderTop: '1px solid var(--border,#dce6ed)' }}>
+      <section className={s.processSection}>
         <div className="container">
-          <div style={{ maxWidth: 640, marginBottom: 48 }}>
+          <div className={s.processHead}>
             <span className={s.eyebrow}>Quy trình hợp tác</span>
             <h2 className={s.sectionTitle}>Rõ đầu việc trước khi bắt đầu</h2>
-            <p className={s.sectionLead}>Mỗi bước đều có mục tiêu và phạm vi để hai bên cùng theo dõi tiến độ.</p>
+            <p className={s.sectionLead}>Trước khi bắt đầu, cả hai bên đã rõ mình sẽ làm gì và bàn giao gì.</p>
           </div>
           <div className={s.processGrid}>
-            {PROCESS_STEPS.map(step => (
+            {PROCESS_STEPS.map((step, i) => (
               <article className={s.processStep} key={step.title}>
-                <h3>{step.title}</h3>
-                <p>{step.desc}</p>
+                <div className={s.processTop}>
+                  <div className={s.processNum}>{String(i + 1).padStart(2, '0')}</div>
+                  {i < PROCESS_STEPS.length - 1 && <div className={s.processLine} />}
+                </div>
+                <div className={s.processIcon}><i className={`ti ${step.icon}`} /></div>
+                <h3 className={s.processTitle}>{step.title}</h3>
+                <p className={s.processDesc}>{step.desc}</p>
               </article>
             ))}
           </div>
@@ -201,7 +188,7 @@ export default function DichVuPage() {
           <div className={s.proof}>
             <span className={s.eyebrow}>Năng lực thực chiến</span>
             <h2 className={s.proofTitle}>Kinh nghiệm đứng sau từng đề xuất</h2>
-            <p className={s.proofLead}>Đội ngũ không chỉ dạy pha chế mà đã tham gia vận hành, đào tạo và xây menu cho mô hình thực tế.</p>
+            <p className={s.proofLead}>Đội ngũ đã trực tiếp tham gia vận hành quán, xây menu và đào tạo nhân sự cho nhiều mô hình thực tế — không đơn thuần là đứng lớp.</p>
             <div className={s.proofGrid}>
               <div className={s.proofList}>
                 {PROOF_ROWS.map((row, i) => (
@@ -254,13 +241,13 @@ export default function DichVuPage() {
                 <div className={`${s.field} ${s.fieldFull}`}>
                   <label htmlFor="dvService">Dịch vụ quan tâm</label>
                   <select className={s.select} id="dvService" required value={formService} onChange={e => setFormService(e.target.value)}>
-                    <option value="">Chọn dịch vụ</option>
-                    <option value="khoi-nghiep">Khóa Khởi Nghiệp</option>
-                    <option value="setup-duoi-10">Set Up Menu dưới 10 món</option>
-                    <option value="setup-15-20">Setup Menu 15–20 món</option>
-                    <option value="van-hanh">Đào Tạo Vận Hành</option>
-                    <option value="tai-quan">Đào Tạo Tại Quán</option>
-                    <option value="chua-ro">Chưa rõ, cần tư vấn</option>
+                    <option value="" disabled>-- Chọn dịch vụ --</option>
+                    <option value="Khóa Khởi Nghiệp">🚀 Khóa Khởi Nghiệp</option>
+                    <option value="Gói Set Up Menu">📋 Gói Set Up Menu (dưới 10 món)</option>
+                    <option value="Gói Set Up Menu 15–20 món">📋 Gói Set Up Menu (15–20 món)</option>
+                    <option value="Đào Tạo Vận Hành">🏪 Đào Tạo Vận Hành</option>
+                    <option value="Đào Tạo Tại Quán">🏫 Đào Tạo Tại Quán</option>
+                    <option value="Khác / Tư vấn thêm">💬 Chưa rõ, cần tư vấn thêm</option>
                   </select>
                 </div>
                 <div className={`${s.field} ${s.fieldFull}`}>

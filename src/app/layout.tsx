@@ -1,4 +1,4 @@
-import type { Metadata, Viewport } from 'next';
+﻿import type { Metadata, Viewport } from 'next';
 import { Be_Vietnam_Pro } from 'next/font/google';
 import './globals.css';
 import Navbar from '@/components/Navbar';
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
     siteName: 'Học Viện Cà Phê HCM',
     title: 'Học Viện Cà Phê | Nơi Khởi Nguồn Kinh Doanh Của Bạn',
     description: 'Đào tạo pha chế cà phê, trà sữa và tư vấn mở quán bài bản — từ công thức, set up menu đến vận hành kinh doanh.',
-    images: [{ url: '/images/about.jpg', width: 1200, height: 630, alt: 'Học Viện Cà Phê HCM' }],
+    images: [{ url: '/images/about.webp', width: 1200, height: 630, alt: 'Học Viện Cà Phê HCM' }],
     url: 'https://hocviencaphehcm-next.vercel.app',
     type: 'website',
     locale: 'vi_VN',
@@ -41,7 +41,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Học Viện Cà Phê | Nơi Khởi Nguồn Kinh Doanh Của Bạn',
     description: 'Đào tạo pha chế cà phê, trà sữa và tư vấn mở quán bài bản — từ công thức, set up menu đến vận hành kinh doanh.',
-    images: ['/images/about.jpg'],
+    images: ['/images/about.webp'],
   },
   alternates: { canonical: '/' },
 };

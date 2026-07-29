@@ -3,12 +3,11 @@ import { useState, FormEvent, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
+import s from './page.module.css';
 
 function normalizePhone(raw: string): string {
-  let p = raw.replace(/\s+/g, '').replace(/^(\+84|84)/, '0');
-  return p;
+  return raw.replace(/\s+/g, '').replace(/^(\+84|84)/, '0');
 }
-
 function phoneToEmail(phone: string): string {
   return `${normalizePhone(phone)}@hocviencaphehcm.vn`;
 }
@@ -26,13 +25,11 @@ function LoginForm() {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError('');
-
     const digits = normalizePhone(phone).replace(/\D/g, '');
     if (digits.length < 9 || digits.length > 11) {
       setError('Số điện thoại không hợp lệ.');
       return;
     }
-
     setLoading(true);
     const supabase = createClient();
     const { error: err } = await supabase.auth.signInWithPassword({
@@ -40,7 +37,6 @@ function LoginForm() {
       password,
     });
     setLoading(false);
-
     if (err) {
       setError('Số điện thoại hoặc mật khẩu không đúng. Vui lòng thử lại.');
     } else {
@@ -50,46 +46,31 @@ function LoginForm() {
   }
 
   return (
-    <form className="login-form" onSubmit={handleSubmit}>
-      <div className="lf-group">
-        <label htmlFor="phone">Số điện thoại</label>
-        <div className="lf-input-wrap">
+    <form className={s.form} onSubmit={handleSubmit}>
+      <div className={s.fieldGroup}>
+        <label className={s.label} htmlFor="phone">Số điện thoại</label>
+        <div className={s.inputWrap}>
           <i className="ti ti-phone"></i>
-          <input
-            id="phone"
-            type="tel"
-            placeholder="0912 345 678"
-            value={phone}
-            onChange={e => setPhone(e.target.value)}
-            required
-            autoComplete="tel"
-            inputMode="numeric"
-          />
+          <input id="phone" type="tel" placeholder="0912 345 678"
+            value={phone} onChange={e => setPhone(e.target.value)}
+            required autoComplete="tel" inputMode="numeric" />
         </div>
       </div>
-      <div className="lf-group">
-        <label htmlFor="password">Mật khẩu</label>
-        <div className="lf-input-wrap">
+      <div className={s.fieldGroup}>
+        <label className={s.label} htmlFor="password">Mật khẩu</label>
+        <div className={s.inputWrap}>
           <i className="ti ti-lock"></i>
-          <input
-            id="password"
-            type="password"
-            placeholder="••••••••"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            required
-            autoComplete="current-password"
-          />
+          <input id="password" type="password" placeholder="••••••••"
+            value={password} onChange={e => setPassword(e.target.value)}
+            required autoComplete="current-password" />
         </div>
       </div>
-
       {error && (
-        <div className="lf-error">
+        <div className={s.error}>
           <i className="ti ti-alert-circle"></i> {error}
         </div>
       )}
-
-      <button type="submit" className="btn btn-primary lf-submit" disabled={loading}>
+      <button type="submit" className={s.submitBtn} disabled={loading}>
         {loading
           ? <><i className="ti ti-loader-2 spin"></i> Đang đăng nhập...</>
           : <><i className="ti ti-login"></i> Đăng Nhập</>}
@@ -98,65 +79,35 @@ function LoginForm() {
   );
 }
 
-const LOGIN_PERKS = [
-  'Kho công thức pha chế độc quyền từ giảng viên',
-  'Cập nhật liên tục — hơn 60 công thức đồ uống',
-  'Hỗ trợ trực tiếp từ đội ngũ học viện',
-];
-
 export default function LoginPage() {
   return (
-    <main className="reg-page">
-      {/* LEFT — brand panel */}
-      <div className="reg-brand-panel">
-        <div className="reg-brand-bg">
-          <img src="/images/gallery/Life-styles-with-person/~12816.webp" alt="" aria-hidden="true" />
-        </div>
-        <div className="reg-brand-content">
-          <Link href="/">
-            <img src="/images/logo.png" alt="Học Viện Cà Phê" className="reg-brand-logo" />
-          </Link>
-          <div className="reg-brand-eyebrow">Cổng Học Viên</div>
-          <h2 className="reg-brand-h">Chào Mừng<br />Trở Lại</h2>
-          <p className="reg-brand-desc">Đăng nhập để truy cập kho công thức pha chế độc quyền dành cho học viên Học Viện Cà Phê.</p>
-          <div className="reg-perks">
-            {LOGIN_PERKS.map(t => (
-              <div key={t} className="reg-perk">
-                <i className="ti ti-circle-check"></i>
-                <span>{t}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+    <>
+      <main className={s.page}>
+        <div className={s.card}>
+          <span className={s.cardEyebrow}>Cổng học viên</span>
+          <h1 className={s.cardTitle}>Đăng Nhập</h1>
+          <p className={s.cardSub}>Dành cho học viên Học Viện Cà Phê HCM</p>
 
-      {/* RIGHT — form panel */}
-      <div className="reg-form-panel">
-        <div className="reg-card">
-          <div className="login-logo">
-            <Link href="/"><img src="/images/logo.png" alt="Học Viện Cà Phê" /></Link>
-          </div>
-          <h1 className="login-title">Đăng Nhập</h1>
-          <p className="login-sub">Dành cho học viên Học Viện Cà Phê</p>
-
-          <Suspense fallback={<div className="lf-loading">Đang tải...</div>}>
+          <Suspense fallback={<div style={{ color: 'var(--gtn-muted)' }}>Đang tải...</div>}>
             <LoginForm />
           </Suspense>
 
-          <div className="login-register-cta">
+          <div className={s.divider}>hoặc</div>
+
+          <div className={s.registerCta}>
             <span>Chưa có tài khoản?</span>
-            <Link href="/dang-ky-hoc-vien" className="login-register-link">
+            <Link href="/dang-ky-hoc-vien" className={s.registerLink}>
               <i className="ti ti-user-plus"></i> Đăng ký ngay
             </Link>
           </div>
 
-          <div className="login-footer">
-            <Link href="/">← Về trang chủ</Link>
-            <span>·</span>
-            <a href="https://zalo.me/0834790555" target="_blank" rel="noopener">Liên hệ hỗ trợ</a>
+          <div className={s.footer}>
+            <a href="https://zalo.me/0834790555" target="_blank" rel="noopener">
+              <i className="ti ti-headset"></i> Liên hệ hỗ trợ
+            </a>
           </div>
         </div>
-      </div>
-    </main>
+      </main>
+    </>
   );
 }

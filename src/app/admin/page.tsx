@@ -29,6 +29,10 @@ type Tool = {
   id: string; stt: number; name: string; unit: string;
   price: number; image_url: string; category: string; active: boolean;
 };
+type InstructorShop = {
+  id: string; instructor_key: 'liem' | 'an'; name: string;
+  map_url: string; logo_url: string | null; location: string | null; display_order: number; active: boolean; created_at: string;
+};
 type OrderItem = { id: string; name: string; price: number; unit: string; quantity: number; image_url: string; };
 type Order = {
   id: string; customer_name: string; phone: string; address: string | null;
@@ -115,7 +119,7 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isStaff, setIsStaff] = useState(false);
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'traffic' | 'leads' | 'students' | 'content' | 'products' | 'tools' | 'ext-ing' | 'recipes' | 'ct-hvcp' | 'kho-cong-thuc' | 'hinh-anh' | 'videos' | 'service-videos' | 'orders'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'traffic' | 'leads' | 'students' | 'content' | 'products' | 'tools' | 'ext-ing' | 'recipes' | 'ct-hvcp' | 'kho-cong-thuc' | 'hinh-anh' | 'videos' | 'service-videos' | 'orders' | 'doc-links' | 'shops'>('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Students
@@ -135,6 +139,12 @@ export default function AdminPage() {
   const [leadSearch, setLeadSearch] = useState('');
   const [updatingLead, setUpdatingLead] = useState<string | null>(null);
   const [deletingLead, setDeletingLead] = useState<string | null>(null);
+
+  // Khách hàng stats (khóa học / dịch vụ đã chốt — từ Lark, cron sáng)
+  type KhStats = { khoa_chot_total: number; khoa_chot_month: number; dich_vu_chot_total: number; dich_vu_chot_month: number; dich_vu_breakdown: Record<string, number>; updated_at: string };
+  const [khStats, setKhStats] = useState<KhStats | null>(null);
+  const [khSyncing, setKhSyncing] = useState(false);
+  const [khSyncMsg, setKhSyncMsg] = useState('');
 
   // Traffic (page views dashboard)
   const [trafficLoading, setTrafficLoading] = useState(true);
@@ -238,6 +248,15 @@ export default function AdminPage() {
   const [deletingOrder, setDeletingOrder] = useState<string | null>(null);
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
 
+  // Doc links
+  type DocLink = { id: string; token: string; course: string; title: string; active: boolean; view_count: number; created_at: string; };
+  const [docLinks, setDocLinks] = useState<DocLink[]>([]);
+  const [docLinksLoaded, setDocLinksLoaded] = useState(false);
+  const [docLinkForm, setDocLinkForm] = useState({ course: STUDENT_COURSES[0], title: '' });
+  const [savingDocLink, setSavingDocLink] = useState(false);
+  const [docLinkError, setDocLinkError] = useState('');
+  const [copiedToken, setCopiedToken] = useState<string | null>(null);
+
   // Hình ảnh sync
   const [syncingTraoBang, setSyncingTraoBang] = useState(false);
   const [syncingLopHoc, setSyncingLopHoc] = useState(false);
@@ -262,6 +281,16 @@ export default function AdminPage() {
   const [editingSvId, setEditingSvId] = useState<string | null>(null);
   const [editSvForm, setEditSvForm] = useState({ title: '', youtubeUrl: '', serviceSlug: '' });
   const [savingSv, setSavingSv] = useState(false);
+
+  // Instructor Shops
+  const [shops, setShops] = useState<InstructorShop[]>([]);
+  const [shopForm, setShopForm] = useState({ instructor_key: 'liem' as 'liem' | 'an', name: '', map_url: '', logo_url: '', location: '' });
+  const [shopError, setShopError] = useState('');
+  const [addingShop, setAddingShop] = useState(false);
+  const [deletingShop, setDeletingShop] = useState<string | null>(null);
+  const [editingShopId, setEditingShopId] = useState<string | null>(null);
+  const [editShopForm, setEditShopForm] = useState({ instructor_key: 'liem' as 'liem' | 'an', name: '', map_url: '', logo_url: '', location: '' });
+  const [savingShop, setSavingShop] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -294,6 +323,7 @@ export default function AdminPage() {
         void loadStudents();
         void loadLeads();
         void loadTraffic();
+        void loadKhStats();
         void loadCourses();
         void loadProducts();
         void loadTools();
@@ -305,6 +335,8 @@ export default function AdminPage() {
         void loadDichVuServices();
         void loadServiceVideos();
         void loadExternalIngredients();
+        void loadDocLinks();
+        void loadShops();
       } catch {
         if (!mounted) return;
         router.replace('/login?redirect=/admin');
@@ -326,6 +358,24 @@ export default function AdminPage() {
     const { data, error } = await createClient().from('students').select('*').order('enrolled_at', { ascending: false });
     if (error) throw error;
     setStudents(data ?? []);
+  }
+  async function loadKhStats() {
+    const { data } = await createClient().from('khach_hang_stats').select('*').eq('id', 1).maybeSingle();
+    if (data) setKhStats(data as KhStats);
+  }
+  async function syncKhStats() {
+    setKhSyncing(true); setKhSyncMsg('');
+    try {
+      const res = await fetch('/api/admin/sync-khach-hang-stats', { method: 'POST' });
+      const json = await res.json();
+      if (!res.ok || json.error) throw new Error(json.error || 'Đồng bộ thất bại');
+      await loadKhStats();
+      setKhSyncMsg('Đã cập nhật số liệu mới nhất.');
+    } catch (e: any) {
+      setKhSyncMsg('Lỗi: ' + e.message);
+    } finally {
+      setKhSyncing(false);
+    }
   }
   async function loadLeads() {
     const { data, error } = await createClient().from('leads').select('*').order('created_at', { ascending: false });
@@ -422,6 +472,18 @@ export default function AdminPage() {
     const { data, error } = await createClient().from('orders').select('*').order('created_at', { ascending: false });
     if (error) throw error;
     setOrders(data ?? []);
+  }
+  async function loadDocLinks() {
+    const res = await fetch('/api/admin/doc-links');
+    if (!res.ok) return;
+    const json = await res.json();
+    setDocLinks(json.links ?? []);
+    setDocLinksLoaded(true);
+  }
+  async function loadShops() {
+    const { data, error } = await createClient().from('instructor_shops').select('*').order('instructor_key').order('display_order');
+    if (error) throw error;
+    setShops(data ?? []);
   }
   async function loadVideos() {
     const { data, error } = await createClient().from('videos').select('*').order('sort_order').order('created_at', { ascending: false });
@@ -1155,10 +1217,11 @@ export default function AdminPage() {
 
   function navTo(tab: typeof activeTab) { setActiveTab(tab); setSidebarOpen(false); }
   const TAB_LABELS: Record<string, string> = {
-    dashboard: 'Dashboard', traffic: 'Thống Kê Traffic', leads: 'Yêu Cầu Tư Vấn', students: 'Học Viên',
+    dashboard: 'Dashboard', traffic: 'Thống Kê Traffic', leads: 'Yêu Cầu Tư Vấn', students: 'Học Viên', shops: 'Quán Setup GV',
     content: 'Khóa Học', products: 'Nguyên Liệu', tools: 'Dụng Cụ', 'ext-ing': 'Nguyên Liệu Ngoài',
     recipes: 'Công Thức', 'ct-hvcp': 'CT HVCP', 'kho-cong-thuc': 'CT Miễn Phí',
     'hinh-anh': 'Hình Ảnh', videos: 'Tư Liệu Truyền Thông', 'service-videos': 'Video Dịch Vụ', orders: 'Đơn Hàng',
+    'doc-links': 'Link Tài Liệu',
   };
 
   return (
@@ -1209,6 +1272,13 @@ export default function AdminPage() {
           <button className={`admin-sb-item${activeTab === 'kho-cong-thuc' ? ' active' : ''}`} onClick={() => navTo('kho-cong-thuc')}>
             <i className="ti ti-gift"></i> CT Miễn Phí
             {chiaSeList.length > 0 && <span className="admin-sb-badge">{chiaSeList.length}</span>}
+          </button>
+          <button className={`admin-sb-item${activeTab === 'doc-links' ? ' active' : ''}`} onClick={() => navTo('doc-links')}>
+            <i className="ti ti-link"></i> Link Tài Liệu
+          </button>
+          <button className={`admin-sb-item${activeTab === 'shops' ? ' active' : ''}`} onClick={() => navTo('shops')}>
+            <i className="ti ti-map-pin"></i> Quán Setup
+            {shops.length > 0 && <span className="admin-sb-badge">{shops.length}</span>}
           </button>
           <div className="admin-sb-sep"></div>
           </>)}
@@ -1298,6 +1368,60 @@ export default function AdminPage() {
                     <button className="admin-notice-btn" onClick={() => setActiveTab('leads')}>Xem ngay →</button>
                   </div>
                 )}
+
+                {/* Thống kê Khóa học – Dịch vụ (nguồn Lark, cron sáng) */}
+                <div className="admin-dash-section">
+                  <div className="admin-dash-sec-hd">
+                    <h3>Thống kê Khóa học – Dịch vụ đã chốt</h3>
+                    <button className="admin-dash-more" onClick={syncKhStats} disabled={khSyncing}>
+                      {khSyncing ? <><i className="ti ti-loader-2 spin"></i> Đang đồng bộ...</> : <><i className="ti ti-refresh"></i> Đồng bộ ngay</>}
+                    </button>
+                  </div>
+                  {khStats ? (
+                    <>
+                      <div className="admin-stats-grid">
+                        <div className="admin-stat-card">
+                          <i className="ti ti-school"></i>
+                          <div className="admin-stat-num">{khStats.khoa_chot_total.toLocaleString('vi-VN')}</div>
+                          <div className="admin-stat-label">Khóa học đã chốt (tổng)</div>
+                        </div>
+                        <div className="admin-stat-card">
+                          <i className="ti ti-calendar-check"></i>
+                          <div className="admin-stat-num">{khStats.khoa_chot_month.toLocaleString('vi-VN')}</div>
+                          <div className="admin-stat-label">Khóa học chốt tháng này</div>
+                        </div>
+                        <div className="admin-stat-card">
+                          <i className="ti ti-briefcase"></i>
+                          <div className="admin-stat-num">{khStats.dich_vu_chot_total.toLocaleString('vi-VN')}</div>
+                          <div className="admin-stat-label">Dịch vụ đã chốt (tổng)</div>
+                        </div>
+                        <div className="admin-stat-card">
+                          <i className="ti ti-calendar-check"></i>
+                          <div className="admin-stat-num">{khStats.dich_vu_chot_month.toLocaleString('vi-VN')}</div>
+                          <div className="admin-stat-label">Dịch vụ chốt tháng này</div>
+                        </div>
+                      </div>
+                      {khStats.dich_vu_breakdown && Object.keys(khStats.dich_vu_breakdown).length > 0 && (
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '12px' }}>
+                          {Object.entries(khStats.dich_vu_breakdown).sort((a, b) => b[1] - a[1]).map(([name, count]) => (
+                            <span key={name} className="admin-course-tag" style={{ fontSize: '.78rem' }}>{name}: <strong>{count}</strong></span>
+                          ))}
+                        </div>
+                      )}
+                      <p style={{ fontSize: '.78rem', color: 'var(--text-3)', marginTop: '10px' }}>
+                        Cập nhật lúc {new Date(khStats.updated_at).toLocaleString('vi-VN')} · tự động mỗi sáng.
+                        {khStats.khoa_chot_total > 0 && khStats.khoa_chot_month === 0 && khStats.dich_vu_chot_month === 0 &&
+                          ' (Số liệu "tháng này" = 0 — kiểm tra cột "Chứng từ thanh toán" có phải kiểu Ngày không.)'}
+                      </p>
+                      {khSyncMsg && <p style={{ fontSize: '.78rem', color: khSyncMsg.startsWith('Lỗi') ? '#dc2626' : '#059669', marginTop: '4px' }}>{khSyncMsg}</p>}
+                    </>
+                  ) : (
+                    <p style={{ fontSize: '.85rem', color: 'var(--text-3)' }}>
+                      Chưa có số liệu. Nhấn <strong>Đồng bộ ngay</strong> để lấy lần đầu (hoặc chờ cron sáng).
+                      {khSyncMsg && <span style={{ display: 'block', color: khSyncMsg.startsWith('Lỗi') ? '#dc2626' : '#059669', marginTop: '4px' }}>{khSyncMsg}</span>}
+                    </p>
+                  )}
+                </div>
 
                 <div className="admin-dash-section">
                   <div className="admin-dash-sec-hd">
@@ -2150,11 +2274,11 @@ export default function AdminPage() {
             <div className="admin-table-wrap">
               <table className="admin-table">
                 <thead>
-                  <tr><th>STT</th><th>Ảnh</th><th>Tên Sản Phẩm</th><th>Quy Cách</th><th>Giá Bán</th><th>Danh Mục</th><th>Phân Loại</th><th>Hiện</th><th></th></tr>
+                  <tr><th>STT</th><th>Ảnh</th><th>Tên Sản Phẩm</th><th>Quy Cách</th><th>Giá Bán</th><th>Cost/ĐV</th><th>Danh Mục</th><th>Phân Loại</th><th>Hiện</th><th></th></tr>
                 </thead>
                 <tbody>
                   {filteredAdminProducts.length === 0 ? (
-                    <tr><td colSpan={9} className="admin-empty">{products.length === 0 ? 'Chưa có sản phẩm nào — nhấn "Thêm Sản Phẩm" để bắt đầu' : 'Không tìm thấy sản phẩm nào phù hợp'}</td></tr>
+                    <tr><td colSpan={10} className="admin-empty">{products.length === 0 ? 'Chưa có sản phẩm nào — nhấn "Thêm Sản Phẩm" để bắt đầu' : 'Không tìm thấy sản phẩm nào phù hợp'}</td></tr>
                   ) : filteredAdminProducts.map(p => (
                     <tr key={p.id} style={{ opacity: p.active ? 1 : 0.45 }}>
                       <td className="admin-num">{p.stt || '—'}</td>
@@ -2168,6 +2292,9 @@ export default function AdminPage() {
                       <td className="admin-date">{p.unit || '—'}</td>
                       <td style={{ fontWeight: 700, color: 'var(--accent)', whiteSpace: 'nowrap' }}>
                         {p.price ? p.price.toLocaleString('vi-VN') + 'đ' : '—'}
+                      </td>
+                      <td style={{ whiteSpace: 'nowrap', color: p.cost_per_unit ? '#059669' : '#ccc', fontWeight: 600, fontSize: '0.8rem' }}>
+                        {p.cost_per_unit != null ? p.cost_per_unit.toLocaleString('vi-VN') + 'đ/' + (p.unit || 'đv') : '—'}
                       </td>
                       <td><span className="admin-course-tag" style={{ fontSize: '0.75rem' }}>{p.category}</span></td>
                       <td>
@@ -2953,6 +3080,331 @@ export default function AdminPage() {
             </>
           );
         })()}
+
+            {/* ======= DOC LINKS ======= */}
+            {activeTab === 'doc-links' && (
+              <>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
+                  <h2 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700 }}>Link Tài Liệu Học Viên</h2>
+                </div>
+
+                {/* Create form */}
+                <div className="admin-card" style={{ marginBottom: '24px', padding: '18px 20px' }}>
+                  <h3 style={{ margin: '0 0 14px', fontSize: '0.95rem', fontWeight: 700 }}>Tạo link mới</h3>
+                  <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'flex-end' }}>
+                    <div style={{ flex: '1', minWidth: '160px' }}>
+                      <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '5px', color: 'var(--text-2)' }}>Khóa học *</label>
+                      <select value={docLinkForm.course} onChange={e => setDocLinkForm(f => ({ ...f, course: e.target.value }))} style={{ width: '100%', padding: '8px 10px', border: '1px solid var(--border)', borderRadius: '8px', fontSize: '0.875rem', background: 'var(--bg)', color: 'var(--text)' }}>
+                        {STUDENT_COURSES.map(c => <option key={c} value={c}>{c}</option>)}
+                      </select>
+                    </div>
+                    <div style={{ flex: '2', minWidth: '200px' }}>
+                      <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '5px', color: 'var(--text-2)' }}>Tiêu đề tài liệu (tuỳ chọn)</label>
+                      <input type="text" placeholder="VD: Tài liệu Tổng Hợp Hiện Đại — Batch 12" value={docLinkForm.title} onChange={e => setDocLinkForm(f => ({ ...f, title: e.target.value }))} style={{ width: '100%', padding: '8px 10px', border: '1px solid var(--border)', borderRadius: '8px', fontSize: '0.875rem', boxSizing: 'border-box', background: 'var(--bg)', color: 'var(--text)' }} />
+                    </div>
+                    <button
+                      disabled={savingDocLink}
+                      onClick={async () => {
+                        setSavingDocLink(true); setDocLinkError('');
+                        const res = await fetch('/api/admin/doc-links', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ course: docLinkForm.course, title: docLinkForm.title }) });
+                        setSavingDocLink(false);
+                        if (!res.ok) { const j = await res.json(); setDocLinkError(j.error ?? 'Lỗi'); return; }
+                        const j = await res.json();
+                        setDocLinks(prev => [j.link, ...prev]);
+                        setDocLinkForm(f => ({ ...f, title: '' }));
+                      }}
+                      style={{ padding: '9px 20px', background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}
+                    >
+                      {savingDocLink ? <><i className="ti ti-loader-2 spin"></i> Đang tạo…</> : <><i className="ti ti-plus"></i> Tạo link</>}
+                    </button>
+                  </div>
+                  {docLinkError && <p style={{ color: '#e53e3e', fontSize: '0.8rem', marginTop: '8px' }}>{docLinkError}</p>}
+                </div>
+
+                {/* Links list */}
+                {!docLinksLoaded ? (
+                  <p style={{ color: 'var(--text-3)' }}><i className="ti ti-loader-2 spin"></i> Đang tải…</p>
+                ) : docLinks.length === 0 ? (
+                  <p style={{ color: 'var(--text-3)' }}>Chưa có link nào. Tạo link đầu tiên bên trên.</p>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {docLinks.map(link => {
+                      const url = `${typeof window !== 'undefined' ? window.location.origin : 'https://hocviencaphehcm-next.vercel.app'}/tai-lieu/${link.token}`;
+                      return (
+                        <div key={link.id} style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '12px', padding: '14px 16px' }}>
+                          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', flexWrap: 'wrap' }}>
+                            <div style={{ flex: 1, minWidth: '200px' }}>
+                              <div style={{ fontWeight: 700, fontSize: '0.92rem', color: 'var(--navy, #17324d)' }}>{link.title || link.course}</div>
+                              {link.title && <div style={{ fontSize: '0.78rem', color: 'var(--text-3)', marginTop: '2px' }}>Khóa: {link.course}</div>}
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '6px' }}>
+                                <code style={{ fontSize: '0.75rem', background: 'var(--bg-alt)', padding: '3px 8px', borderRadius: '6px', wordBreak: 'break-all', color: 'var(--text-2)' }}>{url}</code>
+                                <button
+                                  onClick={() => { navigator.clipboard.writeText(url); setCopiedToken(link.token); setTimeout(() => setCopiedToken(null), 2000); }}
+                                  style={{ flex: 'none', padding: '4px 10px', fontSize: '0.75rem', background: copiedToken === link.token ? '#2f855a' : 'var(--bg-alt)', color: copiedToken === link.token ? '#fff' : 'var(--text)', border: '1px solid var(--border)', borderRadius: '6px', cursor: 'pointer', fontWeight: 600, whiteSpace: 'nowrap' }}
+                                >
+                                  {copiedToken === link.token ? <><i className="ti ti-check"></i> Đã copy</> : <><i className="ti ti-copy"></i> Copy</>}
+                                </button>
+                              </div>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                              <span style={{ fontSize: '0.75rem', color: 'var(--text-3)' }}><i className="ti ti-eye"></i> {link.view_count} lượt xem</span>
+                              <span style={{ padding: '3px 10px', borderRadius: '100px', fontSize: '0.72rem', fontWeight: 700, background: link.active ? '#eaf5ee' : '#fef2f2', color: link.active ? '#2f855a' : '#c53030' }}>
+                                {link.active ? 'Hoạt động' : 'Đã tắt'}
+                              </span>
+                              <button
+                                onClick={async () => {
+                                  const res = await fetch('/api/admin/doc-links', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: link.token, active: !link.active }) });
+                                  if (res.ok) { const j = await res.json(); setDocLinks(prev => prev.map(l => l.id === j.link.id ? j.link : l)); }
+                                }}
+                                style={{ padding: '5px 12px', fontSize: '0.78rem', border: '1px solid var(--border)', borderRadius: '6px', background: 'var(--bg)', cursor: 'pointer', fontWeight: 600 }}
+                              >
+                                {link.active ? 'Tắt' : 'Bật'}
+                              </button>
+                              <a href={url} target="_blank" rel="noopener noreferrer" style={{ padding: '5px 10px', fontSize: '0.78rem', border: '1px solid var(--border)', borderRadius: '6px', background: 'var(--bg)', cursor: 'pointer', fontWeight: 600, textDecoration: 'none', color: 'var(--text)' }}>
+                                <i className="ti ti-external-link"></i> Xem
+                              </a>
+                              <button
+                                onClick={async () => {
+                                  if (!confirm('Xoá link này?')) return;
+                                  const res = await fetch(`/api/admin/doc-links?token=${link.token}`, { method: 'DELETE' });
+                                  if (res.ok) setDocLinks(prev => prev.filter(l => l.id !== link.id));
+                                }}
+                                style={{ padding: '5px 10px', fontSize: '0.78rem', border: '1px solid #fed7d7', borderRadius: '6px', background: '#fff5f5', color: '#c53030', cursor: 'pointer', fontWeight: 600 }}
+                              >
+                                <i className="ti ti-trash"></i>
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* ======= SHOPS TAB ======= */}
+            {activeTab === 'shops' && (
+              <>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
+                  <h2 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700 }}>Quán Đã Hỗ Trợ Setup</h2>
+                </div>
+
+                {/* Add form */}
+                <div className="admin-add-card" style={{ marginBottom: '28px' }}>
+                  <h3 style={{ margin: '0 0 14px', fontSize: '0.95rem', fontWeight: 700 }}>Thêm quán mới</h3>
+                  <div style={{ display: 'grid', gridTemplateColumns: '160px 1fr 1fr auto', gap: '10px', alignItems: 'end', flexWrap: 'wrap' }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, marginBottom: '4px', color: 'var(--text-2)' }}>Giảng viên</label>
+                      <select
+                        value={shopForm.instructor_key}
+                        onChange={e => setShopForm(f => ({ ...f, instructor_key: e.target.value as 'liem' | 'an' }))}
+                        style={{ width: '100%', padding: '8px 10px', borderRadius: '8px', border: '1px solid var(--border)', fontSize: '0.9rem' }}
+                      >
+                        <option value="liem">GV. Đoàn Hồng Liêm</option>
+                        <option value="an">GV. Bùi Trần Thiên Ân</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, marginBottom: '4px', color: 'var(--text-2)' }}>Tên quán</label>
+                      <input
+                        value={shopForm.name}
+                        onChange={e => setShopForm(f => ({ ...f, name: e.target.value }))}
+                        placeholder="VD: Cà Phê Nhà Máy"
+                        style={{ width: '100%', padding: '8px 10px', borderRadius: '8px', border: '1px solid var(--border)', fontSize: '0.9rem', boxSizing: 'border-box' }}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, marginBottom: '4px', color: 'var(--text-2)' }}>Khu vực <span style={{ fontWeight: 400, color: 'var(--text-3)' }}>(tuỳ chọn)</span></label>
+                      <input
+                        value={shopForm.location}
+                        onChange={e => setShopForm(f => ({ ...f, location: e.target.value }))}
+                        placeholder="VD: Quận 3, TP.HCM hoặc Đà Lạt"
+                        style={{ width: '100%', padding: '8px 10px', borderRadius: '8px', border: '1px solid var(--border)', fontSize: '0.9rem', boxSizing: 'border-box' }}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, marginBottom: '4px', color: 'var(--text-2)' }}>Link Google Maps</label>
+                      <input
+                        value={shopForm.map_url}
+                        onChange={e => setShopForm(f => ({ ...f, map_url: e.target.value }))}
+                        placeholder="https://maps.app.goo.gl/..."
+                        style={{ width: '100%', padding: '8px 10px', borderRadius: '8px', border: '1px solid var(--border)', fontSize: '0.9rem', boxSizing: 'border-box' }}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, marginBottom: '4px', color: 'var(--text-2)' }}>Logo URL <span style={{ fontWeight: 400, color: 'var(--text-3)' }}>(tuỳ chọn)</span></label>
+                      <input
+                        value={shopForm.logo_url}
+                        onChange={e => setShopForm(f => ({ ...f, logo_url: e.target.value }))}
+                        placeholder="https://... (link ảnh logo quán)"
+                        style={{ width: '100%', padding: '8px 10px', borderRadius: '8px', border: '1px solid var(--border)', fontSize: '0.9rem', boxSizing: 'border-box' }}
+                      />
+                    </div>
+                    <button
+                      disabled={addingShop || !shopForm.name.trim() || !shopForm.map_url.trim()}
+                      onClick={async () => {
+                        setAddingShop(true); setShopError('');
+                        const nextOrder = shops.filter(s => s.instructor_key === shopForm.instructor_key).length;
+                        const { data, error } = await createClient().from('instructor_shops').insert({
+                          instructor_key: shopForm.instructor_key,
+                          name: shopForm.name.trim(),
+                          map_url: shopForm.map_url.trim(),
+                          logo_url: shopForm.logo_url.trim() || null,
+                          location: shopForm.location.trim() || null,
+                          display_order: nextOrder,
+                        }).select().single();
+                        setAddingShop(false);
+                        if (error) { setShopError(error.message); return; }
+                        setShops(prev => [...prev, data]);
+                        setShopForm(f => ({ ...f, name: '', map_url: '' }));
+                      }}
+                      className="btn btn-primary"
+                      style={{ whiteSpace: 'nowrap' }}
+                    >
+                      {addingShop ? <><i className="ti ti-loader-2 spin"></i> Đang thêm...</> : <><i className="ti ti-plus"></i> Thêm</>}
+                    </button>
+                  </div>
+                  {shopError && <p style={{ color: '#c53030', fontSize: '0.82rem', marginTop: '8px' }}><i className="ti ti-alert-circle"></i> {shopError}</p>}
+                </div>
+
+                {/* Lists grouped by instructor */}
+                {(['liem', 'an'] as const).map(key => {
+                  const label = key === 'liem' ? 'GV. Đoàn Hồng Liêm' : 'GV. Bùi Trần Thiên Ân';
+                  const list = shops.filter(s => s.instructor_key === key);
+                  return (
+                    <div key={key} style={{ marginBottom: '28px' }}>
+                      <h3 style={{ fontSize: '0.88rem', fontWeight: 700, color: 'var(--text-2)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 10px' }}>{label}</h3>
+                      {list.length === 0 ? (
+                        <p style={{ fontSize: '0.85rem', color: 'var(--text-3)' }}>Chưa có quán nào.</p>
+                      ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          {list.map((shop, idx) => (
+                            <div key={shop.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'var(--bg-card, #fff)', border: '1px solid var(--border)', borderRadius: '10px', padding: '10px 14px' }}>
+                              {/* Order controls */}
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                                <button
+                                  disabled={idx === 0}
+                                  onClick={async () => {
+                                    const prev = list[idx - 1];
+                                    await Promise.all([
+                                      createClient().from('instructor_shops').update({ display_order: shop.display_order - 1 }).eq('id', shop.id),
+                                      createClient().from('instructor_shops').update({ display_order: prev.display_order + 1 }).eq('id', prev.id),
+                                    ]);
+                                    void loadShops();
+                                  }}
+                                  style={{ background: 'none', border: 'none', cursor: idx === 0 ? 'not-allowed' : 'pointer', opacity: idx === 0 ? 0.3 : 1, padding: '0 4px', lineHeight: 1 }}
+                                  title="Lên"
+                                ><i className="ti ti-chevron-up"></i></button>
+                                <button
+                                  disabled={idx === list.length - 1}
+                                  onClick={async () => {
+                                    const next = list[idx + 1];
+                                    await Promise.all([
+                                      createClient().from('instructor_shops').update({ display_order: shop.display_order + 1 }).eq('id', shop.id),
+                                      createClient().from('instructor_shops').update({ display_order: next.display_order - 1 }).eq('id', next.id),
+                                    ]);
+                                    void loadShops();
+                                  }}
+                                  style={{ background: 'none', border: 'none', cursor: idx === list.length - 1 ? 'not-allowed' : 'pointer', opacity: idx === list.length - 1 ? 0.3 : 1, padding: '0 4px', lineHeight: 1 }}
+                                  title="Xuống"
+                                ><i className="ti ti-chevron-down"></i></button>
+                              </div>
+
+                              {editingShopId === shop.id ? (
+                                <>
+                                  <select
+                                    value={editShopForm.instructor_key}
+                                    onChange={e => setEditShopForm(f => ({ ...f, instructor_key: e.target.value as 'liem' | 'an' }))}
+                                    style={{ padding: '6px 8px', borderRadius: '6px', border: '1px solid var(--border)', fontSize: '0.85rem' }}
+                                  >
+                                    <option value="liem">GV. Liêm</option>
+                                    <option value="an">GV. Thiên Ân</option>
+                                  </select>
+                                  <input
+                                    value={editShopForm.name}
+                                    onChange={e => setEditShopForm(f => ({ ...f, name: e.target.value }))}
+                                    style={{ flex: 1, padding: '6px 8px', borderRadius: '6px', border: '1px solid var(--border)', fontSize: '0.85rem' }}
+                                    placeholder="Tên quán"
+                                  />
+                                  <input
+                                    value={editShopForm.map_url}
+                                    onChange={e => setEditShopForm(f => ({ ...f, map_url: e.target.value }))}
+                                    style={{ flex: 2, padding: '6px 8px', borderRadius: '6px', border: '1px solid var(--border)', fontSize: '0.85rem' }}
+                                    placeholder="Link Google Maps"
+                                  />
+                                  <input
+                                    value={editShopForm.location}
+                                    onChange={e => setEditShopForm(f => ({ ...f, location: e.target.value }))}
+                                    style={{ flex: 1, padding: '6px 8px', borderRadius: '6px', border: '1px solid var(--border)', fontSize: '0.85rem' }}
+                                    placeholder="Khu vực (VD: Quận 3)"
+                                  />
+                                  <input
+                                    value={editShopForm.logo_url}
+                                    onChange={e => setEditShopForm(f => ({ ...f, logo_url: e.target.value }))}
+                                    style={{ flex: 2, padding: '6px 8px', borderRadius: '6px', border: '1px solid var(--border)', fontSize: '0.85rem' }}
+                                    placeholder="Logo URL (tuỳ chọn)"
+                                  />
+                                  <button
+                                    disabled={savingShop}
+                                    onClick={async () => {
+                                      setSavingShop(true);
+                                      const { error } = await createClient().from('instructor_shops').update({
+                                        instructor_key: editShopForm.instructor_key,
+                                        name: editShopForm.name.trim(),
+                                        map_url: editShopForm.map_url.trim(),
+                                        logo_url: editShopForm.logo_url.trim() || null,
+                                        location: editShopForm.location.trim() || null,
+                                      }).eq('id', shop.id);
+                                      setSavingShop(false);
+                                      if (!error) { setEditingShopId(null); void loadShops(); }
+                                    }}
+                                    className="btn btn-primary"
+                                    style={{ fontSize: '0.8rem', padding: '6px 12px' }}
+                                  >
+                                    {savingShop ? <i className="ti ti-loader-2 spin"></i> : <><i className="ti ti-check"></i> Lưu</>}
+                                  </button>
+                                  <button onClick={() => setEditingShopId(null)} className="btn btn-outline" style={{ fontSize: '0.8rem', padding: '6px 10px' }}>Hủy</button>
+                                </>
+                              ) : (
+                                <>
+                                  {shop.logo_url && (
+                                    <img src={shop.logo_url} alt={shop.name} style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover', border: '1px solid var(--border)', flexShrink: 0 }} />
+                                  )}
+                                  <span style={{ flex: 1, fontWeight: 600, fontSize: '0.9rem' }}>{shop.name}</span>
+                                  <a href={shop.map_url} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.78rem', color: 'var(--accent)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                                    <i className="ti ti-map-pin"></i> Xem bản đồ
+                                  </a>
+                                  <button
+                                    onClick={() => { setEditingShopId(shop.id); setEditShopForm({ instructor_key: shop.instructor_key, name: shop.name, map_url: shop.map_url, logo_url: shop.logo_url ?? '', location: shop.location ?? '' }); }}
+                                    className="admin-edit-btn"
+                                    title="Chỉnh sửa"
+                                  ><i className="ti ti-pencil"></i></button>
+                                  <button
+                                    disabled={deletingShop === shop.id}
+                                    onClick={async () => {
+                                      if (!confirm(`Xóa quán "${shop.name}"?`)) return;
+                                      setDeletingShop(shop.id);
+                                      await createClient().from('instructor_shops').delete().eq('id', shop.id);
+                                      setDeletingShop(null);
+                                      setShops(prev => prev.filter(s => s.id !== shop.id));
+                                    }}
+                                    className="admin-del-btn"
+                                    title="Xóa"
+                                  >
+                                    {deletingShop === shop.id ? <i className="ti ti-loader-2 spin"></i> : <i className="ti ti-trash"></i>}
+                                  </button>
+                                </>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </>
+            )}
           </div>
         </div>
       </div>

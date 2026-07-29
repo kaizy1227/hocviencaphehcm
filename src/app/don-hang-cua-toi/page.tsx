@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import Link from 'next/link';
@@ -96,7 +97,7 @@ export default function DonHangCuaToiPage() {
                           <div key={i} className="dh-item">
                             <div className="dh-item-img">
                               {item.image_url
-                                ? <img src={item.image_url} alt={item.name} />
+                                ? <Image src={item.image_url} alt={item.name} width={56} height={56} style={{ objectFit: 'contain', borderRadius: 8 }} />
                                 : <div className="dh-item-img-ph"><i className="ti ti-package"></i></div>}
                             </div>
                             <div className="dh-item-info">

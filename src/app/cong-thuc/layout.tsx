@@ -1,16 +1,16 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Công Thức Pha Chế',
-  description: '36 công thức pha chế độc quyền — Kombucha, Matcha, Cà phê đặc sản. Từ nguyên liệu đến cách pha chi tiết.',
+  title: 'Tính Cost Ly Nước | Công Cụ Miễn Phí',
+  description: 'Tính giá vốn, lợi nhuận và giá bán tối ưu cho từng ly thức uống. Chọn nguyên liệu từ kho Học Viện hoặc tự nhập — không cần đăng nhập.',
   openGraph: {
-    title: 'Công Thức Pha Chế | Học Viện Cà Phê HCM',
-    description: '36 công thức pha chế độc quyền — Kombucha, Matcha, Cà phê đặc sản. Từ nguyên liệu đến cách pha chi tiết.',
+    title: 'Tính Cost Ly Nước | Học Viện Cà Phê HCM',
+    description: 'Tính giá vốn, lợi nhuận và giá bán tối ưu cho từng ly thức uống.',
     url: 'https://hocviencaphehcm-next.vercel.app/cong-thuc',
   },
   twitter: {
-    title: 'Công Thức Pha Chế | Học Viện Cà Phê HCM',
-    description: '36 công thức pha chế độc quyền — Kombucha, Matcha, Cà phê đặc sản. Từ nguyên liệu đến cách pha chi tiết.',
+    title: 'Tính Cost Ly Nước | Học Viện Cà Phê HCM',
+    description: 'Tính giá vốn, lợi nhuận và giá bán tối ưu cho từng ly thức uống.',
   },
   alternates: { canonical: '/cong-thuc' },
 };

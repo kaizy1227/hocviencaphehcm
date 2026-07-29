@@ -1,0 +1,20 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/sync-trao-bang",
+      "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/cron/sync-lop-hoc",
+      "schedule": "5 0 * * *"
+    },
+    {
+      "path": "/api/cron/sync-lich-hoc",
+      "schedule": "10 0 * * *"
+    },
+    {
+      "path": "/api/cron/sync-khach-hang-stats",
+      "schedule": "15 0 * * *"
+    }
+  ]
+}

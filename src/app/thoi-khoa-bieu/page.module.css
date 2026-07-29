@@ -1,0 +1,327 @@
+.page {
+  min-height: 100vh;
+  --tkb-navy:    #17324d;
+  --tkb-caramel: #8f5d18;
+  --tkb-soft:    #fbf3e6;
+  --tkb-muted:   #667a8c;
+  --tkb-line:    #dce6ed;
+}
+
+/* ── Header ── */
+.pageHeader {
+  padding: clamp(44px, 6vw, 72px) 0 clamp(32px, 4vw, 52px);
+  background:
+    radial-gradient(circle at 10% 20%, rgba(73,182,229,0.12), transparent 38%),
+    radial-gradient(circle at 90% 80%, rgba(183,121,31,0.08), transparent 34%),
+    var(--bg, #fff);
+  border-bottom: 1px solid var(--tkb-line);
+}
+.breadcrumb {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 11.5px; text-transform: uppercase;
+  letter-spacing: 0.14em; color: var(--tkb-muted);
+  margin-bottom: 20px;
+}
+.breadcrumb a { color: var(--tkb-muted); text-decoration: none; }
+.breadcrumb a:hover { color: var(--tkb-caramel); }
+.branchBadge {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 12px; font-weight: 600; color: var(--tkb-muted);
+  background: var(--tkb-soft); border: 1px solid var(--tkb-line);
+  border-radius: 99px; padding: 4px 12px;
+  margin-bottom: 14px;
+}
+.branchBadge i { font-size: 13px; color: var(--tkb-caramel); }
+
+.eyebrow {
+  display: block; font-size: 12px; font-weight: 600;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--tkb-caramel); margin-bottom: 12px;
+}
+.pageH1 {
+  font-size: clamp(2rem, 5vw, 3.6rem);
+  font-weight: 900; letter-spacing: -0.03em;
+  color: var(--tkb-navy); margin: 0 0 14px; line-height: 1.05;
+}
+.pageH1 em { font-style: normal; color: var(--tkb-caramel); }
+.pageLead { font-size: 1rem; color: var(--tkb-muted); line-height: 1.75; max-width: 54ch; margin: 0; }
+
+/* ── Live badge ── */
+.liveBadgeRow {
+  display: flex; align-items: center; gap: 8px;
+  margin-top: 28px; margin-bottom: 14px;
+}
+.liveBadge {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: #fee2e2; color: #991b1b;
+  font-size: 0.65rem; font-weight: 800; letter-spacing: 0.08em;
+  padding: 3px 9px; border-radius: 99px;
+}
+.liveDot {
+  width: 7px; height: 7px; border-radius: 50%; background: #ef4444;
+  animation: livePulse 1.4s ease-in-out infinite;
+}
+@keyframes livePulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.45; transform: scale(0.65); }
+}
+.liveUpdated { font-size: 0.72rem; color: var(--tkb-muted); }
+
+/* ── Stats bar ── */
+.statsBar {
+  display: flex; align-items: stretch; gap: 12px; flex-wrap: wrap;
+}
+.statItem {
+  display: flex; flex-direction: column;
+  padding: 18px 20px; border-radius: 14px; flex: 1; min-width: 120px;
+}
+.statCardNavy    { background: var(--tkb-navy); color: #fff; }
+.statCardCaramel { background: var(--tkb-caramel); color: #fff; }
+.statCardSoft    { background: var(--tkb-soft); color: var(--tkb-navy); border: 1.5px solid var(--tkb-line); }
+.statNum {
+  font-size: clamp(1.8rem, 3vw, 2.6rem);
+  font-weight: 900; letter-spacing: -0.03em; line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.statLabel { font-size: 0.75rem; font-weight: 500; opacity: 0.78; margin-top: 5px; }
+.statSub   { font-size: 0.68rem; font-weight: 700; margin-top: 3px; opacity: 0.9; }
+.statCardNavy .statSub    { color: #93c5fd; }
+.statCardCaramel .statSub { color: #fde68a; }
+.statCardSoft .statSub    { color: var(--tkb-caramel); }
+.statDivider { display: none; }
+
+/* ── Calendar section ── */
+.calSection { padding: clamp(40px, 5vw, 64px) 0 clamp(32px, 4vw, 48px); }
+
+/* Month nav */
+.monthNav {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 16px; flex-wrap: wrap; gap: 12px;
+}
+.monthTitle {
+  font-size: clamp(1.2rem, 2.5vw, 1.7rem);
+  font-weight: 900; color: var(--tkb-navy); letter-spacing: -0.02em;
+}
+.monthBtns { display: flex; gap: 8px; }
+.monthBtn {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 8px 16px; border-radius: 10px;
+  border: 1.5px solid var(--tkb-line);
+  background: transparent; color: var(--tkb-navy);
+  font-size: 0.88rem; font-weight: 600;
+  text-decoration: none;
+  transition: border-color .15s, background .15s;
+}
+.monthBtn:hover { border-color: var(--tkb-caramel); background: var(--tkb-soft); }
+.monthBtnDisabled { opacity: 0.35; pointer-events: none; cursor: default; }
+
+/* Scroll hint — only shows on mobile */
+.scrollHint {
+  display: none;
+  align-items: center; gap: 5px;
+  font-size: 11px; color: var(--tkb-muted); font-weight: 500;
+  margin-bottom: 10px;
+}
+.scrollHint i { font-size: 14px; }
+
+/* Grid wrapper — enables horizontal scroll on small screens */
+.calGridWrap {
+  border: 1px solid var(--tkb-line);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+/* Calendar grid */
+.calGrid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(110px, 1fr));
+  gap: 1px;
+  background: var(--tkb-line);
+  min-width: 700px;
+}
+.calDow {
+  padding: 10px 4px;
+  text-align: center;
+  font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.1em;
+  color: var(--tkb-muted);
+  background: var(--tkb-soft);
+}
+.calCell {
+  min-height: 90px;
+  padding: 8px 7px 6px;
+  background: var(--bg, #fff);
+  display: flex; flex-direction: column; gap: 4px;
+}
+.calCellEmpty  { background: #fafafa; }
+.calCellToday  { background: #fffbf3; }
+.calCellPast   { background: var(--bg, #fff); }
+.calCellFuture { background: #fafafa; opacity: 0.5; }
+
+.calDate {
+  font-size: 0.82rem; font-weight: 700;
+  color: var(--tkb-muted); line-height: 1; margin-bottom: 2px;
+}
+.calDateToday {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--tkb-caramel); color: #fff;
+  font-size: 0.78rem; font-weight: 800;
+}
+
+/* Course chip — 2 lines: tên + sỉ số */
+.chip {
+  display: flex; flex-direction: column; gap: 2px;
+  padding: 4px 6px; border-radius: 6px;
+}
+.chipName {
+  font-size: 10px; font-weight: 700;
+  line-height: 1.35; word-break: break-word;
+}
+.chipSiso {
+  font-size: 9px; font-weight: 500; opacity: 0.8; line-height: 1.2;
+}
+.chipHiendai { background: #e0f2fe; color: #0369a1; }
+.chipTruyen  { background: #fef3c7; color: #92400e; }
+.chipDaxay   { background: #ede9fe; color: #5b21b6; }
+.chipTra     { background: #dcfce7; color: #065f46; }
+.chipDefault { background: #fce7f3; color: #9d174d; }
+
+/* Legend */
+.legend {
+  display: flex; gap: 20px; flex-wrap: wrap;
+  margin-top: 20px; padding-top: 16px;
+  border-top: 1px solid var(--tkb-line);
+}
+.legendItem {
+  display: flex; align-items: flex-start; gap: 8px;
+}
+.legendDot {
+  width: 12px; height: 12px; border-radius: 3px;
+  flex-shrink: 0; margin-top: 3px;
+}
+.legendText { display: flex; flex-direction: column; gap: 1px; }
+.legendName { font-size: 12px; font-weight: 700; color: var(--tkb-navy); }
+.legendDesc { font-size: 11px; color: var(--tkb-muted); line-height: 1.4; max-width: 20ch; }
+
+/* ── Future-update merged cell ── */
+.calCellFutureUpdate {
+  background: #f0f9ff;
+  border-left: 3px solid #bae6fd;
+  min-height: 70px;
+  display: flex; align-items: center; justify-content: center;
+}
+.futureUpdateLabel {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 11px; font-weight: 700; color: #0369a1;
+  letter-spacing: 0.02em;
+}
+.futureUpdateLabel i { font-size: 14px; }
+
+/* ── Empty state ── */
+.emptyState { text-align: center; padding: 60px 20px; color: var(--tkb-muted); }
+.emptyState i { font-size: 2.5rem; opacity: .35; display: block; margin-bottom: 12px; }
+
+/* ── Photo link ── */
+.photoLink { padding: 0 0 clamp(16px, 2vw, 24px); }
+.photoLinkInner {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 0.9rem; font-weight: 700; color: var(--tkb-caramel);
+  text-decoration: none; border-bottom: 1.5px solid transparent;
+  transition: border-color .15s, color .15s;
+}
+.photoLinkInner:hover { border-color: var(--tkb-caramel); color: #7c3400; }
+.photoLinkInner i { font-size: 1rem; }
+
+/* ── CTA section ── */
+.ctaSection { padding: clamp(32px, 4vw, 52px) 0; }
+.ctaBox {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 20px; flex-wrap: wrap;
+  background: #fff7ed;
+  border: 1.5px solid #fdba74;
+  border-radius: 16px;
+  padding: clamp(20px, 3vw, 32px) clamp(20px, 4vw, 40px);
+}
+.ctaLeft { display: flex; align-items: flex-start; gap: 16px; flex: 1; min-width: 0; }
+.ctaIcon { font-size: 2rem; color: var(--tkb-caramel); flex-shrink: 0; margin-top: 2px; }
+.ctaTitle {
+  font-size: 1.1rem; font-weight: 800;
+  color: #7c2d12; margin: 0 0 4px; letter-spacing: -0.01em;
+}
+.ctaDesc { font-size: 0.9rem; color: #92400e; margin: 0 0 10px; line-height: 1.5; }
+
+/* CTA note — "Hỗ trợ học lại miễn phí" nổi bật, vế phụ nhỏ + nghiêng */
+.ctaNote {
+  display: inline-flex; align-items: baseline; gap: 5px; flex-wrap: wrap;
+  background: #fef3c7; border-radius: 6px;
+  padding: 5px 10px; margin: 0;
+}
+.ctaNote i { font-size: 13px; color: #b45309; align-self: center; flex-shrink: 0; }
+.ctaNote strong { font-size: 0.85rem; font-weight: 800; color: #7c2d12; }
+.ctaNote em { font-size: 0.75rem; font-style: italic; font-weight: 400; color: #b45309; }
+
+/* CTA button group */
+.ctaBtnGroup {
+  display: flex; flex-direction: column; gap: 10px; flex-shrink: 0;
+}
+
+/* Zalo Z badge */
+.zaloZ {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 20px; height: 20px; border-radius: 5px;
+  background: rgba(255,255,255,0.25);
+  font-size: 14px; font-weight: 900; line-height: 1;
+}
+
+/* Zalo button */
+.zaloBtn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  padding: 11px 20px; border-radius: 10px;
+  background: #0068ff; color: #fff;
+  font-size: 0.9rem; font-weight: 700;
+  text-decoration: none; white-space: nowrap;
+  animation: zaloPulse 1.1s ease-out infinite;
+  transition: background .15s, transform .1s;
+}
+.zaloBtn:hover { background: #0052cc; transform: scale(1.02); animation: none; }
+
+@keyframes zaloPulse {
+  0%   { box-shadow: 0 0 0 0 rgba(0, 104, 255, 0.5); }
+  60%  { box-shadow: 0 0 0 10px rgba(0, 104, 255, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(0, 104, 255, 0); }
+}
+
+/* Pulse button */
+@keyframes ctaPulse {
+  0%   { box-shadow: 0 0 0 0 rgba(234, 88, 12, 0.5); }
+  60%  { box-shadow: 0 0 0 10px rgba(234, 88, 12, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(234, 88, 12, 0); }
+}
+.ctaBtn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 14px 28px; border-radius: 12px;
+  background: #ea580c; color: #fff;
+  font-size: 1rem; font-weight: 800;
+  text-decoration: none; white-space: nowrap; flex-shrink: 0;
+  animation: ctaPulse 1.1s ease-out infinite;
+  transition: background .15s, transform .1s;
+}
+.ctaBtn:hover { background: #c2410c; transform: scale(1.03); animation: none; }
+.ctaBtn i { font-size: 18px; }
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .calGridWrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 12px; }
+  .scrollHint  { display: flex; }
+  .statsBar    { gap: 10px; }
+  .statItem    { min-width: calc(50% - 5px); }
+
+  /* CTA mobile — stack vertically, icon hidden, buttons full-width */
+  .ctaBox      { flex-direction: column; align-items: stretch; gap: 16px; }
+  .ctaLeft     { gap: 10px; }
+  .ctaIcon     { display: none; }
+  .ctaNote     { display: flex; width: 100%; box-sizing: border-box; }
+  .ctaBtnGroup { flex-direction: column; width: 100%; }
+  .ctaBtn, .zaloBtn { width: 100%; justify-content: center; }
+}

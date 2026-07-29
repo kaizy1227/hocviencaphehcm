@@ -82,10 +82,10 @@ export default function Navbar() {
   const toggle = (key: string) => setExpanded(e => e === key ? null : key);
 
   const isHome = pathname === '/';
-  const isDaoTao = pathname === '/khoa-hoc' || pathname === '/dich-vu';
+  const isGioiThieu = pathname === '/gioi-thieu' || pathname === '/giang-vien' || pathname === '/khoa-hoc' || pathname === '/dich-vu' || pathname === '/hinh-anh/setup-menu' || pathname === '/thoi-khoa-bieu';
   const isCongThuc = pathname === '/cong-thuc' || pathname === '/kho-cong-thuc';
   const isSanPham = pathname === '/nguyen-lieu' || pathname === '/dung-cu';
-  const isHinhAnh = pathname.startsWith('/hinh-anh') || pathname === '/video' || pathname.startsWith('/thu-vien');
+  const isHinhAnh = (pathname.startsWith('/hinh-anh') && pathname !== '/hinh-anh/setup-menu') || pathname === '/video' || pathname.startsWith('/thu-vien');
 
   return (
     <>
@@ -104,24 +104,35 @@ export default function Navbar() {
             {/* MAIN NAV LINKS */}
             <div className="nav-menu">
               <Link href="/" className={`nav-link${isHome ? ' active' : ''}`}>Trang Chủ</Link>
-              <Link href="/gioi-thieu" className={`nav-link${pathname === '/gioi-thieu' ? ' active' : ''}`}>Giới Thiệu</Link>
 
-              {/* Đào Tạo */}
-              <div className={`nav-dropdown-wrap${isDaoTao ? ' active' : ''}`}>
-                <button className="nav-link nav-dropdown-trigger">Đào Tạo</button>
+              {/* Giới Thiệu */}
+              <div className={`nav-dropdown-wrap${isGioiThieu ? ' active' : ''}`}>
+                <button className="nav-link nav-dropdown-trigger" onClick={() => router.push('/gioi-thieu')}>Giới Thiệu</button>
                 <div className="nav-dropdown-menu">
+                  <Link href="/gioi-thieu" className="nav-dd-item" onClick={close}>
+                    <i className="ti ti-info-circle"></i> Giới Thiệu
+                  </Link>
+                  <Link href="/giang-vien" className="nav-dd-item" onClick={close}>
+                    <i className="ti ti-user-star"></i> Giảng Viên
+                  </Link>
                   <Link href="/khoa-hoc" className="nav-dd-item" onClick={close}>
                     <i className="ti ti-school"></i> Khóa Học
                   </Link>
                   <Link href="/dich-vu" className="nav-dd-item" onClick={close}>
                     <i className="ti ti-briefcase"></i> Dịch Vụ
                   </Link>
+                  <Link href="/hinh-anh/setup-menu" className="nav-dd-item" onClick={close}>
+                    <i className="ti ti-photo-star"></i> Setup Quán
+                  </Link>
+                  <Link href="/thoi-khoa-bieu" className="nav-dd-item" onClick={close}>
+                    <i className="ti ti-calendar-week"></i> Lịch Lớp Học
+                  </Link>
                 </div>
               </div>
 
               {/* Công Thức */}
               <div className={`nav-dropdown-wrap${isCongThuc ? ' active' : ''}`}>
-                <button className="nav-link nav-dropdown-trigger">Công Thức</button>
+                <button className="nav-link nav-dropdown-trigger" onClick={() => router.push('/cong-thuc')}>Công Thức</button>
                 <div className="nav-dropdown-menu">
                   <Link href="/cong-thuc" className="nav-dd-item" onClick={close}>
                     <i className="ti ti-lock"></i> Nội Bộ
@@ -134,7 +145,7 @@ export default function Navbar() {
 
               {/* Sản Phẩm */}
               <div className={`nav-dropdown-wrap${isSanPham ? ' active' : ''}`}>
-                <button className="nav-link nav-dropdown-trigger">Sản Phẩm</button>
+                <button className="nav-link nav-dropdown-trigger" onClick={() => router.push('/nguyen-lieu')}>Sản Phẩm</button>
                 <div className="nav-dropdown-menu">
                   <Link href="/nguyen-lieu" className="nav-dd-item" onClick={close}>
                     <i className="ti ti-bottle"></i> Nguyên Liệu
@@ -147,7 +158,7 @@ export default function Navbar() {
 
               {/* Thư Viện */}
               <div className={`nav-dropdown-wrap${isHinhAnh ? ' active' : ''}`}>
-                <button className="nav-link nav-dropdown-trigger">Thư Viện</button>
+                <button className="nav-link nav-dropdown-trigger" onClick={() => router.push('/hinh-anh/trao-bang')}>Thư Viện</button>
                 <div className="nav-dropdown-menu">
                   <Link href="/hinh-anh/trao-bang" className="nav-dd-item" onClick={close}>
                     <i className="ti ti-certificate"></i> Trao Bằng Học Viên
@@ -218,7 +229,9 @@ export default function Navbar() {
               )}
 
               <button className="nav-cart-btn" onClick={openCart} aria-label="Giỏ hàng">
-                <i className="ti ti-shopping-cart"></i>
+                <span className="nav-cart-icon-wrap">
+                  <i className="ti ti-shopping-bag"></i>
+                </span>
                 {totalItems > 0 && <span className="nav-cart-badge">{totalItems}</span>}
               </button>
               <button className="hamburger" onClick={() => setMenuOpen(o => !o)} aria-label="Menu">
@@ -242,16 +255,19 @@ export default function Navbar() {
         </div>
 
         <Link href="/" className={`mob-top-link${isHome ? ' active' : ''}`} onClick={close}>Trang Chủ</Link>
-        <Link href="/gioi-thieu" className={`mob-top-link${pathname === '/gioi-thieu' ? ' active' : ''}`} onClick={close}>Giới Thiệu</Link>
 
         <div className="mob-parent">
-          <button className={`mob-parent-btn${expanded === 'dao-tao' ? ' open' : ''}${isDaoTao ? ' active-parent' : ''}`} onClick={() => toggle('dao-tao')}>
-            <span>Đào Tạo</span>
+          <button className={`mob-parent-btn${expanded === 'gioi-thieu' ? ' open' : ''}${isGioiThieu ? ' active-parent' : ''}`} onClick={() => toggle('gioi-thieu')}>
+            <span>Giới Thiệu</span>
             <i className="ti ti-chevron-down mob-chevron"></i>
           </button>
-          <div className={`mob-children${expanded === 'dao-tao' ? ' open' : ''}`}>
+          <div className={`mob-children${expanded === 'gioi-thieu' ? ' open' : ''}`}>
+            <Link href="/gioi-thieu" className="mob-child" onClick={close}><i className="ti ti-info-circle"></i> Giới Thiệu</Link>
+            <Link href="/giang-vien" className="mob-child" onClick={close}><i className="ti ti-user-star"></i> Giảng Viên</Link>
             <Link href="/khoa-hoc" className="mob-child" onClick={close}><i className="ti ti-school"></i> Khóa Học</Link>
             <Link href="/dich-vu" className="mob-child" onClick={close}><i className="ti ti-briefcase"></i> Dịch Vụ</Link>
+            <Link href="/hinh-anh/setup-menu" className="mob-child" onClick={close}><i className="ti ti-photo-star"></i> Setup Quán</Link>
+            <Link href="/thoi-khoa-bieu" className="mob-child" onClick={close}><i className="ti ti-calendar-week"></i> Lịch Lớp Học</Link>
           </div>
         </div>
 

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 import { useEffect, useRef, useState, FormEvent } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
@@ -128,14 +128,34 @@ function LienHeForm() {
 }
 
 const WHY_CARDS = [
-  { icon: '☕', title: 'Thực chiến 100%', desc: 'Học bằng tay, không lý thuyết suông. Mỗi buổi học là một ca thực hành thực sự tại quầy.' },
+  { icon: '☕', title: 'Đào tạo thực chiến', desc: 'Không lý thuyết suông. Thực hành 100% trong mỗi buổi học.' },
   { icon: '📈', title: 'Cập nhật xu hướng', desc: 'Menu 200+ công thức, bám sát thị trường. Luôn cập nhật hot trend mới nhất.' },
-  { icon: '👥', title: 'Lớp nhỏ, tận tâm', desc: 'Giảng viên kèm sát từng học viên. Quy mô nhỏ đảm bảo chất lượng từng người.' },
+  { icon: '👥', title: 'Phòng học rộng rãi', desc: 'Giảng viên kèm sát từng học viên, đảm bảo không gian thực hành.' },
   { icon: '🤝', title: 'Đồng hành dài hạn', desc: 'Hỗ trợ setup menu, vận hành, khai trương. Không chỉ là một khóa học ngắn hạn.' },
 ];
 
-const BARISTA_PHOTOS = ['~12321.webp','~12555.webp','~12720.webp','~12816.webp','~12930.webp','~12573.webp'];
-const DRINK_PHOTOS   = ['~11675.webp','~11783.webp','~11900.webp'];
+const COMMIT_CARDS = [
+  {
+    icon: 'ti-refresh',
+    title: 'Học lại miễn phí trong 12 tháng',
+    desc: 'Chưa vững tay? Quay lại ôn buổi bất kỳ trong 1 năm — không đóng lại học phí, chỉ phụ phí nguyên liệu và phòng học cho buổi ôn.',
+  },
+  {
+    icon: 'ti-book-2',
+    title: 'Công thức cập nhật trọn đời',
+    desc: 'Truy cập kho 200+ công thức định lượng rõ ràng, được bổ sung món hot-trend mới liên tục — dùng lâu dài, không giới hạn thời gian.',
+  },
+  {
+    icon: 'ti-users',
+    title: 'Lớp nhỏ, kèm sát tại quầy',
+    desc: 'Mỗi lớp chỉ 3–4 học viên, đứng trực tiếp tại quầy với nguyên liệu thật, giảng viên sửa tay ngay đến khi bạn làm được thật.',
+  },
+  {
+    icon: 'ti-heart-handshake',
+    title: 'Đồng hành sau khóa học',
+    desc: 'Hết khóa không phải là hết hỗ trợ — tư vấn menu, giá vốn, thiết bị và kế hoạch khai trương khi bạn mở quán.',
+  },
+];
 
 export default function GioiThieuPage() {
   return (
@@ -161,13 +181,13 @@ export default function GioiThieuPage() {
               </h1>
 
               <p className={s.heroLead}>
-                Mỗi giấc mơ về một quán cà phê đều bắt đầu từ một tách cà phê — và Học Viện Cà Phê HCM trân trọng được đồng hành cùng bạn trên từng bước của hành trình đó.
+                Học Viện Cà Phê HCM đã đồng hành cùng hơn 5.000 học viên — từ ngày đầu chưa biết gì về pha chế đến khi tự tin đứng quầy hoặc mở quán riêng.
               </p>
 
               <div className={s.chipRow} role="list" aria-label="Số liệu nổi bật">
                 <span className={s.chip} role="listitem"><span className={s.chipNum}>11</span>Khóa &amp; chuyên đề</span>
                 <span className={s.chip} role="listitem"><span className={s.chipNum}>200+</span>Công thức đồ uống</span>
-                <span className={s.chip} role="listitem"><span className={s.chipNum}>~10</span>Năm kinh nghiệm</span>
+                <span className={s.chip} role="listitem"><span className={s.chipNum}>10+</span>Năm kinh nghiệm</span>
                 <span className={s.chip} role="listitem"><span className={s.chipNum}>1000+</span>Quán được hỗ trợ</span>
               </div>
 
@@ -178,6 +198,9 @@ export default function GioiThieuPage() {
                 <Link href="/#courses" className={`${s.btn} ${s.btnNavy}`}>
                   <i className="ti ti-book"></i> Xem Khóa Học
                 </Link>
+                <a href="https://zalo.me/0834790555" target="_blank" rel="noopener noreferrer" className={`${s.btn} ${s.btnGhost}`}>
+                  <i className="ti ti-cup"></i> Đến thử món trực tiếp
+                </a>
               </div>
             </div>
 
@@ -203,8 +226,8 @@ export default function GioiThieuPage() {
         <div className="container">
           <div className={s.sectionHead}>
             <span className={s.eyebrow}>Vì sao chọn Học Viện</span>
-            <h2 id="why-title">Bốn giá trị cốt lõi<br />mà chúng tôi giữ vững mỗi ngày</h2>
-            <p>Một học viện thực chiến — không lý thuyết suông — và luôn đồng hành cùng bạn từ ngày đầu đến khi quán vận hành ổn định.</p>
+            <h2 id="why-title">Bốn điều làm nên<br />cách Học Viện đào tạo</h2>
+            <p>Học thật, làm được thật — và vẫn có người bên cạnh sau khi khóa học kết thúc.</p>
           </div>
           <div className={s.whyGrid}>
             {WHY_CARDS.map(c => (
@@ -218,13 +241,35 @@ export default function GioiThieuPage() {
         </div>
       </section>
 
+      {/* ===== CAM KẾT ===== */}
+      <section className={s.commitSection} aria-labelledby="commit-title">
+        <div className="container">
+          <div className={s.sectionHead}>
+            <span className={s.eyebrow}>Cam kết Học Viện</span>
+            <h2 id="commit-title">Điều bạn nhận được<br />không chỉ là một khóa học</h2>
+            <p>Những cam kết rõ ràng, đo được — để bạn yên tâm học và yên tâm bắt đầu.</p>
+          </div>
+          <div className={s.commitGrid}>
+            {COMMIT_CARDS.map(c => (
+              <article className={s.commitCard} key={c.title}>
+                <span className={s.commitIcon} aria-hidden="true"><i className={`ti ${c.icon}`}></i></span>
+                <div>
+                  <h3>{c.title}</h3>
+                  <p>{c.desc}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ===== TIMELINE / STORY ===== */}
       <section className={s.section} aria-labelledby="story-title">
         <div className="container">
           <div className={s.sectionHead}>
             <span className={s.eyebrow}>Câu chuyện &amp; phương pháp</span>
             <h2 id="story-title">Hành trình<br />của chúng tôi và của bạn</h2>
-            <p>Ba mảng ghép đã làm nên cách Học Viện Cà Phê HCM đồng hành cùng hơn 1.000 quán trên khắp Việt Nam.</p>
+            <p>Từ câu hỏi khởi đầu đến hơn 1.000 quán được đồng hành trên cả nước — đây là hành trình của Học Viện Cà Phê HCM.</p>
           </div>
 
           <div className={s.timeline}>
@@ -265,7 +310,7 @@ export default function GioiThieuPage() {
               <div className={s.tlBody}>
                 <span className={s.eyebrow}>03 — Hành Trình Cùng Bạn</span>
                 <h3>Đồng Hành Từ Ngày Đầu Đến Khi Thành Công</h3>
-                <p>Sau khóa học, chúng tôi vẫn ở đây — cùng bạn thiết kế menu, cân đối chi phí, tư vấn thiết bị, lên kế hoạch soft-opening và đồng hành xử lý các tình huống thực tế sau khai trương. Mỗi học viên là một dự án dài hạn, không chỉ là một khóa học.</p>
+                <p>Sau khóa học, chúng tôi vẫn ở đây — cùng bạn thiết kế menu, cân đối chi phí, tư vấn thiết bị, lên kế hoạch soft-opening và xử lý các tình huống thực tế sau khai trương. Không dừng ở ngày bế giảng — Học Viện vẫn ở đó khi bạn cần.</p>
                 <blockquote className={s.tlQuote}>"Học Viện không chỉ hướng dẫn pha chế — mà trân trọng được góp sức cùng bạn xây dựng một quán cà phê thực sự vững bền."</blockquote>
               </div>
             </article>
@@ -278,7 +323,7 @@ export default function GioiThieuPage() {
       <div className={s.statsBar} aria-label="Thống kê Học Viện">
         <div className="container">
           <div className={s.statsGrid}>
-            <div><div className={s.statN}>500<sup>+</sup></div><div className={s.statL}>Học viên<br/>đã hoàn thành</div></div>
+            <div><div className={s.statN}>5000<sup>+</sup></div><div className={s.statL}>Học viên<br/>đã hoàn thành</div></div>
             <div><div className={s.statN}>200<sup>+</sup></div><div className={s.statL}>Công thức<br/>đồ uống</div></div>
             <div><div className={s.statN}>11</div><div className={s.statL}>Khóa học<br/>&amp; chuyên đề</div></div>
             <div><div className={s.statN}>98<sup>%</sup></div><div className={s.statL}>Học viên hài lòng<br/>sau khóa học</div></div>
@@ -286,111 +331,39 @@ export default function GioiThieuPage() {
         </div>
       </div>
 
-      {/* ===== INSTRUCTORS ===== */}
+      {/* ===== INSTRUCTORS — teaser ===== */}
       <section className={s.instrSection} aria-labelledby="instructor-title">
         <div className="container">
-          <div style={{ textAlign: 'center', marginBottom: '48px' }}>
+          <div style={{ textAlign: 'center', marginBottom: '40px' }}>
             <span className={s.eyebrow}>Đội Ngũ Giảng Viên</span>
             <h2 id="instructor-title" style={{ fontSize: 'clamp(26px,3.6vw,46px)', fontWeight: 700, color: 'var(--gtn-navy, #263D5B)', letterSpacing: '-0.02em', lineHeight: 1.1, margin: '0 0 12px' }}>
               Người thầy,<br /><em style={{ color: 'var(--gtn-caramel-dark, #8f5d18)', fontStyle: 'italic' }}>người đồng hành</em>
             </h2>
-            <p style={{ color: 'var(--gtn-muted, #5A6E84)', maxWidth: '580px', margin: '0 auto', fontSize: '17px', lineHeight: 1.7 }}>
-              Không chỉ dạy kỹ thuật — giảng viên tại Học Viện Cà Phê HCM là người vận hành quán thực tế, hiểu thị trường và luôn cập nhật xu hướng mới nhất.
+            <p style={{ color: 'var(--gtn-muted, #5A6E84)', maxWidth: '580px', margin: '0 auto 32px', fontSize: '17px', lineHeight: 1.7 }}>
+              Giảng viên tại Học Viện Cà Phê HCM đều có kinh nghiệm vận hành quán thực tế — họ dạy từ những gì đã làm, không từ giáo trình.
             </p>
           </div>
 
-          <div className="gv-list">
-            {/* Thầy Liêm */}
-            <div className="gv-card2">
-              <div className="gv-photo-side">
-                <img src="/images/giangvienLiem.jpg" alt="Thầy Đoàn Hồng Liêm" />
-              </div>
-              <div className="gv-text-side">
-                <div className="gv-hero-badges">
-                  <span className="gv-badge">Trưởng PĐT Học Viện</span>
-                  <span className="gv-badge">10 năm kinh nghiệm</span>
-                  <span className="gv-badge">Cựu QL chuỗi Coffee</span>
+          {/* Avatar teaser row */}
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 40, flexWrap: 'wrap', marginBottom: 36 }}>
+            {[
+              { name: 'Đoàn Hồng Liêm', role: '☕ Trưởng PĐT · Chuyên Gia Cà Phê', photo: '/images/giangvienLiem.webp' },
+              { name: 'Bùi Trần Thiên Ân', role: '🍵 Chuyên Gia Sáng Tạo Đồ Uống', photo: '/images/giangvienAn.webp' },
+            ].map(gv => (
+              <div key={gv.name} style={{ textAlign: 'center' }}>
+                <div style={{ width: 100, height: 100, borderRadius: '50%', overflow: 'hidden', margin: '0 auto 12px', border: '3px solid var(--gtn-caramel-soft, #fbf3e6)', boxShadow: '0 4px 16px rgba(0,0,0,.18)' }}>
+                  <img src={gv.photo} alt={gv.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 </div>
-                <div className="gv-hero-name">Đoàn Hồng Liêm</div>
-                <div className="gv-hero-role">☕ Trưởng Phòng Đào Tạo · Chuyên Gia Cà Phê</div>
-                <p className="gv-hero-desc">
-                  Gắn bó với ngành F&amp;B như một lẽ tự nhiên — và kể từ đó, chưa một lần rời bước. Hành trình bắt đầu từ vị trí barista rồi dần vươn lên quản lý tại nhiều chuỗi quán cà phê lớn, tích lũy qua từng ca làm, từng tách cà phê, từng đội nhóm được dẫn dắt.
-                </p>
-                <p className="gv-hero-desc">
-                  Hiện là <strong>Trưởng Phòng Đào Tạo</strong> tại Học Viện Cà Phê Chi Nhánh Miền Nam, anh đã trực tiếp xây dựng menu và hướng dẫn nhân sự cho hàng chục quán mới mở trải dài khắp cả nước.
-                </p>
-                <blockquote className="gv-hero-quote">
-                  "Một ly cà phê ngon không bao giờ là ngẫu nhiên — đó là tích lũy của kỹ thuật và tâm huyết. Tôi muốn truyền trọn điều đó cho các bạn."
-                </blockquote>
-                <div className="gv-skills">
-                  <span className="gv-skill-pill">☕ Cà phê máy &amp; espresso</span>
-                  <span className="gv-skill-pill">🔧 Vận hành quán</span>
-                  <span className="gv-skill-pill">🍽️ Setup menu</span>
-                  <span className="gv-skill-pill">👥 Đào tạo nhân sự</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Thầy Ân */}
-            <div className="gv-card2 gv-card2-reverse">
-              <div className="gv-text-side">
-                <div className="gv-hero-badges">
-                  <span className="gv-badge">Nền tảng Nghệ Thuật</span>
-                  <span className="gv-badge">6 năm kinh nghiệm</span>
-                  <span className="gv-badge">Cựu Trainer chuỗi AiCha</span>
-                </div>
-                <div className="gv-hero-name">Bùi Trần Thiên Ân</div>
-                <div className="gv-hero-role">🍵 Chuyên Gia Sáng Tạo Đồ Uống</div>
-                <p className="gv-hero-desc">
-                  Xuất thân từ mái trường <strong>Nghệ Thuật</strong>, Giảng viên Thiên Ân mang trong mình một gu thẩm mỹ riêng biệt — thứ ngôn ngữ không lời mà anh dùng để thổi linh hồn vào từng ly thức uống.
-                </p>
-                <p className="gv-hero-desc">
-                  Trải qua 6 năm gắn bó, từng đảm nhận vai trò trainer cho chuỗi trà sữa AiCha ở thời điểm thương hiệu vươn tới gần 20 cửa hàng, anh tích lũy cho mình kho công thức phong phú về <strong>trà trái cây, trà sữa</strong> hòa quyện cùng nghệ thuật trang trí bắt mắt.
-                </p>
-                <blockquote className="gv-hero-quote">
-                  "Người học nhanh nhất không phải người thông minh nhất — mà là người dám thử, dám sai và không bỏ cuộc."
-                </blockquote>
-                <div className="gv-skills">
-                  <span className="gv-skill-pill">🍵 Trà trái cây &amp; trà sữa</span>
-                  <span className="gv-skill-pill">✨ Sáng tạo hot trend</span>
-                  <span className="gv-skill-pill">🎨 Decor &amp; trình bày</span>
-                  <span className="gv-skill-pill">🍽️ Setup menu</span>
-                </div>
-              </div>
-              <div className="gv-photo-side">
-                <img src="/images/giangvienAn.jpg" alt="Thầy Bùi Trần Thiên Ân" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ===== GALLERY ===== */}
-      <section className={`${s.section} ${s.sectionAlt}`} aria-labelledby="gallery-title">
-        <div className="container">
-          <div className={s.sectionHead}>
-            <span className={s.eyebrow}>Một ngày tại Học Viện</span>
-            <h2 id="gallery-title">Khoảnh khắc lớp học<br />&amp; kho 200+ công thức</h2>
-            <p>Từ buổi thực hành sáng sớm đến ly đồ uống hoàn chỉnh — mỗi khoảnh khắc tại Học Viện đều là một bước tiến thực sự.</p>
-          </div>
-
-          <div className={s.galleryGrid} role="list" aria-label="Gallery lớp học">
-            <div className={`${s.galleryItem} ${s.galleryTall}`} role="listitem">
-              <img src="/images/gallery/Life-styles-with-person/~12816.webp" alt="Học viên thực hành" loading="lazy" />
-            </div>
-            {BARISTA_PHOTOS.slice(0, 4).map(f => (
-              <div className={s.galleryItem} role="listitem" key={f}>
-                <img src={`/images/gallery/Life-styles-with-person/${f}`} alt="" loading="lazy" />
+                <div style={{ fontWeight: 800, fontSize: '0.95rem', color: 'var(--text)', marginBottom: 4 }}>{gv.name}</div>
+                <div style={{ fontSize: '0.78rem', color: 'var(--gtn-muted, #667a8c)' }}>{gv.role}</div>
               </div>
             ))}
-            <div className={`${s.galleryItem} ${s.galleryWide}`} role="listitem">
-              <img src="/images/gallery/Life-styles-with-person/~12930.webp" alt="Lớp học pha chế" loading="lazy" />
-            </div>
-            {DRINK_PHOTOS.map(f => (
-              <div className={s.galleryItem} role="listitem" key={f}>
-                <img src={`/images/gallery/Life-styles/${f}`} alt="" loading="lazy" />
-              </div>
-            ))}
+          </div>
+
+          <div style={{ textAlign: 'center' }}>
+            <Link href="/giang-vien" className="btn btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'var(--gtn-caramel-dark, #8f5d18)' }}>
+              <i className="ti ti-user-star"></i> Xem thông tin giảng viên
+            </Link>
           </div>
         </div>
       </section>
@@ -401,7 +374,7 @@ export default function GioiThieuPage() {
           <div className={s.sectionHead}>
             <span className={s.eyebrow}>Giá trị Học Viện</span>
             <h2 id="values-title">Tầm nhìn · Sứ mệnh<br />Chất lượng thực chiến</h2>
-            <p>Ba trụ cột giữ cho mỗi khóa học, mỗi công thức và mỗi buổi tư vấn luôn đúng hướng — phục vụ bạn dài hạn, không phải một lần.</p>
+            <p>Ba điều chúng tôi giữ vững — trong từng khóa học, từng công thức và từng buổi tư vấn.</p>
           </div>
           <div className={s.valGrid}>
             <article className={s.valCard}>
@@ -431,7 +404,7 @@ export default function GioiThieuPage() {
         <div className="container">
           <div className={s.sectionHead}>
             <span className={s.eyebrow}>Liên hệ</span>
-            <h2 id="contact-title">Chúng Tôi Sẵn Lòng<br />Lắng Nghe Bạn</h2>
+            <h2 id="contact-title">Liên Hệ Với<br />Học Viện Cà Phê HCM</h2>
             <p>Để lại thông tin — đội ngũ tư vấn sẽ liên hệ trong vòng 30 phút (trong giờ làm việc).</p>
           </div>
 
@@ -473,8 +446,8 @@ export default function GioiThieuPage() {
       <section className={s.ctaSection} aria-label="Kêu gọi đăng ký">
         <div className="container">
           <div className={s.ctaBanner}>
-            <h2>Bắt Đầu Hành Trình<br />Của Bạn Từ Hôm Nay</h2>
-            <p>Đăng ký tư vấn miễn phí — chúng tôi sẽ gợi ý lộ trình phù hợp với mục tiêu, ngân sách và khu vực của bạn.</p>
+            <h2>Sẵn Sàng Bắt Đầu<br />Chưa?</h2>
+            <p>Đăng ký tư vấn miễn phí — đội ngũ sẽ gợi ý lộ trình phù hợp với mục tiêu, ngân sách và khu vực của bạn.</p>
             <Link href="/dang-ky" className={s.ctaBtn}>
               <i className="ti ti-calendar-check"></i> Đăng Ký Tư Vấn Miễn Phí
             </Link>

@@ -17,7 +17,8 @@ type ServiceRow = {
 function resolveImg(img: string | null): string {
   if (!img) return '';
   if (img.startsWith('http')) return img;
-  return `/images/services/${img}`;
+  const webp = img.replace(/\.(png|jpe?g)$/i, '.webp');
+  return `/images/services/${webp}`;
 }
 
 export default function DichVuDetailPage() {

@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+﻿import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Liên Hệ',
@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Liên Hệ | Học Viện Cà Phê HCM',
     description: 'Tư vấn khóa học pha chế, đặt hàng nguyên liệu, tư vấn mở quán cà phê trà sữa.',
-    images: [{ url: '/images/about.jpg', width: 1200, height: 630 }],
+    images: [{ url: '/images/about.webp', width: 1200, height: 630 }],
   },
 };
 

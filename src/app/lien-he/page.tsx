@@ -72,7 +72,7 @@ export default function LienHePage() {
             <i className="ti ti-chevron-right" style={{ fontSize: '.75rem' }}></i>
             <span>Liên Hệ</span>
           </div>
-          <h1>Liên Hệ <em>với Chúng Tôi</em></h1>
+          <h1>Liên Hệ <em>Với Chúng Tôi</em></h1>
           <p>Đặt câu hỏi, tư vấn khóa học, hoặc đặt hàng số lượng lớn — chúng tôi sẵn sàng hỗ trợ.</p>
         </div>
       </section>

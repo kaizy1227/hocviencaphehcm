@@ -1,7 +1,27 @@
 const LARK_API = 'https://open.larksuite.com/open-apis';
-const TRAO_BANG_VIEW = 'vewf25S1Jg';
-const LOP_HOC_TABLE  = 'tblZo3DU3xfBX8Wy';
-const LOP_HOC_VIEW   = 'vewi5T4FsC';
+
+// Lark lưu ngày dạng Unix ms (UTC). Vercel chạy UTC+0 nên toLocaleDateString()
+// sẽ lùi 1 ngày so với Vietnam (UTC+7). Fix: cộng +7h vào timestamp rồi dùng UTC getters.
+function larkDateToVN(ms: number): string {
+  const d = new Date(ms + 7 * 3_600_000); // shift về UTC+7
+  const dd = String(d.getUTCDate()).padStart(2, '0');
+  const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
+  return `${dd}/${mm}/${d.getUTCFullYear()}`;
+}
+// Chuyển Lark Unix ms → "yyyy-mm-dd" (cho Postgres DATE type)
+function larkDateToISO(ms: number): string {
+  const d = new Date(ms + 7 * 3_600_000);
+  const yyyy = d.getUTCFullYear();
+  const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
+  const dd = String(d.getUTCDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
+}
+
+// Base "Quản lý công việc" (Wiki-base). Hardcode để tránh lỗi BOM/copy nhầm 0↔O từ env.
+const TRAO_BANG_TABLE = 'tblp4LF3honii8KL'; // "Danh sách học viên chốt khóa học"
+const TRAO_BANG_VIEW  = 'vewMHUtKed';        // view "Hình ảnh trao bằng"
+const LOP_HOC_TABLE   = 'tblZo3DU3xfBX8Wy';  // "Thời khóa biểu lớp học"
+const LOP_HOC_VIEW    = 'vewi5T4FsC';
 
 // ─── In-memory cache (server RAM) ────────────────────────────────────────────
 // Mục đích: tiết kiệm quota Lark API (giới hạn 10.000 lượt/tháng).
@@ -38,7 +58,8 @@ function isDisplayable(a: any): boolean {
   return (
     a.type === 'image/jpeg' || a.type === 'image/jpg' ||
     a.type === 'image/png' || a.type === 'image/webp' ||
-    /\.(jpg|jpeg|png|webp)$/i.test(a.name ?? '')
+    a.type === 'image/heic' || a.type === 'image/heif' ||
+    /\.(jpg|jpeg|png|webp|heic|heif)$/i.test(a.name ?? '')
   );
 }
 
@@ -88,6 +109,19 @@ function extractExtraParam(attachments: any[]): string {
 
 // ─── Trao Bằng ───────────────────────────────────────────────────────────────
 
+// Trích tên khóa học từ field Lookup/text. Bỏ qua giá trị dạng option-id (optXXXX).
+function extractCourseText(raw: any): string {
+  if (!raw) return '';
+  if (typeof raw === 'string') return /^opt[A-Za-z0-9]+$/.test(raw) ? '' : raw;
+  if (Array.isArray(raw)) {
+    return raw
+      .map(v => (typeof v === 'string' ? v : v?.text ?? ''))
+      .filter(s => s && !/^opt[A-Za-z0-9]+$/.test(s))
+      .join(', ');
+  }
+  return raw?.text ?? '';
+}
+
 export interface LarkStudent {
   id: string;
   name: string;
@@ -101,17 +135,21 @@ export async function fetchLarkStudents(): Promise<LarkStudent[]> {
 
   const token = await getLarkToken();
   const appToken = process.env.LARK_TRAO_BANG_APP_TOKEN ?? process.env.LARK_BASE_APP_TOKEN!;
-  const tableId  = process.env.LARK_TABLE_ID!;
 
   const recordRes = await fetch(
-    `${LARK_API}/bitable/v1/apps/${appToken}/tables/${tableId}/records?page_size=100&view_id=${TRAO_BANG_VIEW}`,
+    `${LARK_API}/bitable/v1/apps/${appToken}/tables/${TRAO_BANG_TABLE}/records?page_size=100&view_id=${TRAO_BANG_VIEW}`,
     { headers: { Authorization: `Bearer ${token}` }, cache: 'no-store' },
   );
 
   const json = await recordRes.json();
   if (json.code !== 0) throw new Error(`Lark records error: ${json.msg}`);
 
-  const items: any[] = json.data?.items ?? [];
+  const allItems: any[] = json.data?.items ?? [];
+
+  // Chỉ lấy record có ảnh trao bằng — bỏ qua record trống ảnh
+  const items = allItems.filter(item =>
+    (item.fields['Hình ảnh trao bằng'] ?? []).some(isDisplayable),
+  );
 
   // Extract extra param once from any record that has tmp_url — reused as fallback
   const allAttachments = items.flatMap(item => item.fields['Hình ảnh trao bằng'] ?? []);
@@ -121,17 +159,14 @@ export async function fetchLarkStudents(): Promise<LarkStudent[]> {
     items.map(async item => {
       const f = item.fields;
       const nameArr: any[] = f['Tên HV'] ?? f['Tên học viên'] ?? [];
-      const name = nameArr[0]?.text ?? '';
+      const name = (nameArr[0]?.text ?? '').trim();
 
       const rawDate = f['Ngày'];
       const date = typeof rawDate === 'number'
-        ? new Date(rawDate).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })
+        ? larkDateToVN(rawDate)
         : '';
 
-      const courseRaw = f['Khóa học'];
-      const course = typeof courseRaw === 'string'
-        ? courseRaw
-        : (Array.isArray(courseRaw) ? courseRaw[0]?.text ?? courseRaw[0] ?? '' : '');
+      const course = extractCourseText(f['Khóa học copy']) || extractCourseText(f['Khóa học']);
 
       const attachments: any[] = f['Hình ảnh trao bằng'] ?? [];
       const img = attachments.find(isDisplayable) ?? null;
@@ -141,9 +176,59 @@ export async function fetchLarkStudents(): Promise<LarkStudent[]> {
     }),
   );
 
-  const filtered = results.filter(s => !!s.name);
+  const filtered = results.filter(s => !!s.name && !!s.photoUrl);
   _studentsCache = { data: filtered, expiresAt: Date.now() + CACHE_TTL };
   return filtered;
+}
+
+// Incremental version — chỉ xử lý attachment của record chưa có trong DB.
+// existingIds: Set<lark_id> đã tồn tại → bỏ qua, không tốn thêm lượt API.
+export async function fetchLarkStudentsNew(existingIds: Set<string>): Promise<LarkStudent[]> {
+  const token = await getLarkToken();
+  const appToken = process.env.LARK_TRAO_BANG_APP_TOKEN ?? process.env.LARK_BASE_APP_TOKEN!;
+
+  const recordRes = await fetch(
+    `${LARK_API}/bitable/v1/apps/${appToken}/tables/${TRAO_BANG_TABLE}/records?page_size=100&view_id=${TRAO_BANG_VIEW}`,
+    { headers: { Authorization: `Bearer ${token}` }, cache: 'no-store' },
+  );
+  const json = await recordRes.json();
+  if (json.code !== 0) throw new Error(`Lark records error: ${json.msg}`);
+
+  const items: any[] = json.data?.items ?? [];
+
+  // Chỉ xử lý record chưa có trong DB VÀ có ảnh
+  const newItems = items.filter(item =>
+    !existingIds.has(item.record_id) &&
+    (item.fields['Hình ảnh trao bằng'] ?? []).some(isDisplayable),
+  );
+
+  if (newItems.length === 0) return [];
+
+  const allAttachments = newItems.flatMap(item => item.fields['Hình ảnh trao bằng'] ?? []);
+  const extraParam = extractExtraParam(allAttachments);
+
+  const results = await Promise.all(
+    newItems.map(async item => {
+      const f = item.fields;
+      const nameArr: any[] = f['Tên HV'] ?? f['Tên học viên'] ?? [];
+      const name = (nameArr[0]?.text ?? '').trim();
+
+      const rawDate = f['Ngày'];
+      const date = typeof rawDate === 'number'
+        ? larkDateToVN(rawDate)
+        : '';
+
+      const course = extractCourseText(f['Khóa học copy']) || extractCourseText(f['Khóa học']);
+
+      const attachments: any[] = f['Hình ảnh trao bằng'] ?? [];
+      const img = attachments.find(isDisplayable) ?? null;
+      const photoUrl = await resolveAttachmentUrl(token, img, extraParam);
+
+      return { id: item.record_id, name, date, course: String(course), photoUrl };
+    }),
+  );
+
+  return results.filter(s => !!s.name && !!s.photoUrl);
 }
 
 // ─── Video Truyền Thông ───────────────────────────────────────────────────────
@@ -209,7 +294,7 @@ export async function fetchLarkVideos(): Promise<LarkVideo[]> {
 
       const rawDate = f['Ngày'];
       const date = typeof rawDate === 'number'
-        ? new Date(rawDate).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })
+        ? larkDateToVN(rawDate)
         : '';
 
       const attachments: any[] = f['Tệp tin đính kèm'] ?? [];
@@ -302,9 +387,33 @@ export interface LarkClassSession {
   id: string;
   date: string;
   course: string;
-  className: string;
+  siSo: string;
   studentNames: string;
+  giangVien: string;
   photos: string[];
+}
+
+// Cột ảnh mới đã lọc ảnh đẹp thủ công trong Lark
+const LOP_HOC_PHOTO_FIELD = 'Ảnh lớp học (lọc ảnh đẹp)';
+
+// Trích danh sách text từ field link/formula/single-select.
+// Ưu tiên text_arr (link fields) để tách tên sạch, trim khoảng trắng + ký tự xuống dòng.
+function extractTextList(raw: any): string {
+  if (raw == null) return '';
+  if (typeof raw === 'string') return raw.trim();
+  if (typeof raw === 'number') return String(raw);
+  if (Array.isArray(raw)) {
+    return raw.flatMap(v => {
+      if (typeof v === 'string') return [v];
+      if (typeof v === 'number') return [String(v)];
+      if (Array.isArray(v?.text_arr)) return v.text_arr;
+      if (v?.text) return [v.text];
+      if (v?.name) return [v.name];
+      return [];
+    }).map((s: any) => String(s).trim()).filter(Boolean).join(', ');
+  }
+  if (raw?.value != null) return extractTextList(raw.value);
+  return (raw?.text ?? '').trim();
 }
 
 export async function fetchLarkClassSessions(): Promise<LarkClassSession[]> {
@@ -321,9 +430,14 @@ export async function fetchLarkClassSessions(): Promise<LarkClassSession[]> {
   const json = await recordRes.json();
   if (json.code !== 0) throw new Error(`Lark class records error: ${json.msg}`);
 
-  const items: any[] = json.data?.items ?? [];
+  const allItems: any[] = json.data?.items ?? [];
 
-  const allAttachments = items.flatMap(item => item.fields['Ảnh lớp học Copy'] ?? []);
+  // Chỉ lấy buổi học có ảnh đẹp — bỏ qua record trống ảnh
+  const items = allItems.filter(item =>
+    (item.fields[LOP_HOC_PHOTO_FIELD] ?? []).some(isDisplayable),
+  );
+
+  const allAttachments = items.flatMap(item => item.fields[LOP_HOC_PHOTO_FIELD] ?? []);
   const extraParam = extractExtraParam(allAttachments);
 
   const results = await Promise.all(
@@ -332,43 +446,227 @@ export async function fetchLarkClassSessions(): Promise<LarkClassSession[]> {
 
       const rawDate = f['Ngày học'];
       const date = typeof rawDate === 'number'
-        ? new Date(rawDate).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })
+        ? larkDateToVN(rawDate)
         : (typeof rawDate === 'string' ? rawDate : '');
 
-      const courseRaw = f['Khóa học'];
-      let course = '';
-      if (Array.isArray(courseRaw)) {
-        course = courseRaw.map((v: any) => {
-          if (v?.text) return v.text;
-          if (typeof v === 'string') return v;
-          return '';
-        }).filter(Boolean).join(', ');
-      } else if (typeof courseRaw === 'string') {
-        course = courseRaw;
-      }
+      const course       = extractTextList(f['Khóa học']);
+      const siSo         = extractTextList(f['Sỉ số']);
+      const studentNames = extractTextList(f['Danh sách học viên']);
+      const giangVien    = extractTextList(f['Họ & Tên Giảng Viên']);
 
-      const classNameArr: any[] = f['Mã lớp học'] ?? [];
-      const className = typeof classNameArr === 'string'
-        ? classNameArr
-        : (classNameArr[0]?.text ?? classNameArr[0] ?? '');
-
-      const tkbRaw = f['Mã TKB'];
-      let studentNames = '';
-      if (Array.isArray(tkbRaw)) {
-        studentNames = tkbRaw.map((v: any) => v?.text ?? (typeof v === 'string' ? v : '')).filter(Boolean).join(', ');
-      } else if (typeof tkbRaw === 'string') {
-        studentNames = tkbRaw;
-      }
-
-      const attachments: any[] = (f['Ảnh lớp học Copy'] ?? []).filter(isDisplayable);
+      const attachments: any[] = (f[LOP_HOC_PHOTO_FIELD] ?? []).filter(isDisplayable);
       const photoUrls = await Promise.all(attachments.map(a => resolveAttachmentUrl(token, a, extraParam)));
       const photos = photoUrls.filter((u): u is string => !!u);
 
-      return { id: item.record_id, date, course, className: String(className), studentNames, photos };
+      return { id: item.record_id, date, course, siSo, studentNames, giangVien, photos };
     }),
   );
 
   const filtered = results.filter(s => s.photos.length > 0);
   _classesCache = { data: filtered, expiresAt: Date.now() + CACHE_TTL };
   return filtered;
+}
+
+// Incremental — chỉ resolve ảnh của buổi học CHƯA có trong DB.
+// existingIds: Set<lark_id> đã tồn tại → bỏ qua, không tốn thêm lượt API.
+export async function fetchLarkClassSessionsNew(existingIds: Set<string>): Promise<LarkClassSession[]> {
+  const token    = await getLarkToken();
+  const appToken = process.env.LARK_BASE_APP_TOKEN!;
+
+  const recordRes = await fetch(
+    `${LARK_API}/bitable/v1/apps/${appToken}/tables/${LOP_HOC_TABLE}/records?page_size=100&view_id=${LOP_HOC_VIEW}`,
+    { headers: { Authorization: `Bearer ${token}` }, cache: 'no-store' },
+  );
+
+  const json = await recordRes.json();
+  if (json.code !== 0) throw new Error(`Lark class records error: ${json.msg}`);
+
+  const items: any[] = json.data?.items ?? [];
+
+  // Chỉ xử lý buổi học CHƯA có trong DB VÀ có ảnh đẹp
+  const newItems = items.filter(item =>
+    !existingIds.has(item.record_id) &&
+    (item.fields[LOP_HOC_PHOTO_FIELD] ?? []).some(isDisplayable),
+  );
+
+  if (newItems.length === 0) return [];
+
+  const allAttachments = newItems.flatMap(item => item.fields[LOP_HOC_PHOTO_FIELD] ?? []);
+  const extraParam = extractExtraParam(allAttachments);
+
+  const results = await Promise.all(
+    newItems.map(async item => {
+      const f = item.fields;
+
+      const rawDate = f['Ngày học'];
+      const date = typeof rawDate === 'number'
+        ? larkDateToVN(rawDate)
+        : (typeof rawDate === 'string' ? rawDate : '');
+
+      const course       = extractTextList(f['Khóa học']);
+      const siSo         = extractTextList(f['Sỉ số']);
+      const studentNames = extractTextList(f['Danh sách học viên']);
+      const giangVien    = extractTextList(f['Họ & Tên Giảng Viên']);
+
+      const attachments: any[] = (f[LOP_HOC_PHOTO_FIELD] ?? []).filter(isDisplayable);
+      const photoUrls = await Promise.all(attachments.map(a => resolveAttachmentUrl(token, a, extraParam)));
+      const photos = photoUrls.filter((u): u is string => !!u);
+
+      return { id: item.record_id, date, course, siSo, studentNames, giangVien, photos };
+    }),
+  );
+
+  return results.filter(s => s.photos.length > 0);
+}
+
+// ─── Thời Khóa Biểu (lightweight — không resolve ảnh, tiết kiệm quota) ────────
+// Dùng cho cron sync-lich-hoc: 1 token + 1 records fetch = 2 lượt/ngày.
+
+function normalizeLarkCourse(raw: string): string {
+  const up = raw.toUpperCase().trim();
+  if (up.startsWith('CÔNG TÁC') || up.startsWith('CONG TAC')) return 'Công tác';
+  if (up.startsWith('TEST MÓN') || up.startsWith('THỬ MÓN') || up.startsWith('TEST MON') || up.startsWith('THU MON')) return 'Thử món';
+  if (up.startsWith('GIẢNG VIÊN OFF') || up.startsWith('GIANG VIEN OFF')) return 'Giảng viên off';
+  return raw;
+}
+
+export interface LarkScheduleEntry {
+  id: string;
+  isoDate: string;   // "yyyy-mm-dd" cho Postgres DATE
+  course: string;
+  siSo: number | null;
+  giangVien: string;
+}
+
+export async function fetchLarkClassSchedule(): Promise<LarkScheduleEntry[]> {
+  const token    = await getLarkToken();
+  const appToken = process.env.LARK_BASE_APP_TOKEN!;
+  const all: LarkScheduleEntry[] = [];
+  let pageToken = '';
+
+  do {
+    const base = `${LARK_API}/bitable/v1/apps/${appToken}/tables/${LOP_HOC_TABLE}/records?page_size=100`;
+    const url  = pageToken ? `${base}&page_token=${pageToken}` : base;
+    const res  = await fetch(url, { headers: { Authorization: `Bearer ${token}` }, cache: 'no-store' });
+    const json = await res.json();
+    if (json.code !== 0) throw new Error(`Lark schedule error: ${json.msg}`);
+
+    for (const item of (json.data?.items ?? [])) {
+      const f         = item.fields;
+      const rawDate   = f['Ngày học'];
+      const isoDate   = typeof rawDate === 'number' ? larkDateToISO(rawDate) : '';
+      const rawCourse = extractTextList(f['Khóa học']) || extractTextList(f['Dự kiến khóa học?']) || '';
+      const course    = normalizeLarkCourse(rawCourse);
+      const siSoRaw   = extractTextList(f['Sỉ số']);
+      const siSo      = siSoRaw ? (parseInt(siSoRaw) || null) : null;
+      const giangVien = extractTextList(f['Họ & Tên Giảng Viên']);
+      if (isoDate && course) all.push({ id: item.record_id, isoDate, course, siSo, giangVien });
+    }
+
+    pageToken = json.data?.has_more ? json.data.page_token : '';
+  } while (pageToken);
+
+  return all;
+}
+
+// ─── Thống kê Khách hàng (Base "Quản lý công việc" — Bên ngoài) ───────────────
+// Đếm khóa học / dịch vụ đã chốt. KHÔNG resolve ảnh → mỗi page = 1 lượt.
+// 1.838 bản ghi ≈ 19 page + 1 token ≈ 20 lượt/lần. Chạy 1 lần/sáng qua cron.
+const KHACH_HANG_APP_TOKEN = 'Rg8DbDE0SaZsEls6vkylfx2ngrf';
+const KHACH_HANG_TABLE     = 'tbl9RhlOHmdqjTa3';
+
+export interface KhachHangStats {
+  khoaChotTotal: number;
+  khoaChotMonth: number;
+  dichVuChotTotal: number;
+  dichVuChotMonth: number;
+  dichVuBreakdown: Record<string, number>;
+}
+
+// Trích timestamp (ms) từ field ngày Lark — robust với number / {value} / array / string.
+function extractDateMs(raw: any): number | null {
+  if (raw == null) return null;
+  if (typeof raw === 'number') return raw > 1e11 ? raw : null;
+  if (Array.isArray(raw)) {
+    for (const v of raw) { const m = extractDateMs(v); if (m != null) return m; }
+    return null;
+  }
+  if (typeof raw === 'object') {
+    if (typeof raw.value === 'number') return extractDateMs(raw.value);
+    if (typeof raw.timestamp === 'number') return extractDateMs(raw.timestamp);
+    return null;
+  }
+  if (typeof raw === 'string') {
+    const n = Number(raw); if (!isNaN(n) && n > 1e11) return n;
+    const p = Date.parse(raw); if (!isNaN(p)) return p;
+  }
+  return null;
+}
+
+// Field select/text → chuỗi. Field multi-select → nối bằng dấu phẩy.
+function selectText(raw: any): string {
+  if (raw == null) return '';
+  if (typeof raw === 'string') return raw.trim();
+  if (Array.isArray(raw)) {
+    return raw.map(v => (typeof v === 'string' ? v : (v?.text ?? v?.name ?? ''))).filter(Boolean).join(', ').trim();
+  }
+  return String(raw?.text ?? raw?.name ?? raw ?? '').trim();
+}
+
+function fieldNonEmpty(raw: any): boolean {
+  if (raw == null) return false;
+  if (typeof raw === 'string') return raw.trim() !== '';
+  if (Array.isArray(raw)) return raw.length > 0;
+  if (typeof raw === 'object') return Object.keys(raw).length > 0;
+  return !!raw;
+}
+
+export async function fetchLarkKhachHangStats(): Promise<KhachHangStats> {
+  const token = await getLarkToken();
+
+  // Mốc tháng hiện tại theo giờ VN (UTC+7)
+  const vnNow = new Date(Date.now() + 7 * 3_600_000);
+  const curY = vnNow.getUTCFullYear();
+  const curM = vnNow.getUTCMonth();
+  const inThisMonth = (ms: number | null) => {
+    if (ms == null) return false;
+    const d = new Date(ms + 7 * 3_600_000);
+    return d.getUTCFullYear() === curY && d.getUTCMonth() === curM;
+  };
+
+  let khoaChotTotal = 0, khoaChotMonth = 0, dichVuChotTotal = 0, dichVuChotMonth = 0;
+  const dichVuBreakdown: Record<string, number> = {};
+
+  let pageToken = '';
+  do {
+    const base = `${LARK_API}/bitable/v1/apps/${KHACH_HANG_APP_TOKEN}/tables/${KHACH_HANG_TABLE}/records?page_size=100`;
+    const url  = pageToken ? `${base}&page_token=${pageToken}` : base;
+    const res  = await fetch(url, { headers: { Authorization: `Bearer ${token}` }, cache: 'no-store' });
+    const json = await res.json();
+    if (json.code !== 0) throw new Error(`Lark khách hàng error: ${json.msg}`);
+
+    for (const item of (json.data?.items ?? [])) {
+      const f = item.fields;
+      const tinhTrang = selectText(f['Tình trạng']).toUpperCase();
+      const isKhoaChot = tinhTrang.includes('ĐÃ CHỐT') || tinhTrang.includes('DA CHOT');
+      const dichVuRaw = f['Dịch vụ đã chốt'];
+      const hasDichVu = fieldNonEmpty(dichVuRaw);
+      const dateMs = extractDateMs(f['Chứng từ thanh toán']);
+      const thisMonth = inThisMonth(dateMs);
+
+      if (isKhoaChot) { khoaChotTotal++; if (thisMonth) khoaChotMonth++; }
+      if (hasDichVu) {
+        dichVuChotTotal++;
+        if (thisMonth) dichVuChotMonth++;
+        const label = selectText(dichVuRaw);
+        for (const part of label.split(',').map(s => s.trim()).filter(Boolean)) {
+          dichVuBreakdown[part] = (dichVuBreakdown[part] ?? 0) + 1;
+        }
+      }
+    }
+
+    pageToken = json.data?.has_more ? (json.data.page_token ?? '') : '';
+  } while (pageToken);
+
+  return { khoaChotTotal, khoaChotMonth, dichVuChotTotal, dichVuChotMonth, dichVuBreakdown };
 }

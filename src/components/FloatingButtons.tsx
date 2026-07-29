@@ -12,9 +12,15 @@ export default function FloatingButtons() {
 
   return (
     <div className="floats">
-      <a href="https://zalo.me/0834790555" className="fl fl-zalo" title="Chat Zalo" target="_blank" rel="noopener">Zalo</a>
+      <a href="https://zalo.me/0834790555" className="fl fl-zalo" title="Chat Zalo" target="_blank" rel="noopener">Z</a>
       <a href="https://www.facebook.com/hocviencaphe" className="fl fl-fb" title="Facebook" target="_blank" rel="noopener">
         <i className="ti ti-brand-facebook"></i>
+      </a>
+      <a href="https://www.tiktok.com/@congthucphache.hvcp" className="fl fl-tiktok" title="TikTok" target="_blank" rel="noopener">
+        <i className="ti ti-brand-tiktok"></i>
+      </a>
+      <a href="https://www.youtube.com/@HocVienCaPheHCM" className="fl fl-yt" title="YouTube" target="_blank" rel="noopener">
+        <i className="ti ti-brand-youtube"></i>
       </a>
       <a href="tel:0834790555" className="fl fl-phone" title="Gọi ngay">
         <i className="ti ti-phone"></i>

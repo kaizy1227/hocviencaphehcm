@@ -21,6 +21,101 @@ export async function GET(req: Request) {
     return NextResponse.json({ step: 0, error: 'missing env vars', appId: !!appId, appToken: !!appToken, tableId: !!tableId });
   }
 
+  // Step 0a: compare env value against expected (không lộ giá trị thật)
+  const EXPECTED_BASE = 'Rg8DbDE0SaZsEls6vkylfx2ngrf';
+  const baseCheck = {
+    matchesExpected: appToken === EXPECTED_BASE,
+    lenEnv: appToken.length,
+    lenExpected: EXPECTED_BASE.length,
+    first4: appToken.slice(0, 4),
+    last4: appToken.slice(-4),
+    hasWhitespace: /\s/.test(appToken),
+    tableIdUsed: tableId,
+    viewIdUsed: viewId,
+  };
+  if (searchParams.get('probe') === '1') {
+    return NextResponse.json({ step: '0a', baseCheck });
+  }
+
+  // Step 0g: dump raw value của vài field cụ thể (xác nhận shape để parse đúng)
+  if (searchParams.get('vals') === '1') {
+    const tk = await getLarkToken();
+    const rRes = await fetch(
+      `${LARK_API}/bitable/v1/apps/${appToken}/tables/${tableId}/records?page_size=3&view_id=${viewId}`,
+      { headers: { Authorization: `Bearer ${tk}` }, cache: 'no-store' },
+    );
+    const rJson = await safeJson(rRes);
+    const keys = ['Khóa học', 'Sỉ số', 'Danh sách học viên', 'Ngày học', 'Ảnh lớp học (lọc ảnh đẹp)'];
+    const samples = (rJson?.data?.items ?? []).map((it: any) => {
+      const out: Record<string, any> = {};
+      for (const k of keys) {
+        const v = it.fields[k];
+        out[k] = Array.isArray(v) ? { _isArray: true, len: v.length, first: v[0] } : v;
+      }
+      return out;
+    });
+    return NextResponse.json({ step: '0g', samples });
+  }
+
+  // Step 0f: liệt kê field names + 1 record mẫu của bảng (xác nhận tên cột chính xác)
+  if (searchParams.get('fields') === '1') {
+    const tk = await getLarkToken();
+    const hh = { Authorization: `Bearer ${tk}` };
+    const fRes = await fetch(
+      `${LARK_API}/bitable/v1/apps/${appToken}/tables/${tableId}/fields?page_size=100`,
+      { headers: hh, cache: 'no-store' },
+    );
+    const fJson = await safeJson(fRes);
+    const rRes = await fetch(
+      `${LARK_API}/bitable/v1/apps/${appToken}/tables/${tableId}/records?page_size=1&view_id=${viewId}`,
+      { headers: hh, cache: 'no-store' },
+    );
+    const rJson = await safeJson(rRes);
+    const sampleFields = rJson?.data?.items?.[0]?.fields ?? {};
+    return NextResponse.json({
+      step: '0f',
+      fieldNames: (fJson?.data?.items ?? []).map((f: any) => ({ name: f.field_name, type: f.ui_type ?? f.type })),
+      sampleRecordKeys: Object.keys(sampleFields),
+    });
+  }
+
+  // Step 0d: chẩn đoán Wiki-base — thử liệt kê tables + resolve wiki node
+  if (searchParams.get('diag') === '1') {
+    const tk = await getLarkToken();
+    const hh = { Authorization: `Bearer ${tk}` };
+
+    // 1) List tables bằng appToken hiện tại
+    const listRes = await fetch(
+      `${LARK_API}/bitable/v1/apps/${appToken}/tables?page_size=50`,
+      { headers: hh, cache: 'no-store' },
+    );
+    const listJson = await safeJson(listRes);
+
+    // 2) Resolve wiki node → obj_token thật
+    const nodeToken = searchParams.get('node') ?? 'HHFpwTjphiUo49kN3HJl9fc5gm1';
+    const nodeRes = await fetch(
+      `${LARK_API}/wiki/v2/spaces/get_node?token=${nodeToken}&obj_type=wiki`,
+      { headers: hh, cache: 'no-store' },
+    );
+    const nodeJson = await safeJson(nodeRes);
+
+    return NextResponse.json({
+      step: '0d',
+      listTables: {
+        code: listJson?.code,
+        msg: listJson?.msg,
+        tables: (listJson?.data?.items ?? []).map((t: any) => ({ id: t.table_id, name: t.name })),
+      },
+      wikiNode: {
+        code: nodeJson?.code,
+        msg: nodeJson?.msg,
+        obj_token: nodeJson?.data?.node?.obj_token,
+        obj_type: nodeJson?.data?.node?.obj_type,
+        title: nodeJson?.data?.node?.title,
+      },
+    });
+  }
+
   const token = await getLarkToken();
   const h = { Authorization: `Bearer ${token}` };
 
