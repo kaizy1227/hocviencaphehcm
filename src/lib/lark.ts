@@ -598,6 +598,12 @@ function extractDateMs(raw: any): number | null {
   }
   if (typeof raw === 'string') {
     const n = Number(raw); if (!isNaN(n) && n > 1e11) return n;
+    // dd/mm/yyyy hoặc d/m/yyyy (định dạng Lark text)
+    const dmy = raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (dmy) {
+      const p = Date.parse(`${dmy[3]}-${dmy[2].padStart(2, '0')}-${dmy[1].padStart(2, '0')}`);
+      if (!isNaN(p)) return p;
+    }
     const p = Date.parse(raw); if (!isNaN(p)) return p;
   }
   return null;
