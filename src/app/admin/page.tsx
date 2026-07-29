@@ -367,7 +367,9 @@ export default function AdminPage() {
     setKhSyncing(true); setKhSyncMsg('');
     try {
       const res = await fetch('/api/admin/sync-khach-hang-stats', { method: 'POST' });
-      const json = await res.json();
+      const text = await res.text();
+      let json: any;
+      try { json = JSON.parse(text); } catch { throw new Error(`Server: ${text.slice(0, 300)}`); }
       if (!res.ok || json.error) throw new Error(json.error || 'Đồng bộ thất bại');
       await loadKhStats();
       setKhSyncMsg('Đã cập nhật số liệu mới nhất.');
