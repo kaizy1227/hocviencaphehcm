@@ -2,8 +2,8 @@ import { NextResponse } from 'next/server';
 import { createClient as sbClient } from '@supabase/supabase-js';
 import { fetchLarkKhachHangStats } from '@/lib/lark';
 
+export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
-export const maxDuration = 60;
 
 const getSb = () => sbClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
