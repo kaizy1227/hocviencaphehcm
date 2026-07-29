@@ -645,7 +645,7 @@ export async function fetchLarkKhachHangStats(): Promise<KhachHangStats> {
 
   let pageToken = '';
   do {
-    const base = `${LARK_API}/bitable/v1/apps/${KHACH_HANG_APP_TOKEN}/tables/${KHACH_HANG_TABLE}/records?page_size=100`;
+    const base = `${LARK_API}/bitable/v1/apps/${KHACH_HANG_APP_TOKEN}/tables/${KHACH_HANG_TABLE}/records?page_size=500`;
     const url  = pageToken ? `${base}&page_token=${pageToken}` : base;
     const res  = await fetch(url, { headers: { Authorization: `Bearer ${token}` }, cache: 'no-store' });
     const json = await res.json();
