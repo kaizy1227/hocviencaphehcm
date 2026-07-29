@@ -2510,9 +2510,9 @@ export default function AdminPage() {
                       <tr key={e.id} style={{ opacity: e.active ? 1 : 0.45 }}>
                         <td className="admin-num">{i + 1}</td>
                         <td className="admin-name">{e.name}</td>
-                        <td className="admin-date">{e.quantity_per_pack.toLocaleString('vi-VN')} {e.unit}</td>
-                        <td style={{ whiteSpace: 'nowrap' }}>{e.price_per_pack.toLocaleString('vi-VN')} đ</td>
-                        <td style={{ whiteSpace: 'nowrap', fontWeight: 600, color: 'var(--accent)' }}>{(Math.round(e.cost_per_unit * 10000) / 10000).toLocaleString('vi-VN')} đ/{e.unit}</td>
+                        <td className="admin-date">{(e.quantity_per_pack ?? 0).toLocaleString('vi-VN')} {e.unit}</td>
+                        <td style={{ whiteSpace: 'nowrap' }}>{(e.price_per_pack ?? 0).toLocaleString('vi-VN')} đ</td>
+                        <td style={{ whiteSpace: 'nowrap', fontWeight: 600, color: 'var(--accent)' }}>{(Math.round((e.cost_per_unit ?? 0) * 10000) / 10000).toLocaleString('vi-VN')} đ/{e.unit}</td>
                         <td><button className={`course-toggle${e.active ? ' on' : ''}`} onClick={() => toggleExtActive(e)}><i className={`ti ti-${e.active ? 'eye' : 'eye-off'}`}></i></button></td>
                         <td style={{ display: 'flex', gap: '4px' }}>
                           <button className="admin-edit-btn" onClick={() => startEditExtIng(e)} title="Sửa"><i className="ti ti-pencil"></i></button>
@@ -3031,7 +3031,7 @@ export default function AdminPage() {
                               {o.items.length} sản phẩm <i className={`ti ti-chevron-${expandedOrder === o.id ? 'up' : 'down'}`}></i>
                             </button>
                           </td>
-                          <td style={{ fontWeight: 700, color: 'var(--accent)', whiteSpace: 'nowrap' }}>{o.total.toLocaleString('vi-VN')}đ</td>
+                          <td style={{ fontWeight: 700, color: 'var(--accent)', whiteSpace: 'nowrap' }}>{(o.total ?? 0).toLocaleString('vi-VN')}đ</td>
                           <td className="admin-date">{new Date(o.created_at).toLocaleDateString('vi-VN')}</td>
                           <td>
                             <select className={`lead-status-select ${ORDER_STATUS[o.status].cls}`} value={o.status} disabled={updatingOrder === o.id} onChange={e => updateOrderStatus(o.id, e.target.value as Order['status'])}>
