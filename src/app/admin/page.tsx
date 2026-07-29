@@ -1382,22 +1382,22 @@ export default function AdminPage() {
                       <div className="admin-stats-grid">
                         <div className="admin-stat-card">
                           <i className="ti ti-school"></i>
-                          <div className="admin-stat-num">{khStats.khoa_chot_total.toLocaleString('vi-VN')}</div>
+                          <div className="admin-stat-num">{(khStats.khoa_chot_total ?? 0).toLocaleString('vi-VN')}</div>
                           <div className="admin-stat-label">Khóa học đã chốt (tổng)</div>
                         </div>
                         <div className="admin-stat-card">
                           <i className="ti ti-calendar-check"></i>
-                          <div className="admin-stat-num">{khStats.khoa_chot_month.toLocaleString('vi-VN')}</div>
+                          <div className="admin-stat-num">{(khStats.khoa_chot_month ?? 0).toLocaleString('vi-VN')}</div>
                           <div className="admin-stat-label">Khóa học chốt tháng này</div>
                         </div>
                         <div className="admin-stat-card">
                           <i className="ti ti-briefcase"></i>
-                          <div className="admin-stat-num">{khStats.dich_vu_chot_total.toLocaleString('vi-VN')}</div>
+                          <div className="admin-stat-num">{(khStats.dich_vu_chot_total ?? 0).toLocaleString('vi-VN')}</div>
                           <div className="admin-stat-label">Dịch vụ đã chốt (tổng)</div>
                         </div>
                         <div className="admin-stat-card">
                           <i className="ti ti-calendar-check"></i>
-                          <div className="admin-stat-num">{khStats.dich_vu_chot_month.toLocaleString('vi-VN')}</div>
+                          <div className="admin-stat-num">{(khStats.dich_vu_chot_month ?? 0).toLocaleString('vi-VN')}</div>
                           <div className="admin-stat-label">Dịch vụ chốt tháng này</div>
                         </div>
                       </div>
@@ -3060,7 +3060,7 @@ export default function AdminPage() {
                                       <span className="order-detail-unit">{item.unit}</span>
                                     </div>
                                     <span className="order-detail-qty">x{item.quantity}</span>
-                                    <span className="order-detail-price">{(item.price * item.quantity).toLocaleString('vi-VN')}đ</span>
+                                    <span className="order-detail-price">{((item.price ?? 0) * (item.quantity ?? 0)).toLocaleString('vi-VN')}đ</span>
                                   </div>
                                 ))}
                                 {o.notes && (
@@ -3739,7 +3739,7 @@ function RecipeForm({
                       </td>
                       <td style={{ padding: '7px 10px', textAlign: 'right' }}>{item.quantity}</td>
                       <td style={{ padding: '7px 10px', color: 'var(--text-3)' }}>{item.unit}</td>
-                      <td style={{ padding: '7px 10px', textAlign: 'right', fontWeight: 600, color: 'var(--accent)' }}>{Math.round(item.quantity * item.cost_per_unit).toLocaleString('vi-VN')} đ</td>
+                      <td style={{ padding: '7px 10px', textAlign: 'right', fontWeight: 600, color: 'var(--accent)' }}>{Math.round((item.quantity ?? 0) * (item.cost_per_unit ?? 0)).toLocaleString('vi-VN')} đ</td>
                       <td style={{ padding: '7px 10px', textAlign: 'center' }}>
                         <button type="button" onClick={() => setIngredientItems(prev => prev.filter((_, i) => i !== idx))} style={{ background: 'none', border: 'none', color: '#c0392b', cursor: 'pointer', fontSize: '1rem', padding: 0 }}><i className="ti ti-trash"></i></button>
                       </td>
